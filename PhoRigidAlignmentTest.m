@@ -15,7 +15,7 @@ nextIndicies = 2:numberOfDays;
 for i = 1:numberOfOffsets
     % Load first and second days:
     prevIndex = refIndicies(i);
-    nextIndex = refIndicies(i);
+    nextIndex = nextIndicies(i);
 
     % Get the tif paths for each
     registeredTifFolder_prev = registeredOutpaths{prevIndex}.tifFolder;
@@ -40,6 +40,9 @@ for i = 1:numberOfOffsets
     imshowpair(registered_imageInfo_prev.currRegisteredImage, registered)
     title('Fixed Offsets')
 end
+
+% Save the results if needed:
+save('output.mat','dateStrings','outputRegistrationCorrections','-mat')
 
 function [registered_imageInfo_prev, registered_imageInfo_next] = fnLoadRelevantImages(registeredTifFolder_prev, registeredTifFolder_next)
     % Set the datasources
