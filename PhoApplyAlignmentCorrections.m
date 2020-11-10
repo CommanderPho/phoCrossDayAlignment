@@ -49,7 +49,7 @@ for i = 1:numberOfOffsets
     % Only works on 2020b or later:
     % writeall(transformedImds, correctedRegisteredTifFolder, 'OutputFormat','tif', 'Folderlayout', 'flatten')
     for datastoreFileIndex = 1:filesCount
-        [curr_data, curr_info] = read(transformedImds);
+        [curr_data, curr_info] = read(transformedImds); %Hopefully I don't need an index here
         % Save to new filename
         [filepath, name, ext] = fileparts(curr_info.Filename);
         curr_out_filename = [name ext];
