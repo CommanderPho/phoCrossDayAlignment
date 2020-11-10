@@ -39,6 +39,8 @@ for i = 1:numberOfOffsets
     subplot(1,2,2)
     imshowpair(registered_imageInfo_prev.currRegisteredImage, registered)
     title('Fixed Offsets')
+    disp('done.')
+    
 end
 
 % Save the results if needed:
