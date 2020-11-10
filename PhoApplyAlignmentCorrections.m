@@ -10,19 +10,20 @@ addpath(genpath('helpers'));
     nextIndex = nextIndicies(i);
 
     % Get the tif paths for each
+    registeredRootFolder = registeredOutpaths{nextIndex}.root;
     registeredTifFolder_next = registeredOutpaths{nextIndex}.tifFolder;
 
     % Create a corrected tif path next to the current one
-    correctedRegisteredTifFolder = fullfile(registeredTifFolder_next, '..', 'reg_tif_aligned'); 
+    correctedRegisteredTifFolder = fullfile(registeredRootFolder, 'reg_tif_aligned'); 
     
     if ~exist(correctedRegisteredTifFolder,'dir')
         mkdir(correctedRegisteredTifFolder)
     end
     
     % Load the datasources
-    imds = imageDatastore(registeredTifFolder_next,'IncludeSubfolders',false,'FileExtensions','.tif','LabelSource','foldernames');
+    imds = imageDatastore(registeredTifFolder_next,'IncludeSubfolders',false,'FileExtensions','.tif','LabelSource','foldernames','ReadFcn', @fnCustomTifStackReader);
     % Extract information from the loaded datastores
-    corrected_imageInfo.count = size(imds.Files, 1);
+    corrected_imageInfo.filesCount = size(imds.Files, 1);
 
     % Get the current transform
     curr_offset_first_to_second = outputRegistrationCorrections.translation_offset_first_to_second(i,:);
@@ -32,10 +33,24 @@ addpath(genpath('helpers'));
     %auimds = augmentedImageDatastore(outputSize, imds.registered_next)
     
     transformedImds = transform(imds, @(x) imwarp(x, curr_tform, 'OutputView', imref2d(size(x))));
-    fprintf('Writing %d transformed files to %s!\n', corrected_imageInfo.count, correctedRegisteredTifFolder);
+    fprintf('Writing %d transformed files to %s!\n', corrected_imageInfo.filesCount, correctedRegisteredTifFolder);
     
-    writeall(transformedImds, correctedRegisteredTifFolder, 'OutputFormat','tif', 'Folderlayout', 'flatten')
+    % Only works on 2020b or later:
+    % writeall(transformedImds, correctedRegisteredTifFolder, 'OutputFormat','tif', 'Folderlayout', 'flatten')
+    
+    for datastoreFileIndex = 1:corrected_imageInfo.filesCount
+        [curr_data, curr_info] = read(transformedImds);
+        % Save to new filename
+        [filepath, name, ext] = fileparts(curr_info.Filename);
+        curr_out_filename = [name ext];
+        curr_out_filepath = fullfile(correctedRegisteredTifFolder, curr_out_filename);
+        fprintf('Writing %s out to disk... ', curr_out_filepath);
+        imwrite(curr_data, curr_out_filepath); % Write the file out to disk
+        fprintf('done. \n');
+    end
+    
     fprintf('Done! Wrote transformed files to %s!\n', correctedRegisteredTifFolder);
+    
     
     
 %     Rfixed = imref2d(size(registered_imageInfo_next.currRegisteredImage));
