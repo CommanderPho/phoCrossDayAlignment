@@ -25,9 +25,10 @@ if strcmp(croOptions.computationMethod, 'normxcorr')
     [ypeak, xpeak] = find(crossCorrelation==max(crossCorrelation(:)));
     yoffSet = ypeak - size(first.time, 1);
     xoffSet = xpeak - size(first.time, 2);
-    % Build translation-only affine2d transform:
-    T = [1 0 0; 0 1 0; -xoffSet -yoffSet 1];
-    tform = affine2d(T);
+%     % Build translation-only affine2d transform:
+%     T = [1 0 0; 0 1 0; -xoffSet -yoffSet 1];
+%     tform = affine2d(T);
+    [tform] = fnBuildTranslationOnlyAffineTransform(-xoffSet, -yoffSet);
     offset_first_to_second = [-xoffSet -yoffSet];
     
     debugStructures.crossCorrelation = crossCorrelation;
