@@ -34,7 +34,7 @@ addpath(genpath('helpers'));
     transformedImds = transform(imds, @(x) imwarp(x, curr_tform, 'OutputView', imref2d(size(x))));
     fprintf('Writing %d transformed files to %s!\n', corrected_imageInfo.count, correctedRegisteredTifFolder);
     
-    writeall(transformedImds, correctedRegisteredTifFolder, 'Folderlayout', 'flatten')
+    writeall(transformedImds, correctedRegisteredTifFolder, 'OutputFormat','tif', 'Folderlayout', 'flatten')
     fprintf('Done! Wrote transformed files to %s!\n', correctedRegisteredTifFolder);
     
     
