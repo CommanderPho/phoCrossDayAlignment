@@ -1,6 +1,9 @@
+% Pho Rigid Alignment Computation Script: Pipeline Stage 0
+% Pho Hale, November 10, 2020
+% Given the specified dateStrings, computes the translations required to align all registered .tif files in a date folder with the "reference" date folder (the first one in the cell array).
+% Produces a series of offsets, which are saved into an output file 'output.mat'.
 addpath(genpath('helpers'));
 
-dataPath = 'E:\PhoHaleScratchFolder';
 dateStrings = {'20200117','20200120','20200124'}; % Strings representing each date.
 [rawOutpaths, registeredOutpaths] = fnBuildPaths(dateStrings);
 

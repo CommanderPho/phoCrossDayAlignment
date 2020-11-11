@@ -1,5 +1,7 @@
+% Pho Apply Rigid Alignment Corrections Script: Pipeline Stage 1
+% Pho Hale, November 10, 2020
 % Takes alignment offsets computed by the previous stage in the pipeline
-% and applies them to the registered .tifs
+% and applies them to the registered .tifs, saving them out to a new 'reg_tif_aligned' directory adjacent to the 'reg_tif' directory.
 
 addpath(genpath('helpers'));
 
