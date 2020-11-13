@@ -1,4 +1,4 @@
-function [ephysData,pathName] = pfaAppendRZ6SoundInfo(experimentType,ephysData)
+function [ephysData,pathName] = pfaAppendRZ6SoundInfo(experimentType, ephysData, audioParametersPath)
 
 %this function appends metadata regarding the stimuli you fed the RZ6
 %during your experiments. This code is currently a work in progress and
@@ -14,8 +14,18 @@ function [ephysData,pathName] = pfaAppendRZ6SoundInfo(experimentType,ephysData)
 %need to be named EXACTLY as myParameters_amplitudes.txt and
 %myParameters_frequencies.txt
 
+
 if strcmp(experimentType,'AM')
-    pathName = uigetdir ;
+    
+    % allow the user to pass-in a path programmatically instead of
+    % requiring GUI selection of one.
+    if ~exist('audioParametersPath','var')
+        pathName = uigetdir ;
+    else
+        pathName = audioParametersPath;
+    end
+
+
     cd(pathName);
     dirContents = dir('*.txt') ;
     fileNameList = {dirContents(:).name} ;
