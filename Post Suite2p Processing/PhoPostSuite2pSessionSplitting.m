@@ -5,7 +5,7 @@
 % clear all;
 addpath(genpath('..\helpers'));
 
-%% Processing Options
+%% Processing Options:
 dateStrings = {'20200117','20200120','20200124'}; % Strings representing each date.
 trialLength = 150;
 animalID = 'anm265';
@@ -15,7 +15,9 @@ enable_session_fAll_writes = false; % If true, a Fall.mat file is generated for 
 force_session_fAll_overwrites = true; % If true, extant session_fAll files are overwritten instead of loaded. Only has an effect if enable_session_fAll_writes is true
 
 enable_session_TO_LOAD_INTERMEDIATES_writes = false; % If true, "TO_LOAD" intermediate files are saved for each session. These contain the ephysdata
+finalDataStruct_DFF_baselineFrames = [1, 30];
 
+%% BEGIN BODY:
 fAllPath = fullfile(outputFolder,'plane0\Fall.mat');
 fAllSplitOutputPath = fullfile(outputFolder,'plane0\days_split');
 if ~exist(fAllSplitOutputPath,'dir')
@@ -167,6 +169,12 @@ end
 
 %once you have saved your individual sessions, append them all into a FDS
 %format structure using this script
+
+% The final stage is adding the baselineDFF data to the finalDataStruct:
+disp('Running makeSessionList_FDS on finalDataStruct...')
+[sessionList, compList] = makeSessionList_FDS(finalDataStruct); %make a list of sessions and comps in FDS
+disp('Running makeSessionList_FDS on finalDataStruct...')
+finalDataStruct = baselineDFF_fds(finalDataStruct, sessionList, finalDataStruct_DFF_baselineFrames); % Adds the DFF baseline to the finalDataStruct
 
 %% "FD (final data)" file output:
 fprintf('writing final data struct out to %s... ', FDOutputPath);

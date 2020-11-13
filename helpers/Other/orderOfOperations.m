@@ -33,5 +33,5 @@ ephysData=pfaAppendSuite2p_v2(ephysData,fAll.F,fAll.Fneu,fAll.iscell,fAll.stat,1
 finalDataStruct=baselineDFF_fds(finalDataStruct,sessionList,[1,30]);
 
 %plotting
-plotTracesForAllStimuli_FDS(fStruct,compList)
-plotAMConditions_FDS(fStruct,compList)
+plotTracesForAllStimuli_FDS(finalDataStruct, compList)
+plotAMConditions_FDS(finalDataStruct, compList)
