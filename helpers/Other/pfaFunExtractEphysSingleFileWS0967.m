@@ -213,7 +213,7 @@ end
 % replaceDashWithUnderScore = char(replaceDashWithUnderScore) ;
 % savedTracesB.(replaceDashWithUnderScore) = savedTraces;
 
-allEphysData = [] ;
+allEphysData = [];
 %rename this to savedTraces if you are dealing with single files
 allEphysData = savedTraces ;
 %allEphysData= pfaFunDetectFestoRise(allEphysData); %run the detect festo rise time function right now because you always end up running it anyway.
