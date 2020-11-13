@@ -1,9 +1,12 @@
 
 %function to import wavesurfer data from 2-photon 
-function [allEphysData,headerInfo] = pfaFunExtractEphysSingleFileWS0967
-[file_name,path_name] = uigetfile('*.h5') ;
-full_file_name = strcat(path_name,file_name) ;
-data = ws.loadDataFile(full_file_name,'double') ;
+function [allEphysData,headerInfo] = pfaFunExtractEphysSingleFileWS0967(h5_file_path)
+
+if ~exist('h5_file_path','var')
+    [file_name,path_name] = uigetfile('*.h5') ; % if no h5 file path is passed in, prompt the user for the file
+    h5_file_path = strcat(path_name,file_name) ;
+end
+data = ws.loadDataFile(h5_file_path,'double') ;
 strNames=(fieldnames(data));
 
 %this needs to be a cell array for compatibility with sweep browser.
