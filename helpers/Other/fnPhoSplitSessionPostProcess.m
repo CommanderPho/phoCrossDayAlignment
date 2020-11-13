@@ -1,5 +1,6 @@
 function [currSessionData] = fnPhoSplitSessionPostProcess(sessionPathsInfo, curr_output_fAll, trialLength)
-%FNPHOSPLITSESSIONPOSTPROCESS Summary of this function goes here
+%FNPHOSPLITSESSIONPOSTPROCESS Does the post-processing outlined in
+%"orderOfOperations.m"
 %   Detailed explanation goes here
 
     if ~exist('trialLength','var')
