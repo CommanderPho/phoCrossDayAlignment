@@ -21,6 +21,8 @@ function [rawOutpaths, registeredOutpaths] = fnBuildPaths(dateStrings)
         % Append to the output arrays
         rawOutpaths{i}.root = currOutpath_raw;
         rawOutpaths{i}.tifFolder = currOutpath_raw; % tifs are just directly in this folder. There is also a .h5 file
+        rawOutpaths{i}.audioParametersFolder = fullfile(currOutpath_raw, '..\AudioParameters');
+        
         registeredOutpaths{i}.root = currOutpath_registered;
         registeredOutpaths{i}.tifFolder = fullfile(currOutpath_registered, 'reg_tif');
     end
