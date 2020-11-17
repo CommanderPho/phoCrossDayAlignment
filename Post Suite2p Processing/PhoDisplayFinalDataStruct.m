@@ -37,6 +37,8 @@ disp('done.')
 
 % %plotting
 % disp('Plotting finalDataStruct...')
-% plotTracesForAllStimuli_FDS(finalDataStruct, compList)
-% plotAMConditions_FDS(finalDataStruct, compList)
+% % plotTracesForAllStimuli_FDS(finalDataStruct, compList(4))
+% plotTracesForAllStimuli_FDS(finalDataStruct, compList(162))
+% plotTracesForAllStimuli_FDS(finalDataStruct, compList(320))
+% plotAMConditions_FDS(finalDataStruct, compList(2:8))
 
