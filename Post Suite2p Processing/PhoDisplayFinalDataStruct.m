@@ -42,3 +42,6 @@ disp('done.')
 % plotTracesForAllStimuli_FDS(finalDataStruct, compList(320))
 % plotAMConditions_FDS(finalDataStruct, compList(2:8))
 
+% plotAMConditions_FDS(finalDataStruct, compList(4))
+
+
