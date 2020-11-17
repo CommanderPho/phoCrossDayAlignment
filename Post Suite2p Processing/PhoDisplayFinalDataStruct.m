@@ -5,25 +5,34 @@
 addpath(genpath('..\helpers'));
 
 %% Options:
+enable_resave = false;
 finalDataStruct_DFF_baselineFrames = [1, 30];
 
 if ~exist('finalDataStruct','var')
-   [filename, path] = uigetfile('*.mat','Select a finalDataStruct .mat file');
-   FDPath = fullfile(path, filename);
-   fprintf('Loading %s...',FDPath);
-   load(FDPath);
-   disp('done.')
+   default_FD_file_path = 'Z:\ICPassiveStim\FDStructs\anm265\FDS_anm265.mat';
+%    default_FD_file_path = '*.mat';
+   [filename, path] = uigetfile(default_FD_file_path,'Select a finalDataStruct .mat file');
+    if isequal(filename,0)
+        disp('User selected Cancel');
+    else
+        FDPath = fullfile(path, filename);
+        fprintf('Loading %s...',FDPath);
+        load(FDPath);
+        disp('done.')
+    end
 end
 
 % TODO: Check if the fields exist (DFF already computed):
 disp('Running makeSessionList_FDS on finalDataStruct...')
 [sessionList, compList] = makeSessionList_FDS(finalDataStruct); %make a list of sessions and comps in FDS
-disp('Running makeSessionList_FDS on finalDataStruct...')
-finalDataStruct = baselineDFF_fds(finalDataStruct, sessionList, finalDataStruct_DFF_baselineFrames); % Adds the DFF baseline to the finalDataStruct
 
 %% "FD (final data)" file output:
-fprintf('writing final data struct with DFF back out to %s... ', FDPath);
-save(FDPath, 'finalDataStruct')  % Save out to the file
+if enable_resave
+    disp('Running baselineDFF_fds on finalDataStruct...')
+    finalDataStruct = baselineDFF_fds(finalDataStruct, sessionList, finalDataStruct_DFF_baselineFrames); % Adds the DFF baseline to the finalDataStruct
+    fprintf('writing final data struct with DFF back out to %s... ', FDPath);
+    save(FDPath, 'finalDataStruct')  % Save out to the file
+end
 disp('done.')
 
 % %plotting
