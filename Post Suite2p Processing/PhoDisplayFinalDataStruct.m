@@ -2,7 +2,35 @@
 % Pho Hale, November 13, 2020
 % Uses the finalDataStruct workspace variable and shows results.
 
-addpath(genpath('..\helpers'));
+%% SPEC: finalDataStruct
+% finalDataStruct: 1x1 struct - 1 field: has one field for each animal
+%   anm265: 1x1 struct: has one field for each session ("day")
+%       - session_20200117: 1x1 struct
+%           - behData:  1x1 struct
+%               - amAmplitude: 520x1 double
+%               - amFrequency: 520x1 double
+%           - imgData:  1x1 struct - has one field for each ROI (referred to as a "component" or "comp") named "comp%d" in printf format
+%               - comp1:    1x1 struct
+%                   - imagingData: 520x150 double
+%                   - imagingDataNeuropil: 520x150 double
+%                   - segmentLabelMatrix: 512x512 double
+%                   - imagingDataDFF: 520x150 double
+
+%% SPEC: sessionList
+% sessionList: 1x3 struct - 2 fields:
+%   anmID: 'anm265'
+%   date:  '20200117'
+
+%% SPEC: compList
+% compList: 1x474 struct - 3 fields:
+%   anmID: 'anm265'
+%   date:  '20200117'
+%   compName: 'comp1'
+
+
+
+
+addpath(genpath('../helpers'));
 
 %% Options:
 enable_resave = false;
@@ -26,6 +54,7 @@ end
 % TODO: Check if the fields exist (DFF already computed):
 disp('Running makeSessionList_FDS on finalDataStruct...')
 [sessionList, compList] = makeSessionList_FDS(finalDataStruct); %make a list of sessions and comps in FDS
+
 
 %% "FD (final data)" file output:
 if enable_resave
