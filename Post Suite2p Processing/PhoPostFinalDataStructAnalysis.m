@@ -38,8 +38,11 @@ multiSessionCellRoiSeriesOutResults = {};
 % Build 2D Mesh for each component
 finalOutPeaksGrid = zeros(numCompListEntries,6,6);
 
-% The maximum peak value for each signal
+% componentAggregatePropeties.maxTuningPeakValue: the maximum peak value for each signal
 componentAggregatePropeties.maxTuningPeakValue = zeros(numCompListEntries,1);
+
+% componentAggregatePropeties.sumTuningPeaksValue: the sum of all peaks
+componentAggregatePropeties.sumTuningPeaksValue = zeros(numCompListEntries,1);
 
 for i = 1:num_cellROIs
    curr_comp = uniqueComps{i};
@@ -48,7 +51,7 @@ for i = 1:num_cellROIs
    fprintf('uniqueComp[%d]: %s', i, curr_comp);
    disp(curr_comp_indicies');
    multiSessionCellRoiCompIndicies(i,:) = curr_comp_indicies';
-%     currOutCells = cell([1, length(curr_indicies)]);
+
     currOutCells = {};
 	for j = 1:length(curr_comp_indicies)
 		curr_day_linear_index = curr_comp_indicies(j);
@@ -58,36 +61,26 @@ for i = 1:num_cellROIs
         uniqueFreqs = outputs.uniqueFreqs;
         peakSignals = outputs.AMConditions.peakSignal;
         maxPeakSignal = max(peakSignals);
+        sumPeaksSignal = sum(peakSignals);
         
         % Store the outputs in the grid:
         finalOutPeaksGrid(curr_day_linear_index,:,:) = outputs.finalOutGrid;
         componentAggregatePropeties.maxTuningPeakValue(curr_day_linear_index) = maxPeakSignal; 
+        componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_index) = sumPeaksSignal;
         
-        if j == 1
+        temp.isFirstSessionInCellRoi = (j == 1);
+        if temp.isFirstSessionInCellRoi
             compFirstDayTuningMaxPeak(i) = maxPeakSignal;
             if maxPeakSignal > tuning_max_threshold_criteria
                compSatisfiesFirstDayTuning(i) = 1;
-               %outputs.uniqueStimuli
-%                tempOut = [outputs.peakSignal outputs.tracesForEachStimulus];
-%                tempOut = [outputs.AMConditions.peakSignal];
-%                tempOut = [outputs.TracesForAllStimuli.meanData];
-%               
-%                currOutCells{j} = tempOut;
-               
+
             else
                 compSatisfiesFirstDayTuning(i) = 0;
 %                 break; % Skip remaining comps for the other days if the first day doesn't meat the criteria
             end
                     
         else
-% %             tempOut = [outputs.peakSignal outputs.tracesForEachStimulus];
-%             tempOut = [outputs.AMConditions.peakSignal];
-%             currOutCells{j} = tempOut;
-%         
-%             if j == length(curr_comp_indicies)
-%                % If it's the last index
-%                multiSessionCellRoiSeriesOutResults = [multiSessionCellRoiSeriesOutResults currOutCells];
-%             end
+
         end
         
 	end
@@ -104,7 +97,9 @@ componentAggregatePropeties.maxTuningPeakValue = reshape(componentAggregatePrope
 componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria = reshape(componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria,[],3); % Reshape from linear to cellRoi indexing
 
 % componentAggregatePropeties.tuningScore: the number of days the cellRoi meets the criteria
-componentAggregatePropeties.tuningScore = sum(componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria,2);
+componentAggregatePropeties.tuningScore = sum(componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria, 2);
+
+
 
 
 % % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(4))

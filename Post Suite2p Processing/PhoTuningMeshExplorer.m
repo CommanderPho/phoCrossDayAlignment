@@ -4,11 +4,16 @@
 % Plots 3D Mesh Surface.
 
 
-componentAggregatePropeties.maxTuningPeakValue
+% componentAggregatePropeties.maxTuningPeakValue
+
 % Find
 
+%% Sort based on tuning score:
+[sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
 
-cellRoisToPlot = 1:10;
+fig_export_parent_path = '/Users/pho/Desktop/ROI Results/Figures';
+numToCompare = 5;
+cellRoisToPlot = cellRoiSortIndex(1:numToCompare);
 
 for i = 1:length(cellRoisToPlot)
     %% Plot the grid as a test
@@ -16,7 +21,12 @@ for i = 1:length(cellRoisToPlot)
     temp.currAllSessionCompIndicies = multiSessionCellRoiCompIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
 
     [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
-    zlim([-1, 1])
+    zlim([-0.2, 1])
+    
+    fig_name = sprintf('TuningMesh_cellRoi_%d.fig',temp.cellRoiIndex);
+    fig_export_path = fullfile(fig_export_parent_path, fig_name);
+    
+    savefig(figH, fig_export_path);
 end
 
 
@@ -24,12 +34,18 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
     % currAllSessionCompIndicies: all sessions for the current ROI
 
     %% Options:
-    dateEdgeColorMap = colormap(gray(6));
-    meshFaceOpacity = 0.95; % 0.2
+    dataEdgeColorMap = colormap(gray(6));
+    dataEdgeColorMap = dataEdgeColorMap(2:end,:);
+    
+    meshFaceOpacity = 0.80; % 0.2
 
-    meshPointsMarkerSize = 20;
+    meshPointsMarkerColor = 'cyan';
+    meshPointsMarkerSize = 10;
 
-    meshDifferencesLineWidth = 5;
+    % meshDifferencesLinesEnabled: if true, draws connecting lines between each point of the surface
+    meshDifferencesLinesEnabled = false;
+    meshDifferencesLineColor = 'red';
+    meshDifferencesLineWidth = 2;
 
     % uniqueAmps, uniqueFreqs, multiSessionCellRoiCompIndicies, cellRoiIndex
 
@@ -49,24 +65,29 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
         temp.compIndex = currAllSessionCompIndicies(i); 
         % Gets the grid for this session of this cell ROI
         temp.currPeaksGrid = squeeze(finalOutPeaksGrid(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x6x6)
-        temp.currColor = dateEdgeColorMap(i,:);
+        temp.currColor = dataEdgeColorMap(i,:);
 
         axH = surf(xx, yy, temp.currPeaksGrid);
-        set(axH,'EdgeColor', temp.currColor); % Set edge colors to be able to visually distinguish between the days
+%         set(axH,'EdgeColor', temp.currColor); % Set edge colors to be able to visually distinguish between the days
         set(axH,'FaceAlpha', meshFaceOpacity);
-        set(axH,'FaceColor',temp.currColor);
+        set(axH,'FaceColor', temp.currColor);
 
         set(axH,'Marker','.','MarkerSize', meshPointsMarkerSize); % Dots
+        if exist('meshPointsMarkerColor','var')
+            set(axH,'MarkerFaceColor', meshPointsMarkerColor, 'MarkerEdgeColor', meshPointsMarkerColor);
+        end
         hold on;
 
         %% TODO: Draw the difference between each point in the grid as a thick line, shaded white for positive changes or black for negative ones.
-        if i == 2        
-            for ii = 1:length(xx)
-                for jj = 1:length(yy)
-                    line_i = ii;
-                    line_j = jj;
-                    lineObj = line([xx(line_i,line_j) xx(line_i,line_j)], [yy(line_i,line_j) yy(line_i,line_j)], [temp.prevPeaksGrid(line_i,line_j) temp.currPeaksGrid(line_i,line_j)]);
-                    set(lineObj, 'Color','black','LineWidth', meshDifferencesLineWidth);
+        if i == 2
+            if meshDifferencesLinesEnabled
+                for ii = 1:length(xx)
+                    for jj = 1:length(yy)
+                        line_i = ii;
+                        line_j = jj;
+                        lineObj = line([xx(line_i,line_j) xx(line_i,line_j)], [yy(line_i,line_j) yy(line_i,line_j)], [temp.prevPeaksGrid(line_i,line_j) temp.currPeaksGrid(line_i,line_j)]);
+                        set(lineObj, 'Color',meshDifferencesLineColor,'LineWidth', meshDifferencesLineWidth);
+                    end
                 end
             end
         end
