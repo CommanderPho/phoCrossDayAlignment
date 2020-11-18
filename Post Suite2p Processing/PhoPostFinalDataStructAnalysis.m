@@ -95,34 +95,48 @@ temp.cellRoiIndex = 1;
 temp.currAllSessionCompIndicies = multiSessionCellRoiCompIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
 
 temp.numSessions = length(temp.currAllSessionCompIndicies);
+% meshgrid is common to all sessions within the ROI:
+[xx, yy] = meshgrid(uniqueAmps, uniqueFreqs);
+uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),'% Depth');
+uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
+figH = figure(1); % generate a new figure to plot the sessions.
+clf(figH);
+% For each session in this cell ROI
 for i = 1:temp.numSessions
+    % Get the index for this session of this cell ROI
+    temp.compIndex = temp.currAllSessionCompIndicies(i); 
     % Gets the grid for this session of this cell ROI
     temp.currPeaksGrid = squeeze(finalOutPeaksGrid(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x6x6)
-    fnPlotMeshFromPeaksGrid(uniqueAmps, uniqueFreqs, temp.currPeaksGrid)
+    axH = surf(xx, yy, temp.currPeaksGrid);
+    hold on;
+%     fnPlotMeshFromPeaksGrid(uniqueAmps, uniqueFreqs, temp.currPeaksGrid)
 end
+
+% Set x-labels:
+xlabel('uniqueAmps (% Depth)')
+xticklabels(uniqueAmpLabels);
+% Set y-labels:
+ylabel('uniqueFreqs (Hz)')
+yticklabels(uniqueFreqLabels);
+
 
 % % plotTracesForAllStimuli_FDS(finalDataStruct, compList(4))
 % plotTracesForAllStimuli_FDS(finalDataStruct, compList(162))
 % plotTracesForAllStimuli_FDS(finalDataStruct, compList(320))
 % plotAMConditions_FDS(finalDataStruct, compList(2:8))
 
-function [figH, axH] = fnPlotMeshFromPeaksGrid(uniqueAmps, uniqueFreqs, peaksGrid)
-    % Build a 2D Mesh from the uniqueAmps and uniqueFreqs
-    %% TODO: meshgrid and labels will be the same for each comp, so this can be factored out for efficiency
-    [xx, yy] = meshgrid(uniqueAmps, uniqueFreqs);
-%     zz = xx.^2 - yy.^2;
-    zz = peaksGrid;
-    figH = figure;
-    axH = surf(xx, yy, zz);
-    % Set x-labels:
-    xlabel('uniqueAmps (% Depth)')
-    uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),'% Depth');
-    xticklabels(uniqueAmpLabels);
-    % Set y-labels:
-    ylabel('uniqueFreqs (Hz)')
-    uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
-    yticklabels(uniqueFreqLabels);
-end
+% function [figH, axH] = fnPlotMeshFromPeaksGrid(uniqueAmps, uniqueFreqs, peaksGrid)
+%     % Build a 2D Mesh from the uniqueAmps and uniqueFreqs
+%     %% TODO: meshgrid and labels will be the same for each comp, so this can be factored out for efficiency
+% 
+%     axH = surf(xx, yy, zz);
+%     % Set x-labels:
+%     xlabel('uniqueAmps (% Depth)')
+%     xticklabels(uniqueAmpLabels);
+%     % Set y-labels:
+%     ylabel('uniqueFreqs (Hz)')
+%     yticklabels(uniqueFreqLabels);
+% end
 
 
 function [currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(compList, index)
