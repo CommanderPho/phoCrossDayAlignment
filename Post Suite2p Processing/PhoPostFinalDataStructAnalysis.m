@@ -14,26 +14,27 @@ activeAnimalCompList = compList(strcmpi({compList.anmID}, curr_animal));
 dateStrings = {activeAnimalSessionList.date};  % Strings representing each date.
 
 compTable = struct2table(activeAnimalCompList);
+numCompListEntries = height(compTable); % The number of rows in the compTable. Should be a integer multiple of the number of unique comps (corresponding to multiple sessions/days for each unique comp)
 indexArray = 1:height(compTable);
 indexColumn = table(indexArray','VariableNames',{'index'});
 compTable = [compTable indexColumn];
 
-uniqueComps = unique(compTable.compName,'stable');
-num_comps = length(uniqueComps);
+uniqueComps = unique(compTable.compName,'stable'); % Each unique component corresponds to a cellROI
+num_cellROIs = length(uniqueComps); 
 
 tuning_max_threshold_criteria = 0.2;
 
-multiSessionCellRoiCompIndicies = zeros(num_comps, 3); % a list of comp indicies for each CellRoi
-compFirstDayTuningMaxPeak = zeros(num_comps, 1); % Just the first day
-compSatisfiesFirstDayTuning = zeros(num_comps, 1); % Just the first day
+multiSessionCellRoiCompIndicies = zeros(num_cellROIs, 3); % a list of comp indicies for each CellRoi
+compFirstDayTuningMaxPeak = zeros(num_cellROIs, 1); % Just the first day
+compSatisfiesFirstDayTuning = zeros(num_cellROIs, 1); % Just the first day
 
-compFirstDayTuningMaxPeak = zeros(num_comps, 1); % Just the first day
+compFirstDayTuningMaxPeak = zeros(num_cellROIs, 1); % Just the first day
 multiSessionCellRoiSeriesOutResults = {};
 
 % Build 2D Mesh for each component
-finalOutPeaksGrid = zeros(num_comps,6,6);
+finalOutPeaksGrid = zeros(numCompListEntries,6,6);
 
-for i = 1:num_comps
+for i = 1:num_cellROIs
    curr_comp = uniqueComps{i};
    curr_comp_indicies = find(strcmp(compTable.compName, curr_comp)); % Should be a list of 3 relevant indicies, one corresponding to each day.
    
@@ -43,8 +44,8 @@ for i = 1:num_comps
 %     currOutCells = cell([1, length(curr_indicies)]);
     currOutCells = {};
 	for j = 1:length(curr_comp_indicies)
-		curr_day_index = curr_comp_indicies(j);
-		[currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(compList, curr_day_index);
+		curr_day_linear_index = curr_comp_indicies(j);
+		[currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(compList, curr_day_linear_index);
         [outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp);
         uniqueAmps = outputs.uniqueAmps;
         uniqueFreqs = outputs.uniqueFreqs;
@@ -52,7 +53,7 @@ for i = 1:num_comps
         maxPeakSignal = max(peakSignals);
         
         % TODO: Store the outputs in the grid:
-        finalOutPeaksGrid(i,:,:) = outputs.finalOutGrid;
+        finalOutPeaksGrid(curr_day_linear_index,:,:) = outputs.finalOutGrid;
         if j == 1
             compFirstDayTuningMaxPeak(i) = maxPeakSignal;
             if maxPeakSignal > tuning_max_threshold_criteria
