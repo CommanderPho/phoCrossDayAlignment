@@ -34,25 +34,13 @@ compSeriesOutResults = {};
 % Build 2D Mesh for each component
 finalOutGrid = zeros(num_comps,6,6);
 
-% Build a 2D Mesh from the uniqueAmps and uniqueFreqs
-[xx, yy] = meshgrid(uniqueAmps, uniqueFreqs);
-zz = xx.^2 - yy.^2;
-figure
-surf(xx, yy, zz);
-% Set x-labels:
-xlabel('uniqueAmps (% Depth)')
-uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),'% Depth');
-xticklabels(uniqueAmpLabels);
-% Set y-labels:
-ylabel('uniqueFreqs (Hz)')
-uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
-yticklabels(uniqueFreqLabels);
+
 
 for i = 1:num_comps
    curr_comp = uniqueComps{i};
    curr_indicies = find(strcmp(compTable.compName, curr_comp)); % Should be a list of 3 relevant indicies, one corresponding to each day.
    
-   finalOutGrid(i,:,:) 
+   
    
    fprintf('uniqueComp[%d]: %s', i, curr_comp);
    disp(curr_indicies');
@@ -67,6 +55,9 @@ for i = 1:num_comps
         uniqueFreqs = outputs.uniqueFreqs;
         peakSignals = outputs.AMConditions.peakSignal;
         maxPeakSignal = max(peakSignals);
+        
+        % TODO: Store the outputs in the grid:
+        finalOutGrid(i,:,:) = outputs.finalOutGrid;
         if j == 1
             compFirstDayTuningMaxPeak(i) = maxPeakSignal;
             if maxPeakSignal > tuning_max_threshold_criteria
@@ -104,27 +95,35 @@ compSatisfiesFirstDayTuning = (compFirstDayTuningMaxPeak > tuning_max_threshold_
 sum(compSatisfiesFirstDayTuning)
 
 
-% [C,ia] = unique(compTable.compName,'stable');
-% B = compTable(ia,:);
-
-% reshape(compTable,[],3)
-% reshape(table2cell(compTable),[],3)
-
-% pivotTable = unstack(compTable, 'compName', 'index')
-
-pivotTable = unstack(compTable, 'compName', 'date');
-
-% pivotTable = stack(compTable, 'date') 
-pivotTable = stack(compTable, 'compName');
-
-
-
+%% Plot the grid as a test
+temp.compIndex = 1;
+temp.currPeaksGrid = outputs.finalOutGrid(compIndex,:,:);
+fnPlotMeshFromPeaksGrid(uniqueAmps, uniqueFreqs, temp.currPeaksGrid)
 
 
 % % plotTracesForAllStimuli_FDS(finalDataStruct, compList(4))
 % plotTracesForAllStimuli_FDS(finalDataStruct, compList(162))
 % plotTracesForAllStimuli_FDS(finalDataStruct, compList(320))
 % plotAMConditions_FDS(finalDataStruct, compList(2:8))
+
+function [figH, axH] = fnPlotMeshFromPeaksGrid(uniqueAmps, uniqueFreqs, peaksGrid)
+    % Build a 2D Mesh from the uniqueAmps and uniqueFreqs
+    %% TODO: meshgrid and labels will be the same for each comp, so this can be factored out for efficiency
+    [xx, yy] = meshgrid(uniqueAmps, uniqueFreqs);
+%     zz = xx.^2 - yy.^2;
+    zz = peaksGrid;
+    figH = figure;
+    axH = surf(xx, yy, zz);
+    % Set x-labels:
+    xlabel('uniqueAmps (% Depth)')
+    uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),'% Depth');
+    xticklabels(uniqueAmpLabels);
+    % Set y-labels:
+    ylabel('uniqueFreqs (Hz)')
+    uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
+    yticklabels(uniqueFreqLabels);
+end
+
 
 function [currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(compList, index)
 	currentAnm = compList(index).anmID;
@@ -140,6 +139,11 @@ function [currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(compList
 end
 
 function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, currentComp)
+    %TODO: Figure out how the 26 different stimuli (numStimuli) map to the uniqueAmps/uniqueFreqs points.
+    % outputs.uniqueStimuli: 26x2 double - contains each unique pair of stimuli, with first column being freq and second column being depth:
+    
+
+    
 	startSound=31;
 	endSound=90;
 	sampPeak = 2;
@@ -165,14 +169,36 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     zeroVal = find(outputs.uniqueStimuli(:,2)==0);
     outputs.uniqueStimuli(zeroVal, 1) = 0;
     
+    
+    
     outputs.tracesForEachStimulus = accumarray(ib, find(ib), [], @(rows){rows});
     
     [outputs.numStimuli,~] = size(outputs.uniqueStimuli);
     outputs.uniqueAmps = unique(outputs.uniqueStimuli(:,2));
     outputs.uniqueFreqs = unique(outputs.uniqueStimuli(:,1));
+    numUniqueAmps = length(outputs.uniqueAmps);
+    numUniqueFreqs = length(outputs.uniqueFreqs);
     
     %% Up to this point, the setup is common for both plotAMConditions_FDS and plotTracesForAllStimuli_FDS
-
+    
+    %% Build a map from each unique stimuli to a linear stimulus index:
+%     mapObj = containers.Map(outputs.uniqueStimuli(zeroVal, 1), {val1, val2, ...});
+        
+%     mapFn = @(amp, freq) find(
+    indexMapArray = zeros(numUniqueAmps, numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
+    for i = 1:numUniqueAmps
+        activeUniqueAmp = outputs.uniqueAmps(i);
+        for j = 1:numUniqueFreqs
+            activeUniqueFreq = outputs.uniqueFreqs(j);
+            if (activeUniqueAmp == 0 || activeUniqueFreq == 0)
+                indexMapArray(i,j) = 1;
+            else
+                currentLinearStimulusIdx = find((outputs.uniqueStimuli(:,1)==activeUniqueFreq) & (outputs.uniqueStimuli(:,2)==activeUniqueAmp));
+                indexMapArray(i,j) = currentLinearStimulusIdx;
+            end
+        end
+    end
+    
 	%pre-allocate
     outputs.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
     outputs.tbImg = linspace(0,numFrames/frameRate,numFrames); % make a timebase to plot as xAxis for traces
@@ -207,7 +233,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     outputs.TracesForAllStimuli.finalSeriesAmps = {};
 %     finalSeries = {};
  % uniqueAmps: the [0%, 20%, 40%, 60%, 80%, 100%] data series
-    for c = 1:numel(outputs.uniqueAmps)
+    for c = 1:numUniqueAmps
         activeUniqueAmp = outputs.uniqueAmps(c);
         currentAmpIdx = find(outputs.uniqueStimuli(:,2)==activeUniqueAmp); % this varies in size. for the 0 element it's 1x1, but for index 2 for example it's 5x1
         theseFreqs = outputs.uniqueStimuli(currentAmpIdx,1); % AM Depth (%)
@@ -226,7 +252,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
      
     outputs.TracesForAllStimuli.finalSeriesFreqs = {};
     % uniqueFreqs: the [0, 10, 20, 50, 100, 200 Hz] data series
-    for d=1:numel(outputs.uniqueFreqs)
+    for d=1:numUniqueFreqs
         activeUniqueFreq = outputs.uniqueFreqs(d);
         currentFreqIdx = find(outputs.uniqueStimuli(:,1)==activeUniqueFreq);
         theseAmps = outputs.uniqueStimuli(currentFreqIdx,2);
@@ -250,5 +276,21 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 %             end
 %         end
     end
+    
+    % Loop through all amplitudes and frequencies:
+    % Build 2D Mesh for each component
+    outputs.finalOutGrid = zeros(numUniqueAmps, numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
+    for i = 1:numUniqueAmps
+        activeUniqueAmp = outputs.uniqueAmps(i);
+        for j = 1:numUniqueFreqs
+            activeUniqueFreq = outputs.uniqueFreqs(j);
+            % Get the appropriate linear index from the map
+            linearStimulusIndex = indexMapArray(i, j);
+            currPeaks = outputs.AMConditions.peakSignal(linearStimulusIndex); % 'Peak DF/F'
+            outputs.finalOutGrid(i,j) = currPeaks;
+        end
+    end
+
+    
     
 end
