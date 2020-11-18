@@ -7,6 +7,11 @@ addpath(genpath('..\helpers'));
 
 %% Options:
 curr_animal = 'anm265';
+
+% tuning_max_threshold_criteria: the threshold value for peakDFF
+tuning_max_threshold_criteria = 0.2;
+
+
 %% Filter down to entries for the current animal:
 activeAnimalDataStruct = finalDataStruct.(curr_animal); % get the final data struct for the current animal
 activeAnimalSessionList = sessionList(strcmpi({sessionList.anmID}, curr_animal));
@@ -23,8 +28,6 @@ compTable = [compTable indexColumn];
 uniqueComps = unique(compTable.compName,'stable'); % Each unique component corresponds to a cellROI
 num_cellROIs = length(uniqueComps); 
 
-tuning_max_threshold_criteria = 0.2;
-
 multiSessionCellRoiCompIndicies = zeros(num_cellROIs, 3); % a list of comp indicies for each CellRoi
 compFirstDayTuningMaxPeak = zeros(num_cellROIs, 1); % Just the first day
 compSatisfiesFirstDayTuning = zeros(num_cellROIs, 1); % Just the first day
@@ -34,6 +37,9 @@ multiSessionCellRoiSeriesOutResults = {};
 
 % Build 2D Mesh for each component
 finalOutPeaksGrid = zeros(numCompListEntries,6,6);
+
+% The maximum peak value for each signal
+componentAggregatePropeties.maxTuningPeakValue = zeros(numCompListEntries,1);
 
 for i = 1:num_cellROIs
    curr_comp = uniqueComps{i};
@@ -53,20 +59,20 @@ for i = 1:num_cellROIs
         peakSignals = outputs.AMConditions.peakSignal;
         maxPeakSignal = max(peakSignals);
         
-        % TODO: Store the outputs in the grid:
+        % Store the outputs in the grid:
         finalOutPeaksGrid(curr_day_linear_index,:,:) = outputs.finalOutGrid;
+        componentAggregatePropeties.maxTuningPeakValue(curr_day_linear_index) = maxPeakSignal; 
+        
         if j == 1
             compFirstDayTuningMaxPeak(i) = maxPeakSignal;
             if maxPeakSignal > tuning_max_threshold_criteria
                compSatisfiesFirstDayTuning(i) = 1;
-               % Build the grid for this session and the two following
-               % sessions:
                %outputs.uniqueStimuli
 %                tempOut = [outputs.peakSignal outputs.tracesForEachStimulus];
-               tempOut = [outputs.AMConditions.peakSignal];
-               tempOut = [outputs.TracesForAllStimuli.meanData];
-              
-               currOutCells{j} = tempOut;
+%                tempOut = [outputs.AMConditions.peakSignal];
+%                tempOut = [outputs.TracesForAllStimuli.meanData];
+%               
+%                currOutCells{j} = tempOut;
                
             else
                 compSatisfiesFirstDayTuning(i) = 0;
@@ -74,14 +80,14 @@ for i = 1:num_cellROIs
             end
                     
         else
-%             tempOut = [outputs.peakSignal outputs.tracesForEachStimulus];
-            tempOut = [outputs.AMConditions.peakSignal];
-            currOutCells{j} = tempOut;
-        
-            if j == length(curr_comp_indicies)
-               % If it's the last index
-               multiSessionCellRoiSeriesOutResults = [multiSessionCellRoiSeriesOutResults currOutCells];
-            end
+% %             tempOut = [outputs.peakSignal outputs.tracesForEachStimulus];
+%             tempOut = [outputs.AMConditions.peakSignal];
+%             currOutCells{j} = tempOut;
+%         
+%             if j == length(curr_comp_indicies)
+%                % If it's the last index
+%                multiSessionCellRoiSeriesOutResults = [multiSessionCellRoiSeriesOutResults currOutCells];
+%             end
         end
         
 	end
@@ -91,6 +97,14 @@ end
 compSatisfiesFirstDayTuning = (compFirstDayTuningMaxPeak > tuning_max_threshold_criteria);
 sum(compSatisfiesFirstDayTuning)
 
+% WARNING: This assumes that there are the same number of sessions for each cellROI
+componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria = (componentAggregatePropeties.maxTuningPeakValue > tuning_max_threshold_criteria);
+
+componentAggregatePropeties.maxTuningPeakValue = reshape(componentAggregatePropeties.maxTuningPeakValue,[],3); % Reshape from linear to cellRoi indexing
+componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria = reshape(componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria,[],3); % Reshape from linear to cellRoi indexing
+
+% componentAggregatePropeties.tuningScore: the number of days the cellRoi meets the criteria
+componentAggregatePropeties.tuningScore = sum(componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria,2);
 
 
 % % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(4))
@@ -156,8 +170,6 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     zeroVal = find(outputs.uniqueStimuli(:,2)==0);
     outputs.uniqueStimuli(zeroVal, 1) = 0;
     
-    
-    
     outputs.tracesForEachStimulus = accumarray(ib, find(ib), [], @(rows){rows});
     
     [outputs.numStimuli,~] = size(outputs.uniqueStimuli);
@@ -169,19 +181,16 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     %% Up to this point, the setup is common for both plotAMConditions_FDS and plotTracesForAllStimuli_FDS
     
     %% Build a map from each unique stimuli to a linear stimulus index:
-%     mapObj = containers.Map(outputs.uniqueStimuli(zeroVal, 1), {val1, val2, ...});
-        
-%     mapFn = @(amp, freq) find(
-    indexMapArray = zeros(numUniqueAmps, numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
+    outputs.indexMap_AmpsFreqs2StimulusArray = zeros(numUniqueAmps, numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
     for i = 1:numUniqueAmps
         activeUniqueAmp = outputs.uniqueAmps(i);
         for j = 1:numUniqueFreqs
             activeUniqueFreq = outputs.uniqueFreqs(j);
             if (activeUniqueAmp == 0 || activeUniqueFreq == 0)
-                indexMapArray(i,j) = 1;
+                outputs.indexMap_AmpsFreqs2StimulusArray(i,j) = 1;
             else
                 currentLinearStimulusIdx = find((outputs.uniqueStimuli(:,1)==activeUniqueFreq) & (outputs.uniqueStimuli(:,2)==activeUniqueAmp));
-                indexMapArray(i,j) = currentLinearStimulusIdx;
+                outputs.indexMap_AmpsFreqs2StimulusArray(i,j) = currentLinearStimulusIdx;
             end
         end
     end
@@ -208,7 +217,6 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         %make an average
         outputs.TracesForAllStimuli.meanData(b,:) = mean(outputs.TracesForAllStimuli.imgDataToPlot, 1); % this is that main red line that we care about, it contains 1x150 double
         
-        
         %% plotAMConditions_FDS Style
         outputs.AMConditions.imgDataToPlot(b,:) = mean(imgData(tracesToPlot,:));
         [~,maxInd] = max(outputs.AMConditions.imgDataToPlot(b, startSound:endSound)); % get max of current signal only within the startSound:endSound range
@@ -226,7 +234,6 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         theseFreqs = outputs.uniqueStimuli(currentAmpIdx,1); % AM Depth (%)
         thesePeaks = outputs.AMConditions.peakSignal(currentAmpIdx); % 'Peak DF/F'
         
-        
         tempCurrOutput = struct;
         tempCurrOutput.ampIdx = currentAmpIdx;
         tempCurrOutput.ampValue = activeUniqueAmp;
@@ -234,7 +241,6 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         tempCurrOutput.peaks = thesePeaks;
 
         outputs.TracesForAllStimuli.finalSeriesAmps{end+1} = tempCurrOutput;
-        
     end
      
     outputs.TracesForAllStimuli.finalSeriesFreqs = {};
@@ -253,15 +259,6 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 
         outputs.TracesForAllStimuli.finalSeriesFreqs{end+1} = tempCurrOutput;
         
-%         %and plot the traces
-%         if uniqueFreqs(d)==0
-%             plot(tbImg,imgDataToPlot(currentFreqIdx,:),'Color','black','Linewidth',2)
-%             text(max(tbImg),(d-1)*2,strcat(num2str(uniqueFreqs(d)),{' '},'Hz'))
-%         else
-%             for dd =1:numel(currentFreqIdx)
-%                 plot(tbImg,imgDataToPlot(currentFreqIdx(dd),:)+((d-1)*1),'Color',amplitudeColorMap(dd+1,:),'Linewidth',2)
-%             end
-%         end
     end
     
     % Loop through all amplitudes and frequencies:
@@ -272,7 +269,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         for j = 1:numUniqueFreqs
             activeUniqueFreq = outputs.uniqueFreqs(j);
             % Get the appropriate linear index from the map
-            linearStimulusIndex = indexMapArray(i, j);
+            linearStimulusIndex = outputs.indexMap_AmpsFreqs2StimulusArray(i, j);
             currPeaks = outputs.AMConditions.peakSignal(linearStimulusIndex); % 'Peak DF/F'
             outputs.finalOutGrid(i,j) = currPeaks;
         end
