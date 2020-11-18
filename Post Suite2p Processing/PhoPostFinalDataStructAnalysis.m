@@ -13,7 +13,6 @@ activeAnimalCompList = compList(strcmpi({compList.anmID}, curr_animal));
 %% Processing Options:
 dateStrings = {activeAnimalSessionList.date};  % Strings representing each date.
 
-
 compTable = struct2table(activeAnimalCompList);
 indexArray = 1:height(compTable);
 indexColumn = table(indexArray','VariableNames',{'index'});
@@ -24,31 +23,27 @@ num_comps = length(uniqueComps);
 
 tuning_max_threshold_criteria = 0.2;
 
-compOutIndicies = zeros(num_comps, 3);
+multiSessionCellRoiCompIndicies = zeros(num_comps, 3); % a list of comp indicies for each CellRoi
 compFirstDayTuningMaxPeak = zeros(num_comps, 1); % Just the first day
 compSatisfiesFirstDayTuning = zeros(num_comps, 1); % Just the first day
 
 compFirstDayTuningMaxPeak = zeros(num_comps, 1); % Just the first day
-compSeriesOutResults = {};
+multiSessionCellRoiSeriesOutResults = {};
 
 % Build 2D Mesh for each component
-finalOutGrid = zeros(num_comps,6,6);
-
-
+finalOutPeaksGrid = zeros(num_comps,6,6);
 
 for i = 1:num_comps
    curr_comp = uniqueComps{i};
-   curr_indicies = find(strcmp(compTable.compName, curr_comp)); % Should be a list of 3 relevant indicies, one corresponding to each day.
-   
-   
+   curr_comp_indicies = find(strcmp(compTable.compName, curr_comp)); % Should be a list of 3 relevant indicies, one corresponding to each day.
    
    fprintf('uniqueComp[%d]: %s', i, curr_comp);
-   disp(curr_indicies');
-   compOutIndicies(i,:) = curr_indicies';
+   disp(curr_comp_indicies');
+   multiSessionCellRoiCompIndicies(i,:) = curr_comp_indicies';
 %     currOutCells = cell([1, length(curr_indicies)]);
     currOutCells = {};
-	for j = 1:length(curr_indicies)
-		curr_day_index = curr_indicies(j);
+	for j = 1:length(curr_comp_indicies)
+		curr_day_index = curr_comp_indicies(j);
 		[currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(compList, curr_day_index);
         [outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp);
         uniqueAmps = outputs.uniqueAmps;
@@ -57,7 +52,7 @@ for i = 1:num_comps
         maxPeakSignal = max(peakSignals);
         
         % TODO: Store the outputs in the grid:
-        finalOutGrid(i,:,:) = outputs.finalOutGrid;
+        finalOutPeaksGrid(i,:,:) = outputs.finalOutGrid;
         if j == 1
             compFirstDayTuningMaxPeak(i) = maxPeakSignal;
             if maxPeakSignal > tuning_max_threshold_criteria
@@ -81,9 +76,9 @@ for i = 1:num_comps
             tempOut = [outputs.AMConditions.peakSignal];
             currOutCells{j} = tempOut;
         
-            if j == length(curr_indicies)
+            if j == length(curr_comp_indicies)
                % If it's the last index
-               compSeriesOutResults = [compSeriesOutResults currOutCells];
+               multiSessionCellRoiSeriesOutResults = [multiSessionCellRoiSeriesOutResults currOutCells];
             end
         end
         
@@ -96,10 +91,15 @@ sum(compSatisfiesFirstDayTuning)
 
 
 %% Plot the grid as a test
-temp.compIndex = 1;
-temp.currPeaksGrid = outputs.finalOutGrid(compIndex,:,:);
-fnPlotMeshFromPeaksGrid(uniqueAmps, uniqueFreqs, temp.currPeaksGrid)
+temp.cellRoiIndex = 1;
+temp.currAllSessionCompIndicies = multiSessionCellRoiCompIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
 
+temp.numSessions = length(temp.currAllSessionCompIndicies);
+for i = 1:temp.numSessions
+    % Gets the grid for this session of this cell ROI
+    temp.currPeaksGrid = squeeze(finalOutPeaksGrid(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x6x6)
+    fnPlotMeshFromPeaksGrid(uniqueAmps, uniqueFreqs, temp.currPeaksGrid)
+end
 
 % % plotTracesForAllStimuli_FDS(finalDataStruct, compList(4))
 % plotTracesForAllStimuli_FDS(finalDataStruct, compList(162))
