@@ -1,8 +1,20 @@
+% Initially the finalDataStruct
+% 
+
 addpath(genpath('..\helpers'));
 
+
+%% Options:
+curr_animal = 'anm265';
+%% Filter down to entries for the current animal:
+activeAnimalDataStruct = finalDataStruct.(curr_animal); % get the final data struct for the current animal
+activeAnimalSessionList = sessionList(strcmpi({sessionList.anmID}, curr_animal));
+activeAnimalCompList = compList(strcmpi({compList.anmID}, curr_animal));
 %% Processing Options:
-dateStrings = {'20200117','20200120','20200124'}; % Strings representing each date.
-compTable = struct2table(compList);
+dateStrings = {activeAnimalSessionList.date};  % Strings representing each date.
+
+
+compTable = struct2table(activeAnimalCompList);
 indexArray = 1:height(compTable);
 indexColumn = table(indexArray','VariableNames',{'index'});
 compTable = [compTable indexColumn];
@@ -19,9 +31,28 @@ compSatisfiesFirstDayTuning = zeros(num_comps, 1); % Just the first day
 compFirstDayTuningMaxPeak = zeros(num_comps, 1); % Just the first day
 compSeriesOutResults = {};
 
+% Build 2D Mesh for each component
+finalOutGrid = zeros(num_comps,6,6);
+
+% Build a 2D Mesh from the uniqueAmps and uniqueFreqs
+[xx, yy] = meshgrid(uniqueAmps, uniqueFreqs);
+zz = xx.^2 - yy.^2;
+figure
+surf(xx, yy, zz);
+% Set x-labels:
+xlabel('uniqueAmps (% Depth)')
+uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),'% Depth');
+xticklabels(uniqueAmpLabels);
+% Set y-labels:
+ylabel('uniqueFreqs (Hz)')
+uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
+yticklabels(uniqueFreqLabels);
+
 for i = 1:num_comps
    curr_comp = uniqueComps{i};
-   curr_indicies = find(strcmp(compTable.compName, curr_comp));
+   curr_indicies = find(strcmp(compTable.compName, curr_comp)); % Should be a list of 3 relevant indicies, one corresponding to each day.
+   
+   finalOutGrid(i,:,:) 
    
    fprintf('uniqueComp[%d]: %s', i, curr_comp);
    disp(curr_indicies');
@@ -73,7 +104,6 @@ compSatisfiesFirstDayTuning = (compFirstDayTuningMaxPeak > tuning_max_threshold_
 sum(compSatisfiesFirstDayTuning)
 
 
-
 % [C,ia] = unique(compTable.compName,'stable');
 % B = compTable(ia,:);
 
@@ -82,11 +112,14 @@ sum(compSatisfiesFirstDayTuning)
 
 % pivotTable = unstack(compTable, 'compName', 'index')
 
-pivotTable = unstack(compTable, 'compName', 'date')
+pivotTable = unstack(compTable, 'compName', 'date');
 
-example
 % pivotTable = stack(compTable, 'date') 
-pivotTable = stack(compTable, 'compName') 
+pivotTable = stack(compTable, 'compName');
+
+
+
+
 
 % % plotTracesForAllStimuli_FDS(finalDataStruct, compList(4))
 % plotTracesForAllStimuli_FDS(finalDataStruct, compList(162))
