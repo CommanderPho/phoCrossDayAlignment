@@ -77,7 +77,16 @@ sum(compSatisfiesFirstDayTuning)
 % [C,ia] = unique(compTable.compName,'stable');
 % B = compTable(ia,:);
 
+% reshape(compTable,[],3)
+% reshape(table2cell(compTable),[],3)
 
+% pivotTable = unstack(compTable, 'compName', 'index')
+
+pivotTable = unstack(compTable, 'compName', 'date')
+
+example
+% pivotTable = stack(compTable, 'date') 
+pivotTable = stack(compTable, 'compName') 
 
 % % plotTracesForAllStimuli_FDS(finalDataStruct, compList(4))
 % plotTracesForAllStimuli_FDS(finalDataStruct, compList(162))
