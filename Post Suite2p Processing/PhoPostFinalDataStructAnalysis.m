@@ -1,3 +1,6 @@
+% Pho Display Final Data Struct: Pipeline Stage 4
+% Pho Hale, November 13, 2020
+
 % Initially the finalDataStruct
 % 
 
@@ -45,7 +48,7 @@ for i = 1:num_cellROIs
     currOutCells = {};
 	for j = 1:length(curr_comp_indicies)
 		curr_day_linear_index = curr_comp_indicies(j);
-		[currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(compList, curr_day_linear_index);
+		[currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(activeAnimalCompList, curr_day_linear_index);
         [outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp);
         uniqueAmps = outputs.uniqueAmps;
         uniqueFreqs = outputs.uniqueFreqs;
@@ -69,7 +72,7 @@ for i = 1:num_cellROIs
                
             else
                 compSatisfiesFirstDayTuning(i) = 0;
-                break; % Skip remaining comps for the other days if the first day doesn't meat the criteria
+%                 break; % Skip remaining comps for the other days if the first day doesn't meat the criteria
             end
                     
         else
@@ -91,40 +94,11 @@ compSatisfiesFirstDayTuning = (compFirstDayTuningMaxPeak > tuning_max_threshold_
 sum(compSatisfiesFirstDayTuning)
 
 
-%% Plot the grid as a test
-temp.cellRoiIndex = 1;
-temp.currAllSessionCompIndicies = multiSessionCellRoiCompIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
 
-temp.numSessions = length(temp.currAllSessionCompIndicies);
-% meshgrid is common to all sessions within the ROI:
-[xx, yy] = meshgrid(uniqueAmps, uniqueFreqs);
-uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),'% Depth');
-uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
-figH = figure(1); % generate a new figure to plot the sessions.
-clf(figH);
-% For each session in this cell ROI
-for i = 1:temp.numSessions
-    % Get the index for this session of this cell ROI
-    temp.compIndex = temp.currAllSessionCompIndicies(i); 
-    % Gets the grid for this session of this cell ROI
-    temp.currPeaksGrid = squeeze(finalOutPeaksGrid(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x6x6)
-    axH = surf(xx, yy, temp.currPeaksGrid);
-    hold on;
-%     fnPlotMeshFromPeaksGrid(uniqueAmps, uniqueFreqs, temp.currPeaksGrid)
-end
-
-% Set x-labels:
-xlabel('uniqueAmps (% Depth)')
-xticklabels(uniqueAmpLabels);
-% Set y-labels:
-ylabel('uniqueFreqs (Hz)')
-yticklabels(uniqueFreqLabels);
-
-
-% % plotTracesForAllStimuli_FDS(finalDataStruct, compList(4))
-% plotTracesForAllStimuli_FDS(finalDataStruct, compList(162))
-% plotTracesForAllStimuli_FDS(finalDataStruct, compList(320))
-% plotAMConditions_FDS(finalDataStruct, compList(2:8))
+% % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(4))
+% plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(162))
+% plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(320))
+% plotAMConditions_FDS(finalDataStruct, activeAnimalCompList(2:8))
 
 % function [figH, axH] = fnPlotMeshFromPeaksGrid(uniqueAmps, uniqueFreqs, peaksGrid)
 %     % Build a 2D Mesh from the uniqueAmps and uniqueFreqs
