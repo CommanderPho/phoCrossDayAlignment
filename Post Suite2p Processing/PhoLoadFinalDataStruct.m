@@ -1,4 +1,4 @@
-% Pho Display Final Data Struct: Pipeline Stage 4
+% Pho Load Final Data Struct: Pipeline Stage 4
 % Pho Hale, November 13, 2020
 % Uses the finalDataStruct workspace variable and shows results.
 

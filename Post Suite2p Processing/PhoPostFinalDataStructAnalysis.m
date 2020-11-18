@@ -1,8 +1,6 @@
-% Pho Display Final Data Struct: Pipeline Stage 4
-% Pho Hale, November 13, 2020
-
-% Initially the finalDataStruct
-% 
+% Pho Post Final Data Struct Analysis: Pipeline Stage 5
+% Pho Hale, November 14, 2020
+% Uses the finalDataStruct workspace variable and shows results.
 
 addpath(genpath('..\helpers'));
 

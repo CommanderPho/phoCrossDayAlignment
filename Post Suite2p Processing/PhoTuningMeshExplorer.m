@@ -1,8 +1,17 @@
+% Pho Tuning Mesh Explorer: Pipeline Stage 6
+% Pho Hale, November 18, 2020
+% Uses the processed results of the previous pipeline stage to plot tuning curve information for the components.
 % Plots 3D Mesh Surface.
-% To be called after '
 
+%% Options:
 dateEdgeColors = {'r', 'g', 'b'};
-% dateEdgeColorMap = colormap(greyscale(3));
+dateEdgeColorMap = colormap(gray(6));
+meshFaceOpacity = 0.95; % 0.2
+
+meshPointsMarkerSize = 20;
+
+meshDifferencesLineWidth = 5;
+
 
 %% Plot the grid as a test
 temp.cellRoiIndex = 5;
@@ -24,11 +33,14 @@ for i = 1:temp.numSessions
     temp.compIndex = temp.currAllSessionCompIndicies(i); 
     % Gets the grid for this session of this cell ROI
     temp.currPeaksGrid = squeeze(finalOutPeaksGrid(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x6x6)
+    temp.currColor = dateEdgeColorMap(i,:);
+    
     axH = surf(xx, yy, temp.currPeaksGrid);
-    set(axH,'EdgeColor', dateEdgeColors{i}); % Set edge colors to be able to visually distinguish between the days
-    set(axH,'FaceAlpha', 0.2);
-    set(axH,'FaceColor',dateEdgeColors{i});
-    set(axH,'Marker','.','MarkerSize',20); % Dots
+    set(axH,'EdgeColor', temp.currColor); % Set edge colors to be able to visually distinguish between the days
+    set(axH,'FaceAlpha', meshFaceOpacity);
+    set(axH,'FaceColor',temp.currColor);
+    
+    set(axH,'Marker','.','MarkerSize', meshPointsMarkerSize); % Dots
     hold on;
     
     %% TODO: Draw the difference between each point in the grid as a thick line, shaded white for positive changes or black for negative ones.
@@ -38,16 +50,13 @@ for i = 1:temp.numSessions
                 line_i = ii;
                 line_j = jj;
                 lineObj = line([xx(line_i,line_j) xx(line_i,line_j)], [yy(line_i,line_j) yy(line_i,line_j)], [temp.prevPeaksGrid(line_i,line_j) temp.currPeaksGrid(line_i,line_j)]);
-                set(lineObj, 'Color','black','LineWidth',10);
+                set(lineObj, 'Color','black','LineWidth', meshDifferencesLineWidth);
             end
         end
     end
 %     
-%     temp.prevCompIndex = temp.compIndex;
-%     temp.prevPeaksGrid = temp.currPeaksGrid;
-% WORKS: line(xx(2,2), yy(2,2), temp.currPeaksGrid(2,2), 'Color','black');
-
-%     line([xx(2,2) xx(2,2)], [yy(2,2) yy(2,2)], [temp.prevPeaksGrid(2,2) temp.currPeaksGrid(2,2)], 'Color','black');
+    temp.prevCompIndex = temp.compIndex;
+    temp.prevPeaksGrid = temp.currPeaksGrid;
 
 end
 
