@@ -9,7 +9,8 @@ enable_resave = false;
 finalDataStruct_DFF_baselineFrames = [1, 30];
 
 if ~exist('finalDataStruct','var')
-   default_FD_file_path = 'Z:\ICPassiveStim\FDStructs\anm265\FDS_anm265.mat';
+%    default_FD_file_path = 'Z:\ICPassiveStim\FDStructs\anm265\FDS_anm265.mat';
+   default_FD_file_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/FDS_anm265.mat';
 %    default_FD_file_path = '*.mat';
    [filename, path] = uigetfile(default_FD_file_path,'Select a finalDataStruct .mat file');
     if isequal(filename,0)

@@ -34,8 +34,8 @@ for i = 1:num_comps
         [outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp);
         uniqueAmps = outputs.uniqueAmps;
         uniqueFreqs = outputs.uniqueFreqs;
-        peakSignals = outputs.peakSignal;
-        maxPeakSignal = max(outputs.peakSignal);
+        peakSignals = outputs.AMConditions.peakSignal;
+        maxPeakSignal = max(peakSignals);
         if j == 1
             compFirstDayTuningMaxPeak(i) = maxPeakSignal;
             if maxPeakSignal > tuning_max_threshold_criteria
@@ -44,7 +44,7 @@ for i = 1:num_comps
                % sessions:
                %outputs.uniqueStimuli
 %                tempOut = [outputs.peakSignal outputs.tracesForEachStimulus];
-               tempOut = [outputs.peakSignal];
+               tempOut = [outputs.AMConditions.peakSignal];
               
                currOutCells{j} = tempOut;
                
@@ -55,7 +55,7 @@ for i = 1:num_comps
                     
         else
 %             tempOut = [outputs.peakSignal outputs.tracesForEachStimulus];
-            tempOut = [outputs.peakSignal];
+            tempOut = [outputs.AMConditions.peakSignal];
             currOutCells{j} = tempOut;
         
             if j == length(curr_indicies)
@@ -133,27 +133,84 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 	%pre-allocate
     outputs.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
     outputs.tbImg = linspace(0,numFrames/frameRate,numFrames); % make a timebase to plot as xAxis for traces
-    outputs.peakSignal = zeros(outputs.numStimuli,1);
+    
+    % The important red lines:
+    outputs.TracesForAllStimuli.meanData = zeros(outputs.numStimuli, numFrames);
+    
+    outputs.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
+    outputs.AMConditions.peakSignal = zeros(outputs.numStimuli,1);
+    
+    %generate the dimensions of the subplots
+    numRows = numel(nonzeros(outputs.uniqueFreqs))+1; %+1 because you have the zero mod condition too
+    numCol = numel(nonzeros(outputs.uniqueAmps));
     
     for b = 1:outputs.numStimuli
         tracesToPlot = outputs.tracesForEachStimulus{b};
+        %% plotTracesForAllStimuli_FDS Style
+         %get the raw data that you're gonna plot
+        outputs.TracesForAllStimuli.imgDataToPlot = imgData(tracesToPlot, :);
+        %make an average
+        outputs.TracesForAllStimuli.meanData(b,:) = mean(outputs.TracesForAllStimuli.imgDataToPlot, 1); % this is that main red line that we care about, it contains 1x150 double
         
-        outputs.imgDataToPlot(b,:) = mean(imgData(tracesToPlot,:));
-        [~,maxInd] = max(outputs.imgDataToPlot(b,startSound:endSound));
+        
+        %% plotAMConditions_FDS Style
+        outputs.AMConditions.imgDataToPlot(b,:) = mean(imgData(tracesToPlot,:));
+        [~,maxInd] = max(outputs.AMConditions.imgDataToPlot(b, startSound:endSound)); % get max of current signal only within the startSound:endSound range
         maxInd = maxInd+startSound-1;
-        outputs.peakSignal(b) = mean(outputs.imgDataToPlot(b,maxInd-sampPeak:maxInd+sampPeak));
+        outputs.AMConditions.peakSignal(b) = mean(outputs.AMConditions.imgDataToPlot(b, maxInd-sampPeak:maxInd+sampPeak));
     end
 
-% 	for c=1:numel(outputs.uniqueAmps)
-%         
-%         %plot peak amplitude as a function fo AM freq, with different AM
-%         %depths as different colors
-%         currentAmpIdx = find(outputs.uniqueStimuli(:,2)==outputs.uniqueAmps(c));
-%         thesePeaks = outputs.peakSignal(currentAmpIdx);
-%         theseFreqs = outputs.uniqueStimuli(currentAmpIdx,1);
-%         
-%     end
+    % 2D projections of the plots:
+    outputs.TracesForAllStimuli.finalSeriesAmps = {};
+%     finalSeries = {};
+ % uniqueAmps: the [0%, 20%, 40%, 60%, 80%, 100%] data series
+    for c = 1:numel(outputs.uniqueAmps)
+        activeUniqueAmp = outputs.uniqueAmps(c);
+        currentAmpIdx = find(outputs.uniqueStimuli(:,2)==activeUniqueAmp); % this varies in size. for the 0 element it's 1x1, but for index 2 for example it's 5x1
+        theseFreqs = outputs.uniqueStimuli(currentAmpIdx,1); % AM Depth (%)
+        thesePeaks = outputs.AMConditions.peakSignal(currentAmpIdx); % 'Peak DF/F'
+        
+        
+        tempCurrOutput = struct;
+        tempCurrOutput.ampIdx = currentAmpIdx;
+        tempCurrOutput.ampValue = activeUniqueAmp;
+        tempCurrOutput.freqs = theseFreqs;
+        tempCurrOutput.peaks = thesePeaks;
 
+        outputs.TracesForAllStimuli.finalSeriesAmps{end+1} = tempCurrOutput;
+        
+%         outputs.TracesForAllStimuli.finalSeriesAmps{end+1}.ampIdx = currentAmpIdx;
+%         outputs.TracesForAllStimuli.finalSeriesAmps{end+1}.ampValue = activeUniqueAmp;
+%         outputs.TracesForAllStimuli.finalSeriesAmps{end+1}.freqs = theseFreqs;
+%         outputs.TracesForAllStimuli.finalSeriesAmps{end+1}.peaks = thesePeaks;
+        
+    end
+     
+    outputs.TracesForAllStimuli.finalSeriesFreqs = {};
+    % uniqueFreqs: the [0, 10, 20, 50, 100, 200 Hz] data series
+    for d=1:numel(outputs.uniqueFreqs)
+        activeUniqueFreq = outputs.uniqueFreqs(d);
+        currentFreqIdx = find(outputs.uniqueStimuli(:,1)==activeUniqueFreq);
+        theseAmps = outputs.uniqueStimuli(currentFreqIdx,2);
+        thesePeaks = outputs.AMConditions.peakSignal(currentFreqIdx); % 'Peak DF/F'
+        
+        tempCurrOutput = struct;
+        tempCurrOutput.freqIdx = currentFreqIdx;
+        tempCurrOutput.freqValue = activeUniqueFreq;
+        tempCurrOutput.amps = theseAmps;
+        tempCurrOutput.peaks = thesePeaks;
 
-
+        outputs.TracesForAllStimuli.finalSeriesFreqs{end+1} = tempCurrOutput;
+        
+%         %and plot the traces
+%         if uniqueFreqs(d)==0
+%             plot(tbImg,imgDataToPlot(currentFreqIdx,:),'Color','black','Linewidth',2)
+%             text(max(tbImg),(d-1)*2,strcat(num2str(uniqueFreqs(d)),{' '},'Hz'))
+%         else
+%             for dd =1:numel(currentFreqIdx)
+%                 plot(tbImg,imgDataToPlot(currentFreqIdx(dd),:)+((d-1)*1),'Color',amplitudeColorMap(dd+1,:),'Linewidth',2)
+%             end
+%         end
+    end
+    
 end
