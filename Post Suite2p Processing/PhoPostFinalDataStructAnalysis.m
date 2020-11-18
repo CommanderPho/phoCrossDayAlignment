@@ -45,6 +45,7 @@ for i = 1:num_comps
                %outputs.uniqueStimuli
 %                tempOut = [outputs.peakSignal outputs.tracesForEachStimulus];
                tempOut = [outputs.AMConditions.peakSignal];
+               tempOut = [outputs.TracesForAllStimuli.meanData];
               
                currOutCells{j} = tempOut;
                
@@ -178,11 +179,6 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         tempCurrOutput.peaks = thesePeaks;
 
         outputs.TracesForAllStimuli.finalSeriesAmps{end+1} = tempCurrOutput;
-        
-%         outputs.TracesForAllStimuli.finalSeriesAmps{end+1}.ampIdx = currentAmpIdx;
-%         outputs.TracesForAllStimuli.finalSeriesAmps{end+1}.ampValue = activeUniqueAmp;
-%         outputs.TracesForAllStimuli.finalSeriesAmps{end+1}.freqs = theseFreqs;
-%         outputs.TracesForAllStimuli.finalSeriesAmps{end+1}.peaks = thesePeaks;
         
     end
      
