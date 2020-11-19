@@ -59,7 +59,7 @@ for a = 1:numel(compList)
         imgDataToPlot(b,:)=mean(imgData(tracesToPlot,:));
         [~,maxInd]=max(imgDataToPlot(b,startSound:endSound));
         maxInd=maxInd+startSound-1;
-        peakSignal(b)=mean(imgDataToPlot(b,maxInd-sampPeak:maxInd+sampPeak));
+        peakSignal(b)=mean(imgDataToPlot(b,maxInd-sampPeak:maxInd+sampPeak)); % looks like this averages over all trials?
     end
     
     figure;
@@ -68,11 +68,13 @@ for a = 1:numel(compList)
     amplitudeColorMap = winter(numel(uniqueAmps));
     frequencyColorMap = spring(numel(uniqueFreqs));
     
+    %% Generate the left two subplots
+    % uniqueAmps: the [0%, 20%, 40%, 60%, 80%, 100%] data series
     for c=1:numel(uniqueAmps)
         
         %plot peak amplitude as a function fo AM freq, with different AM
         %depths as different colors
-        currentAmpIdx = find(uniqueStimuli(:,2)==uniqueAmps(c));
+        currentAmpIdx = find(uniqueStimuli(:,2)==uniqueAmps(c)); % this varies in size. for the 0 element it's 1x1, but for index 2 for example it's 5x1
         thesePeaks = peakSignal(currentAmpIdx);
         theseFreqs = uniqueStimuli(currentAmpIdx,1);
         
@@ -116,7 +118,8 @@ for a = 1:numel(compList)
     end
     legend(lgdStr,'FontSize',8);
     
-    
+    %% Generate the right two subplots
+    % uniqueFreqs: the [0, 10, 20, 50, 100, 200 Hz] data series
     for d=1:numel(uniqueFreqs)
         title(currentComp)
         %plot peak amplitude as a function fo AM freq, with different AM
