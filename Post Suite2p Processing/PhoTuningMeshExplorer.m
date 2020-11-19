@@ -23,7 +23,7 @@ for i = 1:length(cellRoisToPlot)
     % % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(4))
     % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(162))
     % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(320))
-    plotAMConditions_FDS(finalDataStruct, activeAnimalCompList(temp.currAllSessionCompIndicies))
+%     plotAMConditions_FDS(finalDataStruct, activeAnimalCompList(temp.currAllSessionCompIndicies))
 
     
     % Make 2D Plots (Exploring):    
@@ -42,7 +42,7 @@ for i = 1:length(cellRoisToPlot)
 end
 
 %%% 2D Plotting
-function [figH, tiledLayoutH] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, currAllSessionCompIndicies, cellRoiIndex, finalOutPeaksGrid)
+function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, currAllSessionCompIndicies, cellRoiIndex, finalOutPeaksGrid)
     % currAllSessionCompIndicies: all sessions for the current ROI
     %% Options:
     temp.numSessions = length(currAllSessionCompIndicies);
@@ -51,8 +51,6 @@ function [figH, tiledLayoutH] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, u
 
     figH = figure(1337 + cellRoiIndex); % generate a new figure to plot the sessions.
     clf(figH);
-%     hold off;
-    tiledLayoutH = tiledlayout(2, temp.numSessions);
     
     %specify colormaps for your figure. This is important!!
     amplitudeColorMap = winter(numel(uniqueAmps));
@@ -60,7 +58,7 @@ function [figH, tiledLayoutH] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, u
 
     %     colormap(fig2D, amplitudeColorMap);
     
-%     curr_linear_subplot_index = 1;
+    curr_linear_subplot_index = 1;
     % For each session in this cell ROI
     for i = 1:temp.numSessions
         % Get the index for this session of this cell ROI
@@ -68,9 +66,10 @@ function [figH, tiledLayoutH] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, u
         % Gets the grid for this session of this cell ROI
         temp.currPeaksGrid = squeeze(finalOutPeaksGrid(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x6x6)
 
-%         ax_x_amp = subplot(2,temp.numSessions,curr_linear_subplot_index);
-        curr_ax = nexttile;
+        temp.currDateString = dateStrings{i};
         
+        curr_ax = subplot(2, temp.numSessions, curr_linear_subplot_index);
+%         curr_linear_subplot_index = curr_linear_subplot_index + 1;
         colororder(amplitudeColorMap)
 
         % Flatten for each depth first (generating a series with {freq, PeakDF/F} for each depth)
@@ -85,16 +84,18 @@ function [figH, tiledLayoutH] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, u
         ylabel('Peak DF/F')
         xlabel('AM Rate (Hz)')
         legend(uniqueAmpLabels);
+        
+        title(temp.currDateString,'FontSize',14);
 
         %% AM Depth (%) plot
-        curr_ax = nexttile; % get the next tile
+        curr_ax = subplot(2, temp.numSessions, (curr_linear_subplot_index + temp.numSessions)); % get the subplot for the second row by adding the length of the first row
         h_x_freq = plot(repmat(uniqueAmps', [length(uniqueFreqs) 1])', temp.currPeaksGrid');
         ylabel('Peak DF/F')
         xlabel('AM Depth (%)')
         legend(uniqueFreqLabels);
 
 %         hold on;
-
+        curr_linear_subplot_index = curr_linear_subplot_index + 1;
     end
 
 %     % Set x-labels:
