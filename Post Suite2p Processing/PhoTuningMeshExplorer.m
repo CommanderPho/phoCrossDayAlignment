@@ -12,8 +12,10 @@
 [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
 
 fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures';
-numToCompare = 19;
-cellRoisToPlot = cellRoiSortIndex(1:numToCompare);
+% numToCompare = 19;
+% cellRoisToPlot = cellRoiSortIndex(1:numToCompare);
+
+cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
 
 for i = 1:length(cellRoisToPlot)
     %% Plot the grid as a test
@@ -36,12 +38,13 @@ for i = 1:length(cellRoisToPlot)
     fig_name = sprintf('TuningCurves_cellRoi_%d.fig', temp.cellRoiIndex);
     fig_2d_export_path = fullfile(fig_export_parent_path, fig_name);
     savefig(figH_2d, fig_2d_export_path);
+    close(figH_2d);
     
     fig_name = sprintf('TuningMesh_cellRoi_%d.fig', temp.cellRoiIndex);
     fig_export_path = fullfile(fig_export_parent_path, fig_name);
     savefig(figH, fig_export_path);
+    close(figH);
     
-    close all
 end
 
 %%% 2D Plotting
