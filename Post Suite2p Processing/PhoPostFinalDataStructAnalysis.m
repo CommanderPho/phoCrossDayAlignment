@@ -9,7 +9,7 @@ addpath(genpath('..\helpers'));
 curr_animal = 'anm265';
 
 % tuning_max_threshold_criteria: the threshold value for peakDFF
-tuning_max_threshold_criteria = 0.2;
+tuning_max_threshold_criteria = 0.1;
 
 
 %% Filter down to entries for the current animal:
@@ -37,6 +37,7 @@ multiSessionCellRoiSeriesOutResults = {};
 
 % Build 2D Mesh for each component
 finalOutPeaksGrid = zeros(numCompListEntries,6,6);
+finalOutComponentSegmentMasks = zeros(numCompListEntries, 512, 512);
 
 % componentAggregatePropeties.maxTuningPeakValue: the maximum peak value for each signal
 componentAggregatePropeties.maxTuningPeakValue = zeros(numCompListEntries,1);
@@ -65,6 +66,8 @@ for i = 1:num_cellROIs
         
         % Store the outputs in the grid:
         finalOutPeaksGrid(curr_day_linear_index,:,:) = outputs.finalOutGrid;
+        finalOutComponentSegmentMasks(curr_day_linear_index,:,:) = outputs.referenceMask;
+        
         componentAggregatePropeties.maxTuningPeakValue(curr_day_linear_index) = maxPeakSignal; 
         componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_index) = sumPeaksSignal;
         
@@ -132,6 +135,10 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 	smoothValue = 5;
         
     imgData = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataDFF; %assumes you have this field
+    
+    outputs.referenceMask = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).segmentLabelMatrix; % get the reference mask for this component
+    
+    
     [numTrials, numFrames] = size(imgData);
     
     if smoothValue>0

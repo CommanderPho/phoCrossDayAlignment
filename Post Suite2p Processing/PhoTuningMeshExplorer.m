@@ -3,8 +3,10 @@
 % Uses the processed results of the previous pipeline stage to plot tuning curve information for the components.
 % Plots 3D Mesh Surface.
 
+%% Options:
+shouldPerformFigureExport = false;
 
-% componentAggregatePropeties.maxTuningPeakValue
+
 
 % Find
 
@@ -12,16 +14,24 @@
 [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
 
 fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures';
-% numToCompare = 19;
-% cellRoisToPlot = cellRoiSortIndex(1:numToCompare);
+numToCompare = 1;
+cellRoisToPlot = cellRoiSortIndex(1:numToCompare);
 
-cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
+% cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
 
 for i = 1:length(cellRoisToPlot)
     %% Plot the grid as a test
     temp.cellRoiIndex = cellRoisToPlot(i);
     temp.currAllSessionCompIndicies = multiSessionCellRoiCompIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
+    temp.firstCompSessionIndex = temp.currAllSessionCompIndicies(1);
+    
+    temp.firstCompSessionMask = squeeze(finalOutComponentSegmentMasks(temp.firstCompSessionIndex,:,:));
 
+    figure;
+    imshow(temp.firstCompSessionMask);
+%     fnPhoMatrixPlot(temp.firstCompSessionMask);
+    title(sprintf('Mask cellRoi[%d]', temp.cellRoiIndex));
+    
     % % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(4))
     % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(162))
     % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(320))
@@ -34,16 +44,18 @@ for i = 1:length(cellRoisToPlot)
     [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
     zlim([-0.2, 1])
     
-    %% Export plots:
-    fig_name = sprintf('TuningCurves_cellRoi_%d.fig', temp.cellRoiIndex);
-    fig_2d_export_path = fullfile(fig_export_parent_path, fig_name);
-    savefig(figH_2d, fig_2d_export_path);
-    close(figH_2d);
-    
-    fig_name = sprintf('TuningMesh_cellRoi_%d.fig', temp.cellRoiIndex);
-    fig_export_path = fullfile(fig_export_parent_path, fig_name);
-    savefig(figH, fig_export_path);
-    close(figH);
+    if shouldPerformFigureExport
+        %% Export plots:
+        fig_name = sprintf('TuningCurves_cellRoi_%d.fig', temp.cellRoiIndex);
+        fig_2d_export_path = fullfile(fig_export_parent_path, fig_name);
+        savefig(figH_2d, fig_2d_export_path);
+        close(figH_2d);
+
+        fig_name = sprintf('TuningMesh_cellRoi_%d.fig', temp.cellRoiIndex);
+        fig_export_path = fullfile(fig_export_parent_path, fig_name);
+        savefig(figH, fig_export_path);
+        close(figH);
+    end
     
 end
 
