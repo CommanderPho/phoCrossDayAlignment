@@ -24,11 +24,16 @@ frequencyColorMap = spring(numel(uniqueFreqs));
 % cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
 % cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
 
-
+amalgamationMask_AlphaConjunctionMask = zeros(512, 512);
 amalgamationMask_NumberOfTunedDays = zeros(512, 512);
 
 % amalgamationMask_PreferredStimulusAmplitude = zeros(512, 512, 3);
-amalgamationMask_PreferredStimulusAmplitude = zeros(512, 512);
+% init_matrix = zeros(512, 512);
+init_matrix = ones(512, 512) * -1;
+
+amalgamationMask_PreferredStimulusAmplitude = init_matrix;
+amalgamationMask_PreferredStimulusFreq = init_matrix;
+
 
 
 for i = 1:length(uniqueComps)
@@ -48,17 +53,19 @@ for i = 1:length(uniqueComps)
     temp.currRoiTuningScore = componentAggregatePropeties.tuningScore(temp.cellRoiIndex);
     temp.firstCompSessionMask = logical(squeeze(finalOutComponentSegmentMasks(temp.firstCompSessionIndex,:,:)));
     
-    [temp.rgbFirstCompSessionMask] = gray2rgb(temp.firstCompSessionMask);
+%     [temp.rgbFirstCompSessionMask] = gray2rgb(temp.firstCompSessionMask);
 
     % Get color for each:
 %     temp.maxPrefAmpVal
 
-
+    amalgamationMask_AlphaConjunctionMask(temp.firstCompSessionMask) = 1;
     
 %     amalgamationMask_PreferredStimulusAmplitude(temp.rgbFirstCompSessionMask) = [1.0 0.0 1.0]';
     
     amalgamationMask_PreferredStimulusAmplitude(temp.firstCompSessionMask) = double(temp.maxPrefAmpIndex);
 
+    amalgamationMask_PreferredStimulusFreq(temp.firstCompSessionMask) = double(temp.maxPrefFreqIndex);
+    
 %     amalgamationMask_PreferredStimulusAmplitude(temp.rgbFirstCompSessionMask) = amplitudeColorMap(temp.maxPrefAmpIndex,:);
 % 
 %     % Mask the image using bsxfun() function
@@ -96,8 +103,18 @@ end
 % title('number of days meeting tuning criteria for each cellRoi');
 
 figure(1338)
-imshow(amalgamationMask_PreferredStimulusAmplitude, amplitudeColorMap);
-% legend(uniqueAmpLabels);
+subplot(1,2,1)
+tempImH = imshow(amalgamationMask_PreferredStimulusAmplitude, amplitudeColorMap);
+set(tempImH, 'AlphaData', amalgamationMask_AlphaConjunctionMask);
+title('Amplitude Tuning')
+
+subplot(1,2,2)
+tempImH = imshow(amalgamationMask_PreferredStimulusFreq, frequencyColorMap);
+set(tempImH, 'AlphaData', amalgamationMask_AlphaConjunctionMask);
+title('Frequency Tuning')
+
+
+
 
 
 function [rgbImage] = gray2rgb(grayscaleImage)
