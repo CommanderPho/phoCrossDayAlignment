@@ -26,32 +26,9 @@ for i = 1:length(cellRoisToPlot)
     plotAMConditions_FDS(finalDataStruct, activeAnimalCompList(temp.currAllSessionCompIndicies))
 
     
-    % Make 2D Plots (Exploring):
-    fig2D = figure(1337);
-    clf(fig2D)
+    % Make 2D Plots (Exploring):    
+    [figH, axH] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
     
-    %specify colormaps for your figure. This is important!!
-    amplitudeColorMap = winter(numel(uniqueAmps));
-    frequencyColorMap = spring(numel(uniqueFreqs));
-    
-%     colormap(fig2D, amplitudeColorMap);
-    
-    colororder(amplitudeColorMap)
-    
-    temp.curr_comp_index = temp.currAllSessionCompIndicies(1);
-    % Flatten for each depth first (generating a series with {freq, PeakDF/F} for each depth)
-%     for c = 1:length(uniqueAmps)
-%         curr_flat_series = squeeze(finalOutPeaksGrid(temp.curr_comp_index,c,:));
-%         plot(uniqueFreqs, curr_flat_series);
-%     end
-    
-    curr_flat_series = squeeze(finalOutPeaksGrid(temp.curr_comp_index,:,:));
-    h_x_amp = plot(repmat(uniqueFreqs', [length(uniqueAmps) 1])', curr_flat_series');
-%     set(h_x_amp, 'Color', amplitudeColorMap(:,:), 'linewidth', 2);
-%     set(fig2D, 'ColorOrder', amplitudeColorMap);
-    ylabel('Peak DF/F')
-    xlabel('AM Rate (Hz)')
-       
     
     
     % Make 3D Mesh Plot:
@@ -64,7 +41,82 @@ for i = 1:length(cellRoisToPlot)
     savefig(figH, fig_export_path);
 end
 
+%%% 2D Plotting
+function [figH, tiledLayoutH] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, currAllSessionCompIndicies, cellRoiIndex, finalOutPeaksGrid)
+    % currAllSessionCompIndicies: all sessions for the current ROI
+    %% Options:
+    temp.numSessions = length(currAllSessionCompIndicies);
+    uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),{'% Depth'});
+    uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
 
+    figH = figure(1337 + cellRoiIndex); % generate a new figure to plot the sessions.
+    clf(figH);
+%     hold off;
+    tiledLayoutH = tiledlayout(2, temp.numSessions);
+    
+    %specify colormaps for your figure. This is important!!
+    amplitudeColorMap = winter(numel(uniqueAmps));
+    frequencyColorMap = spring(numel(uniqueFreqs));
+
+    %     colormap(fig2D, amplitudeColorMap);
+    
+%     curr_linear_subplot_index = 1;
+    % For each session in this cell ROI
+    for i = 1:temp.numSessions
+        % Get the index for this session of this cell ROI
+        temp.compIndex = currAllSessionCompIndicies(i); 
+        % Gets the grid for this session of this cell ROI
+        temp.currPeaksGrid = squeeze(finalOutPeaksGrid(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x6x6)
+
+%         ax_x_amp = subplot(2,temp.numSessions,curr_linear_subplot_index);
+        curr_ax = nexttile;
+        
+        colororder(amplitudeColorMap)
+
+        % Flatten for each depth first (generating a series with {freq, PeakDF/F} for each depth)
+    %     for c = 1:length(uniqueAmps)
+    %         curr_flat_series = squeeze(finalOutPeaksGrid(temp.curr_comp_index,c,:));
+    %         plot(uniqueFreqs, curr_flat_series);
+    %     end
+
+        h_x_amp = plot(repmat(uniqueFreqs', [length(uniqueAmps) 1])', temp.currPeaksGrid');
+    %     set(h_x_amp, 'Color', amplitudeColorMap(:,:), 'linewidth', 2);
+    %     set(fig2D, 'ColorOrder', amplitudeColorMap);
+        ylabel('Peak DF/F')
+        xlabel('AM Rate (Hz)')
+        legend(uniqueAmpLabels);
+
+        %% AM Depth (%) plot
+        curr_ax = nexttile; % get the next tile
+        h_x_freq = plot(repmat(uniqueAmps', [length(uniqueFreqs) 1])', temp.currPeaksGrid');
+        ylabel('Peak DF/F')
+        xlabel('AM Depth (%)')
+        legend(uniqueFreqLabels);
+
+%         hold on;
+
+    end
+
+%     % Set x-labels:
+%     xlabel('uniqueAmps (% Depth)');
+%     xlim([0 max(uniqueAmps)]);
+%     xticks(uniqueAmps);
+%     xticklabels(uniqueAmpLabels);
+% 
+%     % Set y-labels:
+%     ylabel('uniqueFreqs (Hz)');
+%     ylim([0 max(uniqueFreqs)]);
+%     yticks(uniqueFreqs);
+%     yticklabels(uniqueFreqLabels);
+% 
+%     legend(dateStrings);
+%     title(['cellRoi: ' num2str(cellRoiIndex)]);
+    sgtitle(['cellRoi: ' num2str(cellRoiIndex)]);
+    
+end
+
+
+%%% 3D Mesh Plotting
 function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, currAllSessionCompIndicies, cellRoiIndex, finalOutPeaksGrid)
     % currAllSessionCompIndicies: all sessions for the current ROI
 
