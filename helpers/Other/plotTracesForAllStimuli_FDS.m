@@ -83,7 +83,7 @@ for a = 1:numel(compList)
         plot(tbImg,imgDataToPlot,'color','black')
         hold on
         plot(tbImg,meanData,'color','red','linewidth',2);
-        title(strcat(currentComp,{' '},num2str(uniqueStimuli(b,1)),{' '},'Hz',{' '},'at',{' '},num2str(uniqueStimuli(b,2)*100),{' '},'% Depth'))
+        title(strcat(currentComp, {' '}, num2str(uniqueStimuli(b,1)),{' '},'Hz',{' '},'at',{' '},num2str(uniqueStimuli(b,2)*100),{' '},'% Depth'))
         
         
     end
