@@ -55,8 +55,8 @@ for i = 1:num_cellROIs
 
     currOutCells = {};
 	for j = 1:length(curr_comp_indicies)
-		curr_day_linear_index = curr_comp_indicies(j);
-		[currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(activeAnimalCompList, curr_day_linear_index);
+		curr_day_linear_comp_index = curr_comp_indicies(j); % The comp index, not the unique cellROI index
+		[currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(activeAnimalCompList, curr_day_linear_comp_index);
         [outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp);
         uniqueAmps = outputs.uniqueAmps;
         uniqueFreqs = outputs.uniqueFreqs;
@@ -65,11 +65,19 @@ for i = 1:num_cellROIs
         sumPeaksSignal = sum(peakSignals);
         
         % Store the outputs in the grid:
-        finalOutPeaksGrid(curr_day_linear_index,:,:) = outputs.finalOutGrid;
-        finalOutComponentSegmentMasks(curr_day_linear_index,:,:) = outputs.referenceMask;
+        finalOutPeaksGrid(curr_day_linear_comp_index,:,:) = outputs.finalOutGrid;
+        finalOutComponentSegmentMasks(curr_day_linear_comp_index,:,:) = outputs.referenceMask;
         
-        componentAggregatePropeties.maxTuningPeakValue(curr_day_linear_index) = maxPeakSignal; 
-        componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_index) = sumPeaksSignal;
+        % outputs.maximallyPreferredStimulus
+        %% LinearIndex % The linear stimulus index corresponding to the maximally preferred (amp, freq) pair for each comp.
+        %% AmpFreqIndexTuple % A pair containing the index into the amp array followed by the index into the freq array corresponding to the maximally preferred (amp, freq) pair.
+        %% AmpFreqValuesTuple % The unique amp and freq values at the preferred index
+        %% Value % The actual Peak DF/F value
+        %
+        componentAggregatePropeties.maximallyPreferredStimulusInfo(curr_day_linear_comp_index) = outputs.maximallyPreferredStimulus; 
+        
+        componentAggregatePropeties.maxTuningPeakValue(curr_day_linear_comp_index) = maxPeakSignal; 
+        componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_comp_index) = sumPeaksSignal;
         
         temp.isFirstSessionInCellRoi = (j == 1);
         if temp.isFirstSessionInCellRoi
@@ -251,6 +259,20 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     % Loop through all amplitudes and frequencies:
     % Build 2D Mesh for each component
     outputs.finalOutGrid = zeros(numUniqueAmps, numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
+    
+    % outputs.maximallyPreferredStimulus
+    %% LinearIndex % The linear stimulus index corresponding to the maximally preferred (amp, freq) pair for each comp.
+    %% AmpFreqIndexTuple % A pair containing the index into the amp array followed by the index into the freq array corresponding to the maximally preferred (amp, freq) pair.
+    %% AmpFreqValuesTuple % The unique amp and freq values at the preferred index
+    %% Value % The actual Peak DF/F value
+    %
+    
+    % Also build information about the (amp, freq) pair corresponding to the maximum Peak DF/F for this comp.
+    outputs.maximallyPreferredStimulus.LinearIndex = -1; % The linear stimulus index corresponding to the maximally preferred (amp, freq) pair for each comp.
+    outputs.maximallyPreferredStimulus.AmpFreqIndexTuple = [-1, -1]; % A pair containing the index into the amp array followed by the index into the freq array corresponding to the maximally preferred (amp, freq) pair.
+    outputs.maximallyPreferredStimulus.AmpFreqValuesTuple = [-1, -1]; % The unique amp and freq values at the preferred index
+    outputs.maximallyPreferredStimulus.Value = 0.0; % The actual Peak DF/F value
+    
     for i = 1:numUniqueAmps
         activeUniqueAmp = outputs.uniqueAmps(i);
         for j = 1:numUniqueFreqs
@@ -259,6 +281,13 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
             linearStimulusIndex = outputs.indexMap_AmpsFreqs2StimulusArray(i, j);
             currPeaks = outputs.AMConditions.peakSignal(linearStimulusIndex); % 'Peak DF/F'
             outputs.finalOutGrid(i,j) = currPeaks;
+            % Check if this new peak value exceeds the previous maximum, and if it does, keep track of the new value and index.
+            if currPeaks >= outputs.maximallyPreferredStimulus.Value 
+                outputs.maximallyPreferredStimulus.LinearIndex = linearStimulusIndex; % Set this linear index as the maximum one.
+                outputs.maximallyPreferredStimulus.AmpFreqIndexTuple = [i, j];
+                outputs.maximallyPreferredStimulus.AmpFreqValuesTuple = [activeUniqueAmp, activeUniqueFreq];
+                outputs.maximallyPreferredStimulus.Value = currPeaks;
+            end
         end
     end
 
