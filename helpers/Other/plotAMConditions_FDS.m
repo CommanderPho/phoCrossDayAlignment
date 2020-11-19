@@ -68,6 +68,7 @@ for a = 1:numel(compList)
     amplitudeColorMap = winter(numel(uniqueAmps));
     frequencyColorMap = spring(numel(uniqueFreqs));
     
+    %% Generate the left two subplots
     % uniqueAmps: the [0%, 20%, 40%, 60%, 80%, 100%] data series
     for c=1:numel(uniqueAmps)
         
@@ -117,6 +118,7 @@ for a = 1:numel(compList)
     end
     legend(lgdStr,'FontSize',8);
     
+    %% Generate the right two subplots
     % uniqueFreqs: the [0, 10, 20, 50, 100, 200 Hz] data series
     for d=1:numel(uniqueFreqs)
         title(currentComp)

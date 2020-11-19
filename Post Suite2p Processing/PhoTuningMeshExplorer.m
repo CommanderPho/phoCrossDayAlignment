@@ -12,7 +12,7 @@
 [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
 
 fig_export_parent_path = '/Users/pho/Desktop/ROI Results/Figures';
-numToCompare = 5;
+numToCompare = 2;
 cellRoisToPlot = cellRoiSortIndex(1:numToCompare);
 
 for i = 1:length(cellRoisToPlot)
@@ -20,6 +20,41 @@ for i = 1:length(cellRoisToPlot)
     temp.cellRoiIndex = cellRoisToPlot(i);
     temp.currAllSessionCompIndicies = multiSessionCellRoiCompIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
 
+    % % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(4))
+    % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(162))
+    % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(320))
+    plotAMConditions_FDS(finalDataStruct, activeAnimalCompList(temp.currAllSessionCompIndicies))
+
+    
+    % Make 2D Plots (Exploring):
+    fig2D = figure(1337);
+    clf(fig2D)
+    
+    %specify colormaps for your figure. This is important!!
+    amplitudeColorMap = winter(numel(uniqueAmps));
+    frequencyColorMap = spring(numel(uniqueFreqs));
+    
+%     colormap(fig2D, amplitudeColorMap);
+    
+    colororder(amplitudeColorMap)
+    
+    temp.curr_comp_index = temp.currAllSessionCompIndicies(1);
+    % Flatten for each depth first (generating a series with {freq, PeakDF/F} for each depth)
+%     for c = 1:length(uniqueAmps)
+%         curr_flat_series = squeeze(finalOutPeaksGrid(temp.curr_comp_index,c,:));
+%         plot(uniqueFreqs, curr_flat_series);
+%     end
+    
+    curr_flat_series = squeeze(finalOutPeaksGrid(temp.curr_comp_index,:,:));
+    h_x_amp = plot(repmat(uniqueFreqs', [length(uniqueAmps) 1])', curr_flat_series');
+%     set(h_x_amp, 'Color', amplitudeColorMap(:,:), 'linewidth', 2);
+%     set(fig2D, 'ColorOrder', amplitudeColorMap);
+    ylabel('Peak DF/F')
+    xlabel('AM Rate (Hz)')
+       
+    
+    
+    % Make 3D Mesh Plot:
     [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
     zlim([-0.2, 1])
     

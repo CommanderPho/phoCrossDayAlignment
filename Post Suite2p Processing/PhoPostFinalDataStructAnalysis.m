@@ -107,19 +107,6 @@ componentAggregatePropeties.tuningScore = sum(componentAggregatePropeties.maxTun
 % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(320))
 % plotAMConditions_FDS(finalDataStruct, activeAnimalCompList(2:8))
 
-% function [figH, axH] = fnPlotMeshFromPeaksGrid(uniqueAmps, uniqueFreqs, peaksGrid)
-%     % Build a 2D Mesh from the uniqueAmps and uniqueFreqs
-%     %% TODO: meshgrid and labels will be the same for each comp, so this can be factored out for efficiency
-% 
-%     axH = surf(xx, yy, zz);
-%     % Set x-labels:
-%     xlabel('uniqueAmps (% Depth)')
-%     xticklabels(uniqueAmpLabels);
-%     % Set y-labels:
-%     ylabel('uniqueFreqs (Hz)')
-%     yticklabels(uniqueFreqLabels);
-% end
-
 
 function [currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(compList, index)
 	currentAnm = compList(index).anmID;
@@ -137,8 +124,6 @@ end
 function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, currentComp)
     %TODO: Figure out how the 26 different stimuli (numStimuli) map to the uniqueAmps/uniqueFreqs points.
     % outputs.uniqueStimuli: 26x2 double - contains each unique pair of stimuli, with first column being freq and second column being depth:
-    
-
     
 	startSound=31;
 	endSound=90;
