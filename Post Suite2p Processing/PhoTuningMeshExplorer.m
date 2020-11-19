@@ -11,8 +11,8 @@
 %% Sort based on tuning score:
 [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
 
-fig_export_parent_path = '/Users/pho/Desktop/ROI Results/Figures';
-numToCompare = 2;
+fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures';
+numToCompare = 19;
 cellRoisToPlot = cellRoiSortIndex(1:numToCompare);
 
 for i = 1:length(cellRoisToPlot)
@@ -25,20 +25,23 @@ for i = 1:length(cellRoisToPlot)
     % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(320))
 %     plotAMConditions_FDS(finalDataStruct, activeAnimalCompList(temp.currAllSessionCompIndicies))
 
-    
     % Make 2D Plots (Exploring):    
-    [figH, axH] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
-    
-    
+    [figH_2d, ~] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
     
     % Make 3D Mesh Plot:
     [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
     zlim([-0.2, 1])
     
-    fig_name = sprintf('TuningMesh_cellRoi_%d.fig',temp.cellRoiIndex);
-    fig_export_path = fullfile(fig_export_parent_path, fig_name);
+    %% Export plots:
+    fig_name = sprintf('TuningCurves_cellRoi_%d.fig', temp.cellRoiIndex);
+    fig_2d_export_path = fullfile(fig_export_parent_path, fig_name);
+    savefig(figH_2d, fig_2d_export_path);
     
+    fig_name = sprintf('TuningMesh_cellRoi_%d.fig', temp.cellRoiIndex);
+    fig_export_path = fullfile(fig_export_parent_path, fig_name);
     savefig(figH, fig_export_path);
+    
+    close all
 end
 
 %%% 2D Plotting
@@ -56,8 +59,6 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
     amplitudeColorMap = winter(numel(uniqueAmps));
     frequencyColorMap = spring(numel(uniqueFreqs));
 
-    %     colormap(fig2D, amplitudeColorMap);
-    
     curr_linear_subplot_index = 1;
     % For each session in this cell ROI
     for i = 1:temp.numSessions
@@ -65,36 +66,30 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
         temp.compIndex = currAllSessionCompIndicies(i); 
         % Gets the grid for this session of this cell ROI
         temp.currPeaksGrid = squeeze(finalOutPeaksGrid(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x6x6)
-
         temp.currDateString = dateStrings{i};
         
         curr_ax = subplot(2, temp.numSessions, curr_linear_subplot_index);
-%         curr_linear_subplot_index = curr_linear_subplot_index + 1;
-        colororder(amplitudeColorMap)
-
-        % Flatten for each depth first (generating a series with {freq, PeakDF/F} for each depth)
-    %     for c = 1:length(uniqueAmps)
-    %         curr_flat_series = squeeze(finalOutPeaksGrid(temp.curr_comp_index,c,:));
-    %         plot(uniqueFreqs, curr_flat_series);
-    %     end
-
+        colororder(curr_ax, amplitudeColorMap)
+        hold on; % required for colororder to take effect
+        
         h_x_amp = plot(repmat(uniqueFreqs', [length(uniqueAmps) 1])', temp.currPeaksGrid');
-    %     set(h_x_amp, 'Color', amplitudeColorMap(:,:), 'linewidth', 2);
-    %     set(fig2D, 'ColorOrder', amplitudeColorMap);
+        set(h_x_amp, 'linewidth', 2);
         ylabel('Peak DF/F')
         xlabel('AM Rate (Hz)')
         legend(uniqueAmpLabels);
-        
+      
         title(temp.currDateString,'FontSize',14);
 
         %% AM Depth (%) plot
         curr_ax = subplot(2, temp.numSessions, (curr_linear_subplot_index + temp.numSessions)); % get the subplot for the second row by adding the length of the first row
+        colororder(curr_ax, frequencyColorMap)
+        hold on; % required for colororder to take effect
         h_x_freq = plot(repmat(uniqueAmps', [length(uniqueFreqs) 1])', temp.currPeaksGrid');
+        set(h_x_freq, 'linewidth', 2);
         ylabel('Peak DF/F')
         xlabel('AM Depth (%)')
         legend(uniqueFreqLabels);
 
-%         hold on;
         curr_linear_subplot_index = curr_linear_subplot_index + 1;
     end
 
@@ -110,8 +105,6 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
 %     yticks(uniqueFreqs);
 %     yticklabels(uniqueFreqLabels);
 % 
-%     legend(dateStrings);
-%     title(['cellRoi: ' num2str(cellRoiIndex)]);
     sgtitle(['cellRoi: ' num2str(cellRoiIndex)]);
     
 end
