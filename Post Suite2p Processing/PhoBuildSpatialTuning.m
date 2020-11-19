@@ -84,11 +84,11 @@ for i = 1:length(uniqueComps)
 %     clf(figH);
     
     % Set the greyscale value to the ROIs tuning score, normalized by the maximum possible tuning score (indicating all three days were tuned)
-    if temp.currRoiTuningScore > 0
+%     if temp.currRoiTuningScore > 0
         amalgamationMask_NumberOfTunedDays(temp.firstCompSessionMask) = double(temp.currRoiTuningScore) / 3.0;
-    else
-        amalgamationMask_NumberOfTunedDays(temp.firstCompSessionMask) = -1.0;
-    end
+%     else
+%         amalgamationMask_NumberOfTunedDays(temp.firstCompSessionMask) = -1.0;
+%     end
     
 %     figure;
 %     imshow(temp.firstCompSessionMask);
@@ -99,8 +99,10 @@ for i = 1:length(uniqueComps)
     
 end
 
-% fnPhoMatrixPlot(amalgamationMask_NumberOfTunedDays);
-% title('number of days meeting tuning criteria for each cellRoi');
+figure(1337)
+tempImH = fnPhoMatrixPlot(amalgamationMask_NumberOfTunedDays);
+set(tempImH, 'AlphaData', amalgamationMask_AlphaConjunctionMask);
+title('number of days meeting tuning criteria for each cellRoi');
 
 figure(1338)
 subplot(1,2,1)
