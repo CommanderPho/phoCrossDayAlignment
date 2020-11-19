@@ -8,6 +8,7 @@ session_mats = {'/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotat
 
 uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),{'% Depth'});
 uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
+uniqueNumberOfTunedDaysLabels = strcat(num2str(unique(componentAggregatePropeties.tuningScore)),{' days'});
 
 %specify colormaps for your figure. This is important!!
 amplitudeColorMap = winter(numel(uniqueAmps));
@@ -23,8 +24,8 @@ frequencyColorMap = spring(numel(uniqueFreqs));
 % cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
 % cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
 % cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
-
 amalgamationMask_AlphaConjunctionMask = zeros(512, 512);
+amalgamationMask_AlphaRoiTuningScoreMask = zeros(512, 512);
 amalgamationMask_NumberOfTunedDays = zeros(512, 512);
 
 % amalgamationMask_PreferredStimulusAmplitude = zeros(512, 512, 3);
@@ -52,34 +53,16 @@ for i = 1:length(uniqueComps)
     
     temp.currRoiTuningScore = componentAggregatePropeties.tuningScore(temp.cellRoiIndex);
     temp.firstCompSessionMask = logical(squeeze(finalOutComponentSegmentMasks(temp.firstCompSessionIndex,:,:)));
-    
-%     [temp.rgbFirstCompSessionMask] = gray2rgb(temp.firstCompSessionMask);
 
-    % Get color for each:
-%     temp.maxPrefAmpVal
+    % Set cells in this cellROI region to opaque:
+    amalgamationMask_AlphaConjunctionMask(temp.firstCompSessionMask) = 1.0;
+    % Set the opacity of cell in this cellROI region based on the number of days that the cell passed the threshold:
+    amalgamationMask_AlphaRoiTuningScoreMask(temp.firstCompSessionMask) = (double(temp.currRoiTuningScore) / 3.0);
 
-    amalgamationMask_AlphaConjunctionMask(temp.firstCompSessionMask) = 1;
-    
-%     amalgamationMask_PreferredStimulusAmplitude(temp.rgbFirstCompSessionMask) = [1.0 0.0 1.0]';
-    
     amalgamationMask_PreferredStimulusAmplitude(temp.firstCompSessionMask) = double(temp.maxPrefAmpIndex);
 
     amalgamationMask_PreferredStimulusFreq(temp.firstCompSessionMask) = double(temp.maxPrefFreqIndex);
     
-%     amalgamationMask_PreferredStimulusAmplitude(temp.rgbFirstCompSessionMask) = amplitudeColorMap(temp.maxPrefAmpIndex,:);
-% 
-%     % Mask the image using bsxfun() function
-%     maskedRgbImage = bsxfun(@times, amalgamationMask_PreferredStimulusAmplitude, cast(mask, 'like', amalgamationMask_PreferredStimulusAmplitude));
-% 
-%     amalgamationMask_PreferredStimulusAmplitude(temp.firstCompSessionMask, 1) = amplitudeColorMap(temp.maxPrefAmpIndex,1);
-%     amalgamationMask_PreferredStimulusAmplitude(temp.firstCompSessionMask, 2) = amplitudeColorMap(temp.maxPrefAmpIndex,2);
-%     amalgamationMask_PreferredStimulusAmplitude(temp.firstCompSessionMask, 3) = amplitudeColorMap(temp.maxPrefAmpIndex,3);
-%     mask3 = cat(3, mask, mask, mask);
-    
-%     amalgamationMask_PreferredStimulusAmplitude(temp.firstCompSessionMask, 1) = amplitudeColorMap(temp.maxPrefAmpIndex,1);
-%     amalgamationMask_PreferredStimulusAmplitude(temp.firstCompSessionMask, 2) = amplitudeColorMap(temp.maxPrefAmpIndex,2);
-%     amalgamationMask_PreferredStimulusAmplitude(temp.firstCompSessionMask, 3) = amplitudeColorMap(temp.maxPrefAmpIndex,3);
-   
 %     figH = figure(1337 + cellRoiIndex); % generate a new figure to plot the sessions.
 %     clf(figH);
     
@@ -101,23 +84,49 @@ end
 
 figure(1337)
 tempImH = fnPhoMatrixPlot(amalgamationMask_NumberOfTunedDays);
+xticks([])
+yticks([])
 set(tempImH, 'AlphaData', amalgamationMask_AlphaConjunctionMask);
 title('number of days meeting tuning criteria for each cellRoi');
+% c = colormap('jet');
+curr_color_map = colormap(jet(length(uniqueNumberOfTunedDaysLabels)));
+colorbar('off')
+% curr_color_map = colormap(tempImH,default);
+simpleLegend(uniqueNumberOfTunedDaysLabels, curr_color_map);
+
 
 figure(1338)
 subplot(1,2,1)
 tempImH = imshow(amalgamationMask_PreferredStimulusAmplitude, amplitudeColorMap);
-set(tempImH, 'AlphaData', amalgamationMask_AlphaConjunctionMask);
+set(tempImH, 'AlphaData', amalgamationMask_AlphaRoiTuningScoreMask);
 title('Amplitude Tuning')
+simpleLegend(uniqueAmpLabels, amplitudeColorMap)
 
 subplot(1,2,2)
 tempImH = imshow(amalgamationMask_PreferredStimulusFreq, frequencyColorMap);
-set(tempImH, 'AlphaData', amalgamationMask_AlphaConjunctionMask);
+set(tempImH, 'AlphaData', amalgamationMask_AlphaRoiTuningScoreMask);
 title('Frequency Tuning')
+simpleLegend(uniqueFreqLabels, frequencyColorMap)
+
+sgtitle('Spatial Tuning Analysis')
 
 
 
+function simpleLegend(legendStrings, legendColorMap)
+    hold on;
 
+    h = zeros(length(legendStrings), 1);
+    for i = 1:length(legendStrings)
+        h(i) = plot(NaN,NaN,'Color', legendColorMap(i,:));
+    end
+    
+%     h(1) = plot(NaN,NaN,'or');
+%     h(2) = plot(NaN,NaN,'ob');
+%     h(3) = plot(NaN,NaN,'ok');
+%     legend(h, 'red','blue','black');
+    legend(h, legendStrings);
+
+end
 
 function [rgbImage] = gray2rgb(grayscaleImage)
 %GRAY2RGB Inverse of rgb2gray. Takes a grayscale image and returns an RGB representation of that grayscale (obviously not colorizing it or anything).
