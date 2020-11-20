@@ -4,7 +4,7 @@
 
 addpath(genpath('../helpers'));
 
-fprintf('\t Running PhoPostFinalDataStructAnalysis...\n');
+fprintf('> Running PhoPostFinalDataStructAnalysis...\n');
 
 %% Options:
 % Uses:
@@ -19,12 +19,29 @@ if ~exist('phoPipelineOptions','var')
 
 end
 
+%% DATA STRUCTURES:
+%%%+S- componentAggregatePropeties
+    %= maxTuningPeakValueSatisfiedCriteria - 
+    %= maxTuningPeakValue - 
+    %= maxTuningPeakValueSatisfiedCriteria - 
+    %= tuningScore - the number of days the cellRoi meets the criteria
+    %= maxTuningPeakValue - the maximum peak value for each signal
+    %= sumTuningPeaksValue - the sum of all peaks
+%
+
+%%%+S- maximallyPreferredStimulus
+    %= LinearIndex - The linear stimulus index corresponding to the maximally preferred (amp, freq) pair for each comp.
+    %= AmpFreqIndexTuple - A pair containing the index into the amp array followed by the index into the freq array corresponding to the maximally preferred (amp, freq) pair.
+    %= AmpFreqValuesTuple - The unique amp and freq values at the preferred index
+    %= Value - The actual Peak DF/F value
+%
+
 
 
 %% Filter down to entries for the current animal:
-activeAnimalDataStruct = finalDataStruct.(curr_animal); % get the final data struct for the current animal
-activeAnimalSessionList = sessionList(strcmpi({sessionList.anmID}, curr_animal));
-activeAnimalCompList = compList(strcmpi({compList.anmID}, curr_animal));
+activeAnimalDataStruct = finalDataStruct.(phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal); % get the final data struct for the current animal
+activeAnimalSessionList = sessionList(strcmpi({sessionList.anmID}, phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal));
+activeAnimalCompList = compList(strcmpi({compList.anmID}, phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal));
 %% Processing Options:
 dateStrings = {activeAnimalSessionList.date};  % Strings representing each date.
 
@@ -91,7 +108,7 @@ for i = 1:num_cellROIs
         temp.isFirstSessionInCellRoi = (j == 1);
         if temp.isFirstSessionInCellRoi
             compFirstDayTuningMaxPeak(i) = maxPeakSignal;
-            if maxPeakSignal > tuning_max_threshold_criteria
+            if maxPeakSignal > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria
                compSatisfiesFirstDayTuning(i) = 1;
 
             else
@@ -107,19 +124,21 @@ for i = 1:num_cellROIs
 
 end
 
-compSatisfiesFirstDayTuning = (compFirstDayTuningMaxPeak > tuning_max_threshold_criteria);
-sum(compSatisfiesFirstDayTuning)
+compSatisfiesFirstDayTuning = (compFirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
-componentAggregatePropeties
+fprintf('\t done. INFO: %d of %d cellROIs satisfy the tuning criteria of %f on the first day of the experiment. \n', sum(compSatisfiesFirstDayTuning), length(compFirstDayTuningMaxPeak), phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
+
 
 % WARNING: This assumes that there are the same number of sessions for each cellROI
-componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria = (componentAggregatePropeties.maxTuningPeakValue > tuning_max_threshold_criteria);
+componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria = (componentAggregatePropeties.maxTuningPeakValue > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
 componentAggregatePropeties.maxTuningPeakValue = reshape(componentAggregatePropeties.maxTuningPeakValue,[],3); % Reshape from linear to cellRoi indexing
 componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria = reshape(componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria,[],3); % Reshape from linear to cellRoi indexing
 
 % componentAggregatePropeties.tuningScore: the number of days the cellRoi meets the criteria
 componentAggregatePropeties.tuningScore = sum(componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria, 2);
+
+fprintf('\t done.\n');
 
 
 function [currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(compList, index)

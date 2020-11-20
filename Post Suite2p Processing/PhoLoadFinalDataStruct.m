@@ -30,7 +30,7 @@
 
 addpath(genpath('../helpers'));
 
-fprintf('\t Running PhoLoadFinalDataStruct...\n');
+fprintf('> Running PhoLoadFinalDataStruct...\n');
 
 %% Options:
 % Uses:
@@ -49,7 +49,7 @@ if ~exist('finalDataStruct','var')
     if isempty(phoPipelineOptions.default_FD_file_path)
         [filename, path] = uigetfile('*.mat', 'Select a finalDataStruct .mat file');
     else
-        [filename, path] = uigetfile(default_FD_file_path, 'Select a finalDataStruct .mat file');
+        [filename, path] = uigetfile(phoPipelineOptions.default_FD_file_path, 'Select a finalDataStruct .mat file');
     end
    
     if isequal(filename,0)

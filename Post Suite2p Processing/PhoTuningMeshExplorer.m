@@ -3,21 +3,48 @@
 % Uses the processed results of the previous pipeline stage to plot tuning curve information for the components.
 % Plots 3D Mesh Surface.
 
-%% Options:
-% Uses phoPipelineOptions.shouldSaveFiguresToDisk and phoPipelineOptions.shouldShowPlots
-
-
-
-% Find
+fprintf('> Running PhoTuningMeshExplorer...\n');
 
 %% Sort based on tuning score:
 [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
 
-fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures';
+
+%% Options:
 numToCompare = 1;
 cellRoisToPlot = cellRoiSortIndex(1:numToCompare);
-
 % cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
+
+% Uses:
+%   phoPipelineOptions.shouldSaveFiguresToDisk
+%   phoPipelineOptions.shouldShowPlots
+%   phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path
+
+if ~exist('phoPipelineOptions','var')
+    warning('phoPipelineOptions is missing! Using defaults specified in PhoTuningMeshExplorer.m')
+    phoPipelineOptions.shouldSaveFiguresToDisk = true;
+    phoPipelineOptions.shouldShowPlots = true;
+    %%% PhoTuningMeshExplorer Options:
+    phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = '';
+%     phoPipelineOptions.PhoTuningMeshExplorer.cellRoisToPlot = [];
+end
+
+% If it's needed, make sure the export directory is set up appropriately
+if phoPipelineOptions.shouldShowPlots
+   if phoPipelineOptions.shouldSaveFiguresToDisk
+        if isempty(phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path)
+            phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = uigetdir(pwd, 'Select an export directory');              
+        end
+
+%         if ~exist(phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path, 'dir')
+%             error(['ERROR: The specified figure export directory ' phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path ' does not exist!']);
+%         end
+        
+        while (~exist(phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path, 'dir'))
+            warning(['WARNING: The specified figure export directory ' phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path ' does not exist!']);
+            phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = uigetdir(pwd, 'Select an export directory');     
+        end
+   end
+end
 
 for i = 1:length(cellRoisToPlot)
     %% Plot the grid as a test
@@ -32,11 +59,6 @@ for i = 1:length(cellRoisToPlot)
         imshow(temp.firstCompSessionMask);
         title(sprintf('Mask cellRoi[%d]', temp.cellRoiIndex));
 
-        % % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(4))
-        % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(162))
-        % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(320))
-    %     plotAMConditions_FDS(finalDataStruct, activeAnimalCompList(temp.currAllSessionCompIndicies))
-
         % Make 2D Plots (Exploring):    
         [figH_2d, ~] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
 
@@ -45,20 +67,24 @@ for i = 1:length(cellRoisToPlot)
         zlim([-0.2, 1])
 
         if phoPipelineOptions.shouldSaveFiguresToDisk
+            
             %% Export plots:
             fig_name = sprintf('TuningCurves_cellRoi_%d.fig', temp.cellRoiIndex);
-            fig_2d_export_path = fullfile(fig_export_parent_path, fig_name);
+            fig_2d_export_path = fullfile(phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path, fig_name);
             savefig(figH_2d, fig_2d_export_path);
             close(figH_2d);
 
             fig_name = sprintf('TuningMesh_cellRoi_%d.fig', temp.cellRoiIndex);
-            fig_export_path = fullfile(fig_export_parent_path, fig_name);
+            fig_export_path = fullfile(phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path, fig_name);
             savefig(figH, fig_export_path);
             close(figH);
         end
     
     end
 end
+
+fprintf('\t done.\n');
+
 
 %%% 2D Plotting
 function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, currAllSessionCompIndicies, cellRoiIndex, finalOutPeaksGrid)

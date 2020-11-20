@@ -2,9 +2,46 @@
 % Pho Hale, November 19, 2020
 % Builds relations been each cells spatial location and their tuning.
 
+fprintf('> Running PhoBuildSpatialTuning...\n');
+
+%% Options:
+% Uses:
+%   phoPipelineOptions.shouldSaveFiguresToDisk
+%   phoPipelineOptions.shouldShowPlots
+%   phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path
+
+if ~exist('phoPipelineOptions','var')
+    warning('phoPipelineOptions is missing! Using defaults specified in PhoBuildSpatialTuning.m')
+    phoPipelineOptions.shouldSaveFiguresToDisk = true;
+    phoPipelineOptions.shouldShowPlots = true;
+    %%% PhoBuildSpatialTuning Options:
+    phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path = '';
+end
+
+% If it's needed, make sure the export directory is set up appropriately
+if phoPipelineOptions.shouldShowPlots
+   if phoPipelineOptions.shouldSaveFiguresToDisk
+        if isempty(phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path)
+            phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path = uigetdir(pwd, 'Select an export directory');              
+        end
+
+%         if ~exist(phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path, 'dir')
+%             error(['ERROR: The specified figure export directory ' phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path ' does not exist!']);
+%         end
+        
+        while (~exist(phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path, 'dir'))
+            warning(['WARNING: The specified figure export directory ' phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path ' does not exist!']);
+            phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path = uigetdir(pwd, 'Select an export directory');     
+        end
+   end
+end
+
+
 % session_mats = {'/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ToLoad/anm265/20200117/20200117_anm265.mat',...
 %     '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ToLoad/anm265/20200120/20200120_anm265.mat',...
 %     '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ToLoad/anm265/20200124/20200124_anm265.mat'};
+% SessionMat = load(session_mats{1});
+
 
 uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),{'% Depth'});
 uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
@@ -14,8 +51,6 @@ uniqueNumberOfTunedDaysLabels = strcat(num2str(unique(componentAggregatePropetie
 amplitudeColorMap = winter(numel(uniqueAmps));
 frequencyColorMap = spring(numel(uniqueFreqs));
 
-% SessionMat = load(session_mats{1});
-
 %     imshow(activeAnimalDataStruct.session_20200117.imgData.comp1.segmentLabelMatrix)
 
 % componentAggregatePropeties.maxTuningPeakValue
@@ -24,6 +59,7 @@ frequencyColorMap = spring(numel(uniqueFreqs));
 % cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
 % cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
 % cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
+
 amalgamationMask_AlphaConjunctionMask = zeros(512, 512);
 amalgamationMask_AlphaRoiTuningScoreMask = zeros(512, 512);
 amalgamationMask_NumberOfTunedDays = zeros(512, 512);
@@ -34,8 +70,6 @@ init_matrix = ones(512, 512) * -1;
 
 amalgamationMask_PreferredStimulusAmplitude = init_matrix;
 amalgamationMask_PreferredStimulusFreq = init_matrix;
-
-
 
 for i = 1:length(uniqueComps)
     %% Plot the grid as a test
@@ -83,7 +117,7 @@ for i = 1:length(uniqueComps)
 end
 
 if phoPipelineOptions.shouldShowPlots
-    figure(1337)
+    figH_numDaysCriteria = figure(1337);
     tempImH = fnPhoMatrixPlot(amalgamationMask_NumberOfTunedDays);
     xticks([])
     yticks([])
@@ -96,7 +130,7 @@ if phoPipelineOptions.shouldShowPlots
     simpleLegend(uniqueNumberOfTunedDaysLabels, curr_color_map);
 
 
-    figure(1338)
+    figH_roiTuningPreferredStimulus = figure(1338);
     subplot(1,2,1)
     tempImH = imshow(amalgamationMask_PreferredStimulusAmplitude, amplitudeColorMap);
     set(tempImH, 'AlphaData', amalgamationMask_AlphaRoiTuningScoreMask);
@@ -110,8 +144,24 @@ if phoPipelineOptions.shouldShowPlots
     simpleLegend(uniqueFreqLabels, frequencyColorMap)
 
     sgtitle('Spatial Tuning Analysis')
+    
+    if phoPipelineOptions.shouldSaveFiguresToDisk
+            %% Export plots:
+            fig_name = sprintf('cellROI_shaded_by_number_of_days.fig');
+            fig_numDaysCriteria_export_path = fullfile(phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path, fig_name);
+            savefig(figH_numDaysCriteria, fig_numDaysCriteria_export_path);
+            close(figH_numDaysCriteria);
+
+            fig_name = sprintf('cellROI_TuningPreferredStimulus.fig');
+            fig_export_path = fullfile(phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path, fig_name);
+            savefig(figH_roiTuningPreferredStimulus, fig_export_path);
+            close(figH_roiTuningPreferredStimulus);
+    end
+        
+    
 end
 
+fprintf('\t done.\n')
 
 function simpleLegend(legendStrings, legendColorMap)
     hold on;
@@ -127,11 +177,5 @@ function simpleLegend(legendStrings, legendColorMap)
 %     legend(h, 'red','blue','black');
     legend(h, legendStrings);
 
-end
-
-function [rgbImage] = gray2rgb(grayscaleImage)
-%GRAY2RGB Inverse of rgb2gray. Takes a grayscale image and returns an RGB representation of that grayscale (obviously not colorizing it or anything).
-%   Visually the image is unchanged by this operation
-	rgbImage = cat(3, grayscaleImage, grayscaleImage, grayscaleImage);
 end
 
