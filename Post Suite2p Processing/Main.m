@@ -5,7 +5,7 @@ addpath(genpath('../helpers'));
 %%% General Options:
 phoPipelineOptions.default_FD_file_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/FDS_anm265.mat'; % If empty, user will be prompted interactively
 % phoPipelineOptions.default_FD_file_path = 'Z:\ICPassiveStim\FDStructs\anm265\FDS_anm265.mat';
-phoPipelineOptions.shouldShowPlots = false;
+phoPipelineOptions.shouldShowPlots = true;
 phoPipelineOptions.shouldSaveFiguresToDisk = false; % Note that this has no effect if phoPipelineOptions.shouldShowPlots is false.
 
 %%% PhoLoadFinalDataStruct Options:
@@ -38,8 +38,9 @@ if ~phoPipelineOptions.shouldShowPlots
     end
 end
 
-
-PhoLoadFinalDataStruct
+%% 
+% PhoPostSuite2pSessionSplitting; %% This script is used to create split sessions from the fAll.mat file output by Suite2p
+PhoLoadFinalDataStruct %% If the PhoPostSuite2pSessionSplitting script has already been ran and produced a combined data struct, you can load this from disk.
 PhoPostFinalDataStructAnalysis
 PhoTuningMeshExplorer
 PhoBuildSpatialTuning

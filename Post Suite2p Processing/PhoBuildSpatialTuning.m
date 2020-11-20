@@ -127,7 +127,7 @@ if phoPipelineOptions.shouldShowPlots
     curr_color_map = colormap(jet(length(uniqueNumberOfTunedDaysLabels)));
     colorbar('off')
     % curr_color_map = colormap(tempImH,default);
-    simpleLegend(uniqueNumberOfTunedDaysLabels, curr_color_map);
+    fnAddSimpleLegend(uniqueNumberOfTunedDaysLabels, curr_color_map);
 
 
     figH_roiTuningPreferredStimulus = figure(1338);
@@ -135,13 +135,13 @@ if phoPipelineOptions.shouldShowPlots
     tempImH = imshow(amalgamationMask_PreferredStimulusAmplitude, amplitudeColorMap);
     set(tempImH, 'AlphaData', amalgamationMask_AlphaRoiTuningScoreMask);
     title('Amplitude Tuning')
-    simpleLegend(uniqueAmpLabels, amplitudeColorMap)
+    fnAddSimpleLegend(uniqueAmpLabels, amplitudeColorMap)
 
     subplot(1,2,2)
     tempImH = imshow(amalgamationMask_PreferredStimulusFreq, frequencyColorMap);
     set(tempImH, 'AlphaData', amalgamationMask_AlphaRoiTuningScoreMask);
     title('Frequency Tuning')
-    simpleLegend(uniqueFreqLabels, frequencyColorMap)
+    fnAddSimpleLegend(uniqueFreqLabels, frequencyColorMap)
 
     sgtitle('Spatial Tuning Analysis')
     
@@ -162,20 +162,4 @@ if phoPipelineOptions.shouldShowPlots
 end
 
 fprintf('\t done.\n')
-
-function simpleLegend(legendStrings, legendColorMap)
-    hold on;
-
-    h = zeros(length(legendStrings), 1);
-    for i = 1:length(legendStrings)
-        h(i) = plot(NaN,NaN,'Color', legendColorMap(i,:));
-    end
-    
-%     h(1) = plot(NaN,NaN,'or');
-%     h(2) = plot(NaN,NaN,'ob');
-%     h(3) = plot(NaN,NaN,'ok');
-%     legend(h, 'red','blue','black');
-    legend(h, legendStrings);
-
-end
 
