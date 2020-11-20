@@ -2,9 +2,9 @@
 % Pho Hale, November 19, 2020
 % Builds relations been each cells spatial location and their tuning.
 
-session_mats = {'/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ToLoad/anm265/20200117/20200117_anm265.mat',...
-    '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ToLoad/anm265/20200120/20200120_anm265.mat',...
-    '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ToLoad/anm265/20200124/20200124_anm265.mat'};
+% session_mats = {'/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ToLoad/anm265/20200117/20200117_anm265.mat',...
+%     '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ToLoad/anm265/20200120/20200120_anm265.mat',...
+%     '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ToLoad/anm265/20200124/20200124_anm265.mat'};
 
 uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),{'% Depth'});
 uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
@@ -82,34 +82,35 @@ for i = 1:length(uniqueComps)
     
 end
 
-figure(1337)
-tempImH = fnPhoMatrixPlot(amalgamationMask_NumberOfTunedDays);
-xticks([])
-yticks([])
-set(tempImH, 'AlphaData', amalgamationMask_AlphaConjunctionMask);
-title('number of days meeting tuning criteria for each cellRoi');
-% c = colormap('jet');
-curr_color_map = colormap(jet(length(uniqueNumberOfTunedDaysLabels)));
-colorbar('off')
-% curr_color_map = colormap(tempImH,default);
-simpleLegend(uniqueNumberOfTunedDaysLabels, curr_color_map);
+if phoPipelineOptions.shouldShowPlots
+    figure(1337)
+    tempImH = fnPhoMatrixPlot(amalgamationMask_NumberOfTunedDays);
+    xticks([])
+    yticks([])
+    set(tempImH, 'AlphaData', amalgamationMask_AlphaConjunctionMask);
+    title('number of days meeting tuning criteria for each cellRoi');
+    % c = colormap('jet');
+    curr_color_map = colormap(jet(length(uniqueNumberOfTunedDaysLabels)));
+    colorbar('off')
+    % curr_color_map = colormap(tempImH,default);
+    simpleLegend(uniqueNumberOfTunedDaysLabels, curr_color_map);
 
 
-figure(1338)
-subplot(1,2,1)
-tempImH = imshow(amalgamationMask_PreferredStimulusAmplitude, amplitudeColorMap);
-set(tempImH, 'AlphaData', amalgamationMask_AlphaRoiTuningScoreMask);
-title('Amplitude Tuning')
-simpleLegend(uniqueAmpLabels, amplitudeColorMap)
+    figure(1338)
+    subplot(1,2,1)
+    tempImH = imshow(amalgamationMask_PreferredStimulusAmplitude, amplitudeColorMap);
+    set(tempImH, 'AlphaData', amalgamationMask_AlphaRoiTuningScoreMask);
+    title('Amplitude Tuning')
+    simpleLegend(uniqueAmpLabels, amplitudeColorMap)
 
-subplot(1,2,2)
-tempImH = imshow(amalgamationMask_PreferredStimulusFreq, frequencyColorMap);
-set(tempImH, 'AlphaData', amalgamationMask_AlphaRoiTuningScoreMask);
-title('Frequency Tuning')
-simpleLegend(uniqueFreqLabels, frequencyColorMap)
+    subplot(1,2,2)
+    tempImH = imshow(amalgamationMask_PreferredStimulusFreq, frequencyColorMap);
+    set(tempImH, 'AlphaData', amalgamationMask_AlphaRoiTuningScoreMask);
+    title('Frequency Tuning')
+    simpleLegend(uniqueFreqLabels, frequencyColorMap)
 
-sgtitle('Spatial Tuning Analysis')
-
+    sgtitle('Spatial Tuning Analysis')
+end
 
 
 function simpleLegend(legendStrings, legendColorMap)

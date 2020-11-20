@@ -2,14 +2,23 @@
 % Pho Hale, November 14, 2020
 % Uses the finalDataStruct workspace variable and shows results.
 
-addpath(genpath('..\helpers'));
+addpath(genpath('../helpers'));
 
+fprintf('\t Running PhoPostFinalDataStructAnalysis...\n');
 
 %% Options:
-curr_animal = 'anm265';
+% Uses:
+%   phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal
+%   phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria
+if ~exist('phoPipelineOptions','var')
+    warning('phoPipelineOptions is missing! Using defaults specified in PhoPostFinalDataStructAnalysis.m')
+    %%% PhoPostFinalDataStructAnalysis Options:
+    phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal = 'anm265';
+    % tuning_max_threshold_criteria: the threshold value for peakDFF
+    phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria = 0.1;
 
-% tuning_max_threshold_criteria: the threshold value for peakDFF
-tuning_max_threshold_criteria = 0.1;
+end
+
 
 
 %% Filter down to entries for the current animal:
@@ -49,7 +58,7 @@ for i = 1:num_cellROIs
    curr_comp = uniqueComps{i};
    curr_comp_indicies = find(strcmp(compTable.compName, curr_comp)); % Should be a list of 3 relevant indicies, one corresponding to each day.
    
-   fprintf('uniqueComp[%d]: %s', i, curr_comp);
+   fprintf('\t \t uniqueComp[%d]: %s', i, curr_comp);
    disp(curr_comp_indicies');
    multiSessionCellRoiCompIndicies(i,:) = curr_comp_indicies';
 
@@ -101,6 +110,8 @@ end
 compSatisfiesFirstDayTuning = (compFirstDayTuningMaxPeak > tuning_max_threshold_criteria);
 sum(compSatisfiesFirstDayTuning)
 
+componentAggregatePropeties
+
 % WARNING: This assumes that there are the same number of sessions for each cellROI
 componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria = (componentAggregatePropeties.maxTuningPeakValue > tuning_max_threshold_criteria);
 
@@ -109,14 +120,6 @@ componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria = reshape(compon
 
 % componentAggregatePropeties.tuningScore: the number of days the cellRoi meets the criteria
 componentAggregatePropeties.tuningScore = sum(componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria, 2);
-
-
-
-
-% % plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(4))
-% plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(162))
-% plotTracesForAllStimuli_FDS(finalDataStruct, activeAnimalCompList(320))
-% plotAMConditions_FDS(finalDataStruct, activeAnimalCompList(2:8))
 
 
 function [currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(compList, index)

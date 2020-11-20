@@ -28,43 +28,53 @@
 %   compName: 'comp1'
 
 
-
-
 addpath(genpath('../helpers'));
 
+fprintf('\t Running PhoLoadFinalDataStruct...\n');
+
 %% Options:
-enable_resave = false;
-finalDataStruct_DFF_baselineFrames = [1, 30];
+% Uses:
+%   phoPipelineOptions.default_FD_file_path
+%   phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave
+%   phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames 
+if ~exist('phoPipelineOptions','var')
+    warning('phoPipelineOptions is missing! Using defaults specified in PhoLoadFinalDataStruct.m')
+    phoPipelineOptions.default_FD_file_path = '';
+    phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave = false;
+    phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames = [1, 30]; 
+end
+
 
 if ~exist('finalDataStruct','var')
-%    default_FD_file_path = 'Z:\ICPassiveStim\FDStructs\anm265\FDS_anm265.mat';
-   default_FD_file_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/FDS_anm265.mat';
-%    default_FD_file_path = '*.mat';
-   [filename, path] = uigetfile(default_FD_file_path,'Select a finalDataStruct .mat file');
+    if isempty(phoPipelineOptions.default_FD_file_path)
+        [filename, path] = uigetfile('*.mat', 'Select a finalDataStruct .mat file');
+    else
+        [filename, path] = uigetfile(default_FD_file_path, 'Select a finalDataStruct .mat file');
+    end
+   
     if isequal(filename,0)
-        disp('User selected Cancel');
+        warning('User selected Cancel');
     else
         FDPath = fullfile(path, filename);
-        fprintf('Loading %s...',FDPath);
+        fprintf('\t Loading %s...',FDPath);
         load(FDPath);
-        disp('done.')
+        fprintf('done.\n');
     end
 end
 
 % TODO: Check if the fields exist (DFF already computed):
-disp('Running makeSessionList_FDS on finalDataStruct...')
+fprintf('\t Running makeSessionList_FDS on finalDataStruct...\n');
 [sessionList, compList] = makeSessionList_FDS(finalDataStruct); %make a list of sessions and comps in FDS
-
+fprintf('\t\t done.\n');
 
 %% "FD (final data)" file output:
-if enable_resave
-    disp('Running baselineDFF_fds on finalDataStruct...')
-    finalDataStruct = baselineDFF_fds(finalDataStruct, sessionList, finalDataStruct_DFF_baselineFrames); % Adds the DFF baseline to the finalDataStruct
-    fprintf('writing final data struct with DFF back out to %s... ', FDPath);
+if phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave
+    disp('\t Running baselineDFF_fds on finalDataStruct...')
+    finalDataStruct = baselineDFF_fds(finalDataStruct, sessionList, phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames); % Adds the DFF baseline to the finalDataStruct
+    fprintf('\t writing final data struct with DFF back out to %s... ', FDPath);
     save(FDPath, 'finalDataStruct')  % Save out to the file
 end
-disp('done.')
-
+fprintf('\t done.\n');
 % %plotting
 % disp('Plotting finalDataStruct...')
 % % plotTracesForAllStimuli_FDS(finalDataStruct, compList(4))
