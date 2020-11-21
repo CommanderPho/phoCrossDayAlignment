@@ -6,18 +6,25 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
     %% Options:
     dataEdgeColorMap = colormap(gray(6));
     dataEdgeColorMap = dataEdgeColorMap(2:end,:);
-    
     meshFaceOpacity = 0.80; % 0.2
+    
+%     dataEdgeColorMap = [1 0 0; 0 1 0; 0 0 1];
+%     meshFaceOpacity = 0.2; % 0.2
+
     meshEdgeColor = {'red','green','cyan'};
+%     meshLineStyle = '-.';
+%     meshLineAlpha = 0.3;
     
     meshPointsMarkerSymbol = '.';
     meshPointsMarkerColor = {'red','green','cyan'};
     meshPointsMarkerSize = 20; % 10 is default
     
     % meshDifferencesLinesEnabled: if true, draws connecting lines between each point of the surface
-    meshDifferencesLinesEnabled = false;
-    meshDifferencesLineColor = 'red';
-    meshDifferencesLineWidth = 2;
+    meshDifferencesLinesEnabled = true;
+    meshDifferencesLineColor = 'yellow';
+    meshDifferencesLineWidth = 0.8;
+    meshDifferencesLineStyle = '-.';
+    
     
     meshMaximumPointsEnabled = true; % if true, the maximum point is plotted
     maxPointMarkerColor = 'yellow';
@@ -64,11 +71,16 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
         set(axH,'FaceColor', temp.currColor);
         
         if exist('meshEdgeColor','var')
-            set(axH,'EdgeColor',meshEdgeColor{i});
-            set(axH,'LineStyle','-.');
-            set(axH,'EdgeAlpha', 0.3);
-            set(axH,'LineWidth', 1.0);
+            set(axH,'EdgeColor',meshEdgeColor{i});    
         end
+        if exist('meshLineAlpha','var')
+            set(axH,'EdgeAlpha', meshLineAlpha);
+        end
+        
+        if exist('meshLineStyle','var')
+            set(axH,'LineStyle', meshLineStyle);
+        end
+        set(axH,'LineWidth', 1.0);
         
         set(axH,'Marker',meshPointsMarkerSymbol,'MarkerSize', meshPointsMarkerSize); % Dots
         if exist('meshPointsMarkerColor','var')
@@ -91,14 +103,14 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
 %                 error('More than one maximum!');
 %                 axH = scatter3(xx(rowsOfMaxes, colsOfMaxes), yy(rowsOfMaxes, colsOfMaxes), maxValue, 60); % Draws a single point
 %                 set(axH,'MarkerEdgeColor',maxPointMarkerColor,'MarkerFaceColor',maxPointMarkerColor);
-                warning('More than one maximum!');
+                warning('More than one maximum! Maximum will not be highlighted!');
 
             else
 %                 fprintf('maxPoints: %s [%s, %s], %s\n', num2str(linearIndexesOfMaxes), num2str(rowsOfMaxes), num2str(colsOfMaxes), num2str(maxValue))
 %                 fprintf('\t xx,yy: [%s, %s]\n', num2str(xx(rowsOfMaxes)), num2str(yy(colsOfMaxes)))
 %                 fprintf('\t values: [%s, %s]\n', num2str(uniqueAmps(rowsOfMaxes)), num2str(uniqueFreqs(colsOfMaxes)))
                 axH = scatter3(xx(rowsOfMaxes, colsOfMaxes), yy(rowsOfMaxes, colsOfMaxes), maxValue, 60); % Draws a single point
-                set(axH,'MarkerEdgeColor',maxPointMarkerColor,'MarkerFaceColor',maxPointMarkerColor);
+                set(axH,'MarkerEdgeColor',maxPointMarkerColor,'MarkerFaceColor',maxPointMarkerColor,'Marker','square');
                 hold on;
             end
             
@@ -109,14 +121,14 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
         end
         
         %% TODO: Draw the difference between each point in the grid as a thick line, shaded white for positive changes or black for negative ones.
-        if i == 2
+        if i > 1
             if meshDifferencesLinesEnabled
                 for ii = 1:length(xx)
                     for jj = 1:length(yy)
                         line_i = ii;
                         line_j = jj;
                         lineObj = line([xx(line_i,line_j) xx(line_i,line_j)], [yy(line_i,line_j) yy(line_i,line_j)], [temp.prevPeaksGrid(line_i,line_j) temp.currPeaksGrid(line_i,line_j)]);
-                        set(lineObj, 'Color',meshDifferencesLineColor,'LineWidth', meshDifferencesLineWidth);
+                        set(lineObj, 'Color',meshDifferencesLineColor,'LineWidth', meshDifferencesLineWidth,'LineStyle',meshDifferencesLineStyle);
                     end
                 end
             end

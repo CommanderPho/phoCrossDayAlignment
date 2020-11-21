@@ -49,7 +49,7 @@ function plotted_figH = pho_plot_3d_mesh(dateStrings, uniqueAmps, uniqueFreqs, f
 
     % Make 3D Mesh Plot:
     [plotted_figH, ~] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, curr_cellRoiIndex, finalOutPeaksGrid, extantFigH);
-    zlim([-0.2, 1])
+%     zlim([-0.2, 1])
     set(plotted_figH, 'Name', sprintf('Slider Controlled 3D Mesh Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
 end
 
