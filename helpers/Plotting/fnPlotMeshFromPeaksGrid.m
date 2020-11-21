@@ -19,6 +19,10 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
     
     meshMaximumPointsEnabled = true; % if true, the maximum point is plotted
     maxPointMarkerColor = 'red';
+    
+%     meshPlotSinglePointZeroMode = false; % If true, only the non-zero points are drawn.
+    
+    
     % uniqueAmps, uniqueFreqs, multiSessionCellRoiCompIndicies, cellRoiIndex
 
     temp.numSessions = length(currAllSessionCompIndicies);
@@ -27,6 +31,13 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
     uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),{'% Depth'});
     uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
 
+    fprintf('debug: \n')
+    fprintf('\t uniqueAmps: ')
+    disp(uniqueAmps)
+    fprintf('\t uniqueFreqs: ')
+    disp(uniqueFreqs)
+    
+    
     if ~exist('extantFigH','var')
         figH = figure(cellRoiIndex); % generate a new figure to plot the sessions.
     else
@@ -64,14 +75,29 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
         
         if meshMaximumPointsEnabled
             [maxValue, linearIndexesOfMaxes] = max(temp.currPeaksGrid(:));
-            [rowsOfMaxes colsOfMaxes] = find(temp.currPeaksGrid == maxValue);
-            if length(linearIndexesOfMaxes) > 1
+            [rowsOfMaxes, colsOfMaxes] = find(temp.currPeaksGrid == maxValue);
+            if length(colsOfMaxes) > 1
                 error('More than one maximum!');
+                fprintf('\t uniqueAmps: ');
+                disp(uniqueAmps)
+            else
+                fprintf('maxPoints: %s [%s, %s], %s\n', num2str(linearIndexesOfMaxes), num2str(rowsOfMaxes), num2str(colsOfMaxes), num2str(maxValue))
+                fprintf('\t xx,yy: [%s, %s]\n', num2str(xx(rowsOfMaxes)), num2str(yy(colsOfMaxes)))
+                fprintf('\t values: [%s, %s]\n', num2str(uniqueAmps(rowsOfMaxes)), num2str(uniqueFreqs(colsOfMaxes)))
+                v = [rowsOfMaxes(1) colsOfMaxes(1) maxValue];
+%                 plot3(v(:,1),v(:,2),v(:,3),'r');
+                axH = scatter3(xx(rowsOfMaxes, colsOfMaxes), yy(rowsOfMaxes, colsOfMaxes), maxValue, 60); % Draws a single point
+                set(axH,'MarkerEdgeColor',maxPointMarkerColor,'MarkerFaceColor',maxPointMarkerColor);
+                hold on;
             end
-            tempH = scatter3(xx(rowsOfMaxes), yy(colsOfMaxes), maxValue); % Draws a single point
-            set(tempH,'MarkerEdgeColor',maxPointMarkerColor,'MarkerFaceColor',maxPointMarkerColor);
             
-            hold on;
+            
+            
+%             
+%             tempH = scatter3(xx(rowsOfMaxes), yy(colsOfMaxes), maxValue); % Draws a single point
+%             
+%             
+%             hold on;
         end
         
         %% TODO: Draw the difference between each point in the grid as a thick line, shaded white for positive changes or black for negative ones.
