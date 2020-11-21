@@ -8,7 +8,6 @@
 
 addpath(genpath('../../helpers'));
 
-
 temp.cellRoiIndex = 5;
 
 
@@ -21,18 +20,32 @@ end
 iscInfo.curr_i = temp.cellRoiIndex;
 iscInfo.NumberOfSeries = length(uniqueComps);
 % curr_callback = 
-slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, @(extantFigH, curr_i) (pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoiCompIndicies, extantFigH, curr_i)) );
+% slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, @(extantFigH, curr_i) (pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoiCompIndicies, extantFigH, curr_i)) );
+
+extantFigH_plot_2d = figure('Name','Slider Controlled 2D Plot','NumberTitle','off');
+% extantFigH_plot_3d = figure('Name','Slider Controlled 3D Mesh Plot','NumberTitle','off');
+slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, @(curr_i) (pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoiCompIndicies, extantFigH_plot_2d, curr_i)) );
+
 
 %% Plot function called as a callback on update
 function plotted_figH = pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoiCompIndicies, extantFigH, curr_cellRoiIndex)
     % COMPUTED
     temp.currAllSessionCompIndicies = multiSessionCellRoiCompIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
-%     temp.firstCompSessionIndex = temp.currAllSessionCompIndicies(1);
-%     temp.firstCompSessionMask = squeeze(finalOutComponentSegmentMasks(temp.firstCompSessionIndex,:,:));
 
     % Make 2D Plots (Exploring):    
     [plotted_figH, ~] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, curr_cellRoiIndex, finalOutPeaksGrid, extantFigH);
-
+    set(plotted_figH, 'Name', sprintf('Slider Controlled 2D Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
 end
+
+function plotted_figH = pho_plot_3d_mesh(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoiCompIndicies, extantFigH, curr_cellRoiIndex)
+    % COMPUTED
+    temp.currAllSessionCompIndicies = multiSessionCellRoiCompIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
+
+    % Make 3D Mesh Plot:
+    [plotted_figH, ~] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, curr_cellRoiIndex, finalOutPeaksGrid, extantFigH);
+    zlim([-0.2, 1])
+    set(plotted_figH, 'Name', sprintf('Slider Controlled 3D Mesh Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+end
+
 
 

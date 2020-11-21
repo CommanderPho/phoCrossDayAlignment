@@ -58,7 +58,6 @@ multiSessionCellRoiCompIndicies = zeros(num_cellROIs, 3); % a list of comp indic
 compFirstDayTuningMaxPeak = zeros(num_cellROIs, 1); % Just the first day
 compSatisfiesFirstDayTuning = zeros(num_cellROIs, 1); % Just the first day
 
-compFirstDayTuningMaxPeak = zeros(num_cellROIs, 1); % Just the first day
 multiSessionCellRoiSeriesOutResults = {};
 
 % Build 2D Mesh for each component

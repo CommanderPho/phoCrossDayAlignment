@@ -1,6 +1,6 @@
 
 %%% 3D Mesh Plotting
-function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, currAllSessionCompIndicies, cellRoiIndex, finalOutPeaksGrid)
+function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, currAllSessionCompIndicies, cellRoiIndex, finalOutPeaksGrid, extantFigH)
     % currAllSessionCompIndicies: all sessions for the current ROI
 
     %% Options:
@@ -25,7 +25,13 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
     uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),{'% Depth'});
     uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
 
-    figH = figure(cellRoiIndex); % generate a new figure to plot the sessions.
+    if ~exist('extantFigH','var')
+        figH = figure(cellRoiIndex); % generate a new figure to plot the sessions.
+    else
+        figH = extantFigH; % use the existing provided figure    
+        figure(figH);
+    end
+    
     clf(figH);
     hold off;
 

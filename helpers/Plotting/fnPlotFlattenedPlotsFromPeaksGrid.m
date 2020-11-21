@@ -30,12 +30,28 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
         temp.currPeaksGrid = squeeze(finalOutPeaksGrid(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x6x6)
         temp.currDateString = dateStrings{i};
         
+        
+        
         curr_ax = subplot(2, temp.numSessions, curr_linear_subplot_index);
         colororder(curr_ax, amplitudeColorMap)
         hold on; % required for colororder to take effect
         
-        h_x_amp = plot(repmat(uniqueFreqs', [length(uniqueAmps) 1])', temp.currPeaksGrid');
+        % Deal with the 0,0 index:
+%          if uniqueAmps(c)==0
+%             plot(tbImg, imgDataToPlot(currentAmpIdx,:),'Color','black','Linewidth',2)
+% %             text(max(tbImg),c-1,strcat(num2str(uniqueAmps(c)*100),'%'))
+%          end
+         
+        freq_zero = uniqueFreqs(1);
+        peak_zero = temp.currPeaksGrid(1,1);
+        plot(freq_zero, peak_zero,'x','Color','black','MarkerSize',20) % Draws a single point
+        hold on;
+%         text(max(tbImg),c-1,strcat(num2str(uniqueAmps(c)*100),'%'))
+        
+        h_x_amp = plot(repmat(uniqueFreqs(2:end)', [length(uniqueAmps(2:end)) 1])', temp.currPeaksGrid(2:end,2:end)');
         set(h_x_amp, 'linewidth', 2);
+        
+       
         ylabel('Peak DF/F')
         xlabel('AM Rate (Hz)')
         legend(uniqueAmpLabels);
@@ -46,7 +62,13 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
         curr_ax = subplot(2, temp.numSessions, (curr_linear_subplot_index + temp.numSessions)); % get the subplot for the second row by adding the length of the first row
         colororder(curr_ax, frequencyColorMap)
         hold on; % required for colororder to take effect
-        h_x_freq = plot(repmat(uniqueAmps', [length(uniqueFreqs) 1])', temp.currPeaksGrid');
+        
+        amp_zero = uniqueAmps(1);
+        peak_zero = temp.currPeaksGrid(1,1);
+        plot(amp_zero, peak_zero,'x','Color','black','MarkerSize',20) % Draws a single point
+        hold on;
+        
+        h_x_freq = plot(repmat(uniqueAmps(2:end)', [length(uniqueFreqs(2:end)) 1])', temp.currPeaksGrid(2:end,2:end)');
         set(h_x_freq, 'linewidth', 2);
         ylabel('Peak DF/F')
         xlabel('AM Depth (%)')
