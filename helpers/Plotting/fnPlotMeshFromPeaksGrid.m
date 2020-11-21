@@ -8,17 +8,19 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
     dataEdgeColorMap = dataEdgeColorMap(2:end,:);
     
     meshFaceOpacity = 0.80; % 0.2
-
-    meshPointsMarkerColor = 'cyan';
-    meshPointsMarkerSize = 10;
-
+    meshEdgeColor = {'red','green','cyan'};
+    
+    meshPointsMarkerSymbol = '.';
+    meshPointsMarkerColor = {'red','green','cyan'};
+    meshPointsMarkerSize = 20; % 10 is default
+    
     % meshDifferencesLinesEnabled: if true, draws connecting lines between each point of the surface
     meshDifferencesLinesEnabled = false;
     meshDifferencesLineColor = 'red';
     meshDifferencesLineWidth = 2;
     
     meshMaximumPointsEnabled = true; % if true, the maximum point is plotted
-    maxPointMarkerColor = 'red';
+    maxPointMarkerColor = 'yellow';
     
 %     meshPlotSinglePointZeroMode = false; % If true, only the non-zero points are drawn.
     
@@ -31,11 +33,11 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
     uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),{'% Depth'});
     uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
 
-    fprintf('debug: \n')
-    fprintf('\t uniqueAmps: ')
-    disp(uniqueAmps)
-    fprintf('\t uniqueFreqs: ')
-    disp(uniqueFreqs)
+%     fprintf('debug: \n')
+%     fprintf('\t uniqueAmps: ')
+%     disp(uniqueAmps)
+%     fprintf('\t uniqueFreqs: ')
+%     disp(uniqueFreqs)
     
     
     if ~exist('extantFigH','var')
@@ -60,10 +62,18 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
 %         set(axH,'EdgeColor', temp.currColor); % Set edge colors to be able to visually distinguish between the days
         set(axH,'FaceAlpha', meshFaceOpacity);
         set(axH,'FaceColor', temp.currColor);
-
-        set(axH,'Marker','.','MarkerSize', meshPointsMarkerSize); % Dots
+        
+        if exist('meshEdgeColor','var')
+            set(axH,'EdgeColor',meshEdgeColor{i});
+            set(axH,'LineStyle','-.');
+            set(axH,'EdgeAlpha', 0.3);
+            set(axH,'LineWidth', 1.0);
+        end
+        
+        set(axH,'Marker',meshPointsMarkerSymbol,'MarkerSize', meshPointsMarkerSize); % Dots
         if exist('meshPointsMarkerColor','var')
-            set(axH,'MarkerFaceColor', meshPointsMarkerColor, 'MarkerEdgeColor', meshPointsMarkerColor);
+            set(axH,'MarkerFaceColor', meshPointsMarkerColor{i}, 'MarkerEdgeColor', meshPointsMarkerColor{i});
+            set(axH,'Marker');
         end
         hold on;
 
@@ -76,25 +86,23 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
         if meshMaximumPointsEnabled
             [maxValue, linearIndexesOfMaxes] = max(temp.currPeaksGrid(:));
             [rowsOfMaxes, colsOfMaxes] = find(temp.currPeaksGrid == maxValue);
+                           
             if length(colsOfMaxes) > 1
-                error('More than one maximum!');
-                fprintf('\t uniqueAmps: ');
-                disp(uniqueAmps)
+%                 error('More than one maximum!');
+%                 axH = scatter3(xx(rowsOfMaxes, colsOfMaxes), yy(rowsOfMaxes, colsOfMaxes), maxValue, 60); % Draws a single point
+%                 set(axH,'MarkerEdgeColor',maxPointMarkerColor,'MarkerFaceColor',maxPointMarkerColor);
+                warning('More than one maximum!');
+
             else
-                fprintf('maxPoints: %s [%s, %s], %s\n', num2str(linearIndexesOfMaxes), num2str(rowsOfMaxes), num2str(colsOfMaxes), num2str(maxValue))
-                fprintf('\t xx,yy: [%s, %s]\n', num2str(xx(rowsOfMaxes)), num2str(yy(colsOfMaxes)))
-                fprintf('\t values: [%s, %s]\n', num2str(uniqueAmps(rowsOfMaxes)), num2str(uniqueFreqs(colsOfMaxes)))
-                v = [rowsOfMaxes(1) colsOfMaxes(1) maxValue];
-%                 plot3(v(:,1),v(:,2),v(:,3),'r');
+%                 fprintf('maxPoints: %s [%s, %s], %s\n', num2str(linearIndexesOfMaxes), num2str(rowsOfMaxes), num2str(colsOfMaxes), num2str(maxValue))
+%                 fprintf('\t xx,yy: [%s, %s]\n', num2str(xx(rowsOfMaxes)), num2str(yy(colsOfMaxes)))
+%                 fprintf('\t values: [%s, %s]\n', num2str(uniqueAmps(rowsOfMaxes)), num2str(uniqueFreqs(colsOfMaxes)))
                 axH = scatter3(xx(rowsOfMaxes, colsOfMaxes), yy(rowsOfMaxes, colsOfMaxes), maxValue, 60); % Draws a single point
                 set(axH,'MarkerEdgeColor',maxPointMarkerColor,'MarkerFaceColor',maxPointMarkerColor);
                 hold on;
             end
             
-            
-            
-%             
-%             tempH = scatter3(xx(rowsOfMaxes), yy(colsOfMaxes), maxValue); % Draws a single point
+      
 %             
 %             
 %             hold on;
