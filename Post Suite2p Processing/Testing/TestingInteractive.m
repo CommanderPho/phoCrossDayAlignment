@@ -23,11 +23,17 @@ iscInfo.NumberOfSeries = length(uniqueComps);
 % slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, @(extantFigH, curr_i) (pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoiCompIndicies, extantFigH, curr_i)) );
 
 extantFigH_plot_2d = figure('Name','Slider Controlled 2D Plot','NumberTitle','off');
-% extantFigH_plot_3d = figure('Name','Slider Controlled 3D Mesh Plot','NumberTitle','off');
-slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, @(curr_i) (pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoiCompIndicies, extantFigH_plot_2d, curr_i)) );
+extantFigH_plot_3d = figure('Name','Slider Controlled 3D Mesh Plot','NumberTitle','off');
+% slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, @(curr_i) (pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoiCompIndicies, extantFigH_plot_2d, curr_i)) );
+slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, @(curr_i) (pho_plot_interactive_all(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoiCompIndicies, extantFigH_plot_2d, extantFigH_plot_3d, curr_i)) );
 
 
 %% Plot function called as a callback on update
+function pho_plot_interactive_all(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoiCompIndicies, extantFigH_2d, extantFigH_3d, curr_cellRoiIndex)
+    pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoiCompIndicies, extantFigH_2d, curr_cellRoiIndex);
+    pho_plot_3d_mesh(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoiCompIndicies, extantFigH_3d, curr_cellRoiIndex);
+end
+
 function plotted_figH = pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoiCompIndicies, extantFigH, curr_cellRoiIndex)
     % COMPUTED
     temp.currAllSessionCompIndicies = multiSessionCellRoiCompIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI

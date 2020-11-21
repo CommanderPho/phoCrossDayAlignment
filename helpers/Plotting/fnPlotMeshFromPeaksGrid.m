@@ -16,7 +16,9 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
     meshDifferencesLinesEnabled = false;
     meshDifferencesLineColor = 'red';
     meshDifferencesLineWidth = 2;
-
+    
+    meshMaximumPointsEnabled = true; % if true, the maximum point is plotted
+    maxPointMarkerColor = 'red';
     % uniqueAmps, uniqueFreqs, multiSessionCellRoiCompIndicies, cellRoiIndex
 
     temp.numSessions = length(currAllSessionCompIndicies);
@@ -54,6 +56,24 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
         end
         hold on;
 
+        %% tODO: Zero stuff
+%         peak_zero = temp.currPeaksGrid(1,1);
+%         scatter3(xx(1), yy(1), peak_zero,'x','Color','black','MarkerSize',20) % Draws a single point
+%         hold on;
+            
+        
+        if meshMaximumPointsEnabled
+            [maxValue, linearIndexesOfMaxes] = max(temp.currPeaksGrid(:));
+            [rowsOfMaxes colsOfMaxes] = find(temp.currPeaksGrid == maxValue);
+            if length(linearIndexesOfMaxes) > 1
+                error('More than one maximum!');
+            end
+            tempH = scatter3(xx(rowsOfMaxes), yy(colsOfMaxes), maxValue); % Draws a single point
+            set(tempH,'MarkerEdgeColor',maxPointMarkerColor,'MarkerFaceColor',maxPointMarkerColor);
+            
+            hold on;
+        end
+        
         %% TODO: Draw the difference between each point in the grid as a thick line, shaded white for positive changes or black for negative ones.
         if i == 2
             if meshDifferencesLinesEnabled
