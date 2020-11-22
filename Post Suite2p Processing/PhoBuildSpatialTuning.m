@@ -113,7 +113,11 @@ for i = 1:length(uniqueComps)
 end
 
 if phoPipelineOptions.shouldShowPlots
-    figH_numDaysCriteria = figure(1337);
+%     figH_numDaysCriteria = figure(1337);
+%     figH_numDaysCriteria = figure('Name','CellROI Aggregate: Number of Days Meeting Criteria','NumberTitle','off');
+    figH_numDaysCriteria = createFigureWithNameIfNeeded('CellROI Aggregate: Number of Days Meeting Criteria');
+    
+    
     tempImH = fnPhoMatrixPlot(amalgamationMask_NumberOfTunedDays);
     xticks([])
     yticks([])
@@ -126,7 +130,11 @@ if phoPipelineOptions.shouldShowPlots
     fnAddSimpleLegend(uniqueNumberOfTunedDaysLabels, curr_color_map);
 
 
-    figH_roiTuningPreferredStimulus = figure(1338);
+%     figH_roiTuningPreferredStimulus = figure(1338);
+%     figH_roiTuningPreferredStimulus = figure('Name','CellROI Aggregate: Preferred Stimulus Tuning','NumberTitle','off');
+    figH_roiTuningPreferredStimulus = createFigureWithNameIfNeeded('CellROI Aggregate: Preferred Stimulus Tuning');
+    
+    
     subplot(1,2,1)
     tempImH = imshow(amalgamationMask_PreferredStimulusAmplitude, amplitudeColorMap);
     if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
@@ -148,19 +156,6 @@ if phoPipelineOptions.shouldShowPlots
     fnAddSimpleLegend(uniqueFreqLabels, frequencyColorMap)
 
     sgtitle('Spatial Tuning Analysis')
-    
-    %% Setup the mouseover callbacks:
-%     pb.enterFcn = @(fig,currentPoint) set(fig, ...
-%     'Name','Over Patch', ...
-%     'Pointer','fleur');
-% 
-%     pb.exitFcn = @(fig,currentPoint) set(fig, ...
-%     'Name','', ...
-%     'Pointer','arrow');
-%     
-%     pb.traverseFcn = [];
-%     iptSetPointerBehavior([patchobj1,patchobj2],pb);
-%     iptPointerManager(gcf)
     
     %% Custom Tooltips:
     dcm = datacursormode;
@@ -192,6 +187,18 @@ end
 
 fprintf('\t done.\n')
 
+
+function figH = createFigureWithNameIfNeeded(name)
+    figHPotential = findobj( 'Type', 'Figure', 'Name', name);
+    if isempty(figHPotential)
+       figH = figure('Name',name,'NumberTitle','off'); % Make a new figure
+    else
+        % Use existing figure
+        figH = figHPotential;
+        figure(figH); % Make it active.
+    end
+
+end
 
 %% Custom ToolTip callback function that displays the clicked cell ROI as well as the x,y position.
 function txt = displayCoordinates(~, info, amalgamationMask_cellROI_LookupMask)
