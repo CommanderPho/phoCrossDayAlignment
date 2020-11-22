@@ -59,7 +59,7 @@ for i = 1:length(cellRoisToPlot)
 
         % Make 3D Mesh Plot:
         [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
-        zlim([-0.2, 1])
+%         zlim([-0.2, 1])
 
         if phoPipelineOptions.shouldSaveFiguresToDisk
             

@@ -51,6 +51,12 @@ uniqueNumberOfTunedDaysLabels = strcat(num2str(unique(componentAggregatePropetie
 amplitudeColorMap = winter(numel(uniqueAmps));
 frequencyColorMap = spring(numel(uniqueFreqs));
 
+% Override with solid black for the (0,0) elements.
+amplitudeColorMap(1,:) = [0, 0, 0];
+frequencyColorMap(1,:) = [0, 0, 0];
+
+
+
 %     imshow(activeAnimalDataStruct.session_20200117.imgData.comp1.segmentLabelMatrix)
 
 % componentAggregatePropeties.maxTuningPeakValue
@@ -59,6 +65,8 @@ frequencyColorMap = spring(numel(uniqueFreqs));
 % cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
 % cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
 % cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
+
+amalgamationMask_cellROI_LookupMask = zeros(512, 512); % Maps every pixel in the image to the cellROI index of the cell it belongs to, if one exists.
 
 amalgamationMask_AlphaConjunctionMask = zeros(512, 512);
 amalgamationMask_AlphaRoiTuningScoreMask = zeros(512, 512);
@@ -88,6 +96,10 @@ for i = 1:length(uniqueComps)
     temp.currRoiTuningScore = componentAggregatePropeties.tuningScore(temp.cellRoiIndex);
     temp.firstCompSessionMask = logical(squeeze(finalOutComponentSegmentMasks(temp.firstCompSessionIndex,:,:)));
 
+    % Save the index of this cell in the reverse lookup table:
+    amalgamationMask_cellROI_LookupMask(temp.firstCompSessionMask) = temp.cellRoiIndex;
+    
+    
     % Set cells in this cellROI region to opaque:
     amalgamationMask_AlphaConjunctionMask(temp.firstCompSessionMask) = 1.0;
     % Set the opacity of cell in this cellROI region based on the number of days that the cell passed the threshold:
@@ -97,9 +109,6 @@ for i = 1:length(uniqueComps)
 
     amalgamationMask_PreferredStimulusFreq(temp.firstCompSessionMask) = double(temp.maxPrefFreqIndex);
     
-%     figH = figure(1337 + cellRoiIndex); % generate a new figure to plot the sessions.
-%     clf(figH);
-    
     % Set the greyscale value to the ROIs tuning score, normalized by the maximum possible tuning score (indicating all three days were tuned)
 %     if temp.currRoiTuningScore > 0
         amalgamationMask_NumberOfTunedDays(temp.firstCompSessionMask) = double(temp.currRoiTuningScore) / 3.0;
@@ -107,11 +116,6 @@ for i = 1:length(uniqueComps)
 %         amalgamationMask_NumberOfTunedDays(temp.firstCompSessionMask) = -1.0;
 %     end
     
-%     figure;
-%     imshow(temp.firstCompSessionMask);
-% %     fnPhoMatrixPlot(temp.firstCompSessionMask);
-%     title(sprintf('Mask cellRoi[%d]', temp.cellRoiIndex));
-%     
     
     
 end
@@ -145,6 +149,31 @@ if phoPipelineOptions.shouldShowPlots
 
     sgtitle('Spatial Tuning Analysis')
     
+    %% Setup the mouseover callbacks:
+%     pb.enterFcn = @(fig,currentPoint) set(fig, ...
+%     'Name','Over Patch', ...
+%     'Pointer','fleur');
+% 
+%     pb.exitFcn = @(fig,currentPoint) set(fig, ...
+%     'Name','', ...
+%     'Pointer','arrow');
+%     
+%     pb.traverseFcn = [];
+%     iptSetPointerBehavior([patchobj1,patchobj2],pb);
+%     iptPointerManager(gcf)
+    
+    %% Custom Tooltips:
+    dcm = datacursormode;
+    dcm.Enable = 'on';
+    dcm.DisplayStyle = 'window';
+    dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMask_cellROI_LookupMask));
+
+
+
+    
+    
+    
+    %% Optional Export to disk:
     if phoPipelineOptions.shouldSaveFiguresToDisk
             %% Export plots:
             fig_name = sprintf('cellROI_shaded_by_number_of_days.fig');
@@ -162,4 +191,14 @@ if phoPipelineOptions.shouldShowPlots
 end
 
 fprintf('\t done.\n')
+
+
+%% Custom ToolTip function that displays the clicked cell ROI as well as the x,y position.
+function txt = displayCoordinates(~, info, amalgamationMask_cellROI_LookupMask)
+    x = info.Position(1);
+    y = info.Position(2);
+    cellROI = amalgamationMask_cellROI_LookupMask(y, x);
+    txt = ['(' num2str(x) ', ' num2str(y) '): cellROI: ' num2str(cellROI)];
+end
+
 
