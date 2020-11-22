@@ -1,6 +1,11 @@
-function fStruct=baselineDFF_fds(fStruct,sessionList,baselineFrames)
+function fStruct = baselineDFF_fds(fStruct, sessionList, baselineFrames, processingOptions)
 %make DFF traces based on the baseline period for sessions in
 %finalDataStruct format.
+
+if ~exist('processingOptions','var')
+   processingOptions.use_neuropil = false;
+   
+end
 
 for a = 1:numel(sessionList)
     currentAnm=sessionList(a).anmID;
@@ -23,11 +28,22 @@ for a = 1:numel(sessionList)
         
         %pre-allocate
         fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataDFF = zeros(numTrials,numFrames);
+        if processingOptions.use_neuropil
+            imgDataNeuropil = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataNeuropil; % 520x150 double
+            neuropilSubtractedImgData = imgData - imgDataNeuropil; % subtract off the neuropil from the original data for this component 
+            fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataMinusNeuropilDFF = zeros(numTrials, numFrames);
+        end
         
         for b=1:numTrials
+            if processingOptions.use_neuropil
+                bsln_neuropil_subtracted = mean(neuropilSubtractedImgData(b,baselineFrames(1):baselineFrames(2)));
+                fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataMinusNeuropilDFF(b,:) = (neuropilSubtractedImgData(b,:) - bsln_neuropil_subtracted)./bsln_neuropil_subtracted;
+            end
             bsln = mean(imgData(b,baselineFrames(1):baselineFrames(2)));
             fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataDFF(b,:) = (fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingData(b,:) - bsln)./bsln;
         end
+        
+        
     end
 end
 end
