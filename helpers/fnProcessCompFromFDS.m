@@ -1,11 +1,15 @@
-function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, currentComp)
+function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, currentComp, processingOptions)
     %TODO: Figure out how the 26 different stimuli (numStimuli) map to the uniqueAmps/uniqueFreqs points.
     
-	startSound=31;
-	endSound=90;
-	sampPeak = 2;
-	frameRate=30;
-	smoothValue = 5;
+    if ~exist('processingOptions','var')
+        processingOptions.startSound=31;
+        processingOptions.endSound=90;
+        processingOptions.sampPeak = 2;
+        processingOptions.frameRate=30;
+        processingOptions.smoothValue = 5;
+        processingOptions.compute_neuropil_corrected_versions = true;
+    end
+        
     
     %%%+S- fnProcessCompFromFDS outputs
     %= imgDataNeuropil - the neuropil data for this component. 520 x 150 double
@@ -30,20 +34,28 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     %= maximallyPreferredStimulus - See reference structure
     %
 
-    
+%     outputs.imgDataRaw = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingData; % 520x150 double
     imgDataDFF = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataDFF;  % 520x150 double. %assumes you have this field
     
-    outputs.imgDataRaw = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingData; % 520x150 double
-    outputs.imgDataNeuropil = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataNeuropil; % 520x150 double
+    if processingOptions.compute_neuropil_corrected_versions
+       outputs.imagingDataMinusNeuropilDFF = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataMinusNeuropilDFF;  % 520x150 double. %assumes you have this field
+       outputs.imgDataNeuropil = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataNeuropil; % 520x150 double
+    
+    end
+%     
     
     
     outputs.referenceMask = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).segmentLabelMatrix; % get the reference mask for this component
     
     [numTrials, numFrames] = size(imgDataDFF);
     
-    if smoothValue>0
+    if processingOptions.smoothValue>0
         for i = 1:numTrials
-            imgDataDFF(i,:) = smooth(imgDataDFF(i,:), smoothValue);
+            imgDataDFF(i,:) = smooth(imgDataDFF(i,:), processingOptions.smoothValue);
+            if processingOptions.compute_neuropil_corrected_versions
+                outputs.imagingDataMinusNeuropilDFF(i,:) = smooth(outputs.imagingDataMinusNeuropilDFF(i,:), processingOptions.smoothValue);
+            end
+    
         end
     end
     
@@ -107,14 +119,18 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         %% plotTracesForAllStimuli_FDS Style
          %get the raw data that you're gonna plot
         outputs.TracesForAllStimuli.imgDataToPlot = imgDataDFF(tracesToPlot, :); % These are sets of stimuli for this entry.
+        if processingOptions.compute_neuropil_corrected_versions
+%             outputs.imagingDataMinusNeuropilDFF(i,:) = smooth(outputs.imagingDataMinusNeuropilDFF(i,:), processingOptions.smoothValue);
+        end
+            
         %make an average
         outputs.TracesForAllStimuli.meanData(b,:) = mean(outputs.TracesForAllStimuli.imgDataToPlot, 1); % this is that main red line that we care about, it contains 1x150 double
         
         %% plotAMConditions_FDS Style
         outputs.AMConditions.imgDataToPlot(b,:) = mean(imgDataDFF(tracesToPlot,:));
-        [~,maxInd] = max(outputs.AMConditions.imgDataToPlot(b, startSound:endSound)); % get max of current signal only within the startSound:endSound range
-        maxInd = maxInd+startSound-1;
-        outputs.AMConditions.peakSignal(b) = mean(outputs.AMConditions.imgDataToPlot(b, maxInd-sampPeak:maxInd+sampPeak));
+        [~,maxInd] = max(outputs.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
+        maxInd = maxInd+processingOptions.startSound-1;
+        outputs.AMConditions.peakSignal(b) = mean(outputs.AMConditions.imgDataToPlot(b, maxInd-processingOptions.sampPeak:maxInd+processingOptions.sampPeak));
     end
 
     % 2D projections of the plots:

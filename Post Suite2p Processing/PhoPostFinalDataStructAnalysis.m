@@ -10,6 +10,8 @@ fprintf('> Running PhoPostFinalDataStructAnalysis...\n');
 % Uses:
 %   phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal
 %   phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria
+%   phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions
+%   phoPipelineOptions.PhoPostFinalDataStructAnalysis.compute_neuropil_corrected_versions
 if ~exist('phoPipelineOptions','var')
     warning('phoPipelineOptions is missing! Using defaults specified in PhoPostFinalDataStructAnalysis.m')
     %%% PhoPostFinalDataStructAnalysis Options:
@@ -17,6 +19,13 @@ if ~exist('phoPipelineOptions','var')
     % tuning_max_threshold_criteria: the threshold value for peakDFF
     phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria = 0.1;
 
+    phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions = true;
+    phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.startSound=31;
+	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.endSound=90;
+	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.sampPeak = 2;
+	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.frameRate=30;
+	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.smoothValue = 5;
+    
 end
 
 %% DATA STRUCTURES:
@@ -84,7 +93,7 @@ for i = 1:num_cellROIs
 	for j = 1:length(curr_cellROI_compListIndicies)
 		curr_day_linear_comp_index = curr_cellROI_compListIndicies(j); % The linear comp index, not the unique cellROI index
 		[currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(activeAnimalCompList, curr_day_linear_comp_index);
-        [outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp);
+        [outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp, phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions);
         uniqueAmps = outputs.uniqueAmps;
         uniqueFreqs = outputs.uniqueFreqs;
         peakSignals = outputs.AMConditions.peakSignal;

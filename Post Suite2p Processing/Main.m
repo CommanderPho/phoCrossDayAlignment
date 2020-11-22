@@ -17,8 +17,14 @@ phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames = [
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal = 'anm265';
 % tuning_max_threshold_criteria: the threshold value for peakDFF
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria = 0.1;
-phoPipelineOptions.PhoPostFinalDataStructAnalysis.subtract_neuropil = true;
-
+phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions = true;
+phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.startSound=31;
+phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.endSound=90;
+phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.sampPeak = 2;
+phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.frameRate=30;
+phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.smoothValue = 5;
+    
+    
 %%% PhoTuningMeshExplorer Options:
 phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures';
 % phoPipelineOptions.PhoTuningMeshExplorer.cellRoisToPlot = [];
