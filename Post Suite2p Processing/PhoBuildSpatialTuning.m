@@ -16,6 +16,7 @@ if ~exist('phoPipelineOptions','var')
     phoPipelineOptions.shouldShowPlots = true;
     %%% PhoBuildSpatialTuning Options:
     phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path = '';
+    phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria = false; % If true, the cell region will be rendered with an opacity proporitional to the number of days it met the threshold critiera
 end
 
 % If it's needed, make sure the export directory is set up appropriately
@@ -55,16 +56,7 @@ frequencyColorMap = spring(numel(uniqueFreqs));
 amplitudeColorMap(1,:) = [0, 0, 0];
 frequencyColorMap(1,:) = [0, 0, 0];
 
-
-
-%     imshow(activeAnimalDataStruct.session_20200117.imgData.comp1.segmentLabelMatrix)
-
 % componentAggregatePropeties.maxTuningPeakValue
-
-% cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
-% cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
-% cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
-% cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
 
 amalgamationMask_cellROI_LookupMask = zeros(512, 512); % Maps every pixel in the image to the cellROI index of the cell it belongs to, if one exists.
 
@@ -87,7 +79,7 @@ for i = 1:length(uniqueComps)
     
     % Currently just use the preferred stimulus info from the first of the three sessions:
     temp.currCompMaximallyPreferredStimulusInfo = componentAggregatePropeties.maximallyPreferredStimulusInfo(temp.firstCompSessionIndex);
-    temp.currMaximalIndexTuple = temp.currCompMaximallyPreferredStimulusInfo.AmpFreqIndexTuple;
+    temp.currMaximalIndexTuple = temp.currCompMaximallyPreferredStimulusInfo.AmpFreqIndexTuple; %Check this to make sure it's always (0, 0) when one of the tuple elements are zero.
     temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
     temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
     
@@ -137,13 +129,21 @@ if phoPipelineOptions.shouldShowPlots
     figH_roiTuningPreferredStimulus = figure(1338);
     subplot(1,2,1)
     tempImH = imshow(amalgamationMask_PreferredStimulusAmplitude, amplitudeColorMap);
-    set(tempImH, 'AlphaData', amalgamationMask_AlphaRoiTuningScoreMask);
+    if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
+        set(tempImH, 'AlphaData', amalgamationMask_AlphaRoiTuningScoreMask);
+    else
+        set(tempImH, 'AlphaData', amalgamationMask_AlphaConjunctionMask);
+    end
     title('Amplitude Tuning')
     fnAddSimpleLegend(uniqueAmpLabels, amplitudeColorMap)
 
     subplot(1,2,2)
     tempImH = imshow(amalgamationMask_PreferredStimulusFreq, frequencyColorMap);
-    set(tempImH, 'AlphaData', amalgamationMask_AlphaRoiTuningScoreMask);
+    if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
+        set(tempImH, 'AlphaData', amalgamationMask_AlphaRoiTuningScoreMask);
+    else
+        set(tempImH, 'AlphaData', amalgamationMask_AlphaConjunctionMask);
+    end
     title('Frequency Tuning')
     fnAddSimpleLegend(uniqueFreqLabels, frequencyColorMap)
 
@@ -193,12 +193,18 @@ end
 fprintf('\t done.\n')
 
 
-%% Custom ToolTip function that displays the clicked cell ROI as well as the x,y position.
+%% Custom ToolTip callback function that displays the clicked cell ROI as well as the x,y position.
 function txt = displayCoordinates(~, info, amalgamationMask_cellROI_LookupMask)
     x = info.Position(1);
     y = info.Position(2);
     cellROI = amalgamationMask_cellROI_LookupMask(y, x);
-    txt = ['(' num2str(x) ', ' num2str(y) '): cellROI: ' num2str(cellROI)];
+    cellROIString = '';
+    if cellROI > 0
+        cellROIString = num2str(cellROI);
+    else
+        cellROIString = 'None';
+    end
+    txt = ['(' num2str(x) ', ' num2str(y) '): cellROI: ' cellROIString];
 end
 
 

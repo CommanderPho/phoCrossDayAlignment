@@ -25,7 +25,7 @@ phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = '/Users/pho/Dr
 
 %%% PhoBuildSpatialTuning Options:
 phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures/cellROI_General';
-    
+phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria = false; % If true, the cell region will be rendered with an opacity proporitional to the number of days it met the threshold critiera    
     
 % phoPipelineState.indentLevelString = '';
 
