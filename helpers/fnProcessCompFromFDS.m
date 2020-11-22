@@ -8,6 +8,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 	smoothValue = 5;
     
     %%%+S- fnProcessCompFromFDS outputs
+    %= imgDataNeuropil - the neuropil data for this component. 520 x 150 double
     %= referenceMask - the reference mask for this component
     %= stimList - 
     %= uniqueStimuli - 26x2 double - contains each unique pair of stimuli, with first column being freq and second column being depth
@@ -29,19 +30,24 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     %= maximallyPreferredStimulus - See reference structure
     %
 
-    imgData = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataDFF; %assumes you have this field
+    
+    imgDataDFF = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataDFF;  % 520x150 double. %assumes you have this field
+    
+    outputs.imgDataRaw = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingData; % 520x150 double
+    outputs.imgDataNeuropil = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataNeuropil; % 520x150 double
+    
     
     outputs.referenceMask = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).segmentLabelMatrix; % get the reference mask for this component
     
-    [numTrials, numFrames] = size(imgData);
+    [numTrials, numFrames] = size(imgDataDFF);
     
     if smoothValue>0
         for i = 1:numTrials
-            imgData(i,:) = smooth(imgData(i,:), smoothValue);
+            imgDataDFF(i,:) = smooth(imgDataDFF(i,:), smoothValue);
         end
     end
     
-    [~, numFrames] = size(imgData);
+    [~, numFrames] = size(imgDataDFF);
     
     % outputs.stimList: starts as a 520x2 double
 	outputs.stimList(:,1) = fStruct.(currentAnm).(currentSesh).behData.amFrequency;
@@ -67,7 +73,6 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     outputs.indexMap_AmpsFreqs2StimulusArray = zeros(numUniqueAmps, numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
     outputs.indexMap_StimulusLinear2AmpsFreqsArray = zeros(outputs.numStimuli, 2); % each row contains a fixed linear stimulus, and the two entries in the adjacent columns contain the uniqueAmps index and the uniqueFreqs index.
     
-    
     for i = 1:numUniqueAmps
         activeUniqueAmp = outputs.uniqueAmps(i);
         for j = 1:numUniqueFreqs
@@ -84,7 +89,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     end
 
 	%pre-allocate
-    outputs.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
+%     outputs.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
     outputs.tbImg = linspace(0,numFrames/frameRate,numFrames); % make a timebase to plot as xAxis for traces
     
     % The important red lines:
@@ -101,12 +106,12 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         tracesToPlot = outputs.tracesForEachStimulus{b};
         %% plotTracesForAllStimuli_FDS Style
          %get the raw data that you're gonna plot
-        outputs.TracesForAllStimuli.imgDataToPlot = imgData(tracesToPlot, :); % These are sets of stimuli for this entry.
+        outputs.TracesForAllStimuli.imgDataToPlot = imgDataDFF(tracesToPlot, :); % These are sets of stimuli for this entry.
         %make an average
         outputs.TracesForAllStimuli.meanData(b,:) = mean(outputs.TracesForAllStimuli.imgDataToPlot, 1); % this is that main red line that we care about, it contains 1x150 double
         
         %% plotAMConditions_FDS Style
-        outputs.AMConditions.imgDataToPlot(b,:) = mean(imgData(tracesToPlot,:));
+        outputs.AMConditions.imgDataToPlot(b,:) = mean(imgDataDFF(tracesToPlot,:));
         [~,maxInd] = max(outputs.AMConditions.imgDataToPlot(b, startSound:endSound)); % get max of current signal only within the startSound:endSound range
         maxInd = maxInd+startSound-1;
         outputs.AMConditions.peakSignal(b) = mean(outputs.AMConditions.imgDataToPlot(b, maxInd-sampPeak:maxInd+sampPeak));

@@ -36,11 +36,13 @@ fprintf('> Running PhoLoadFinalDataStruct...\n');
 % Uses:
 %   phoPipelineOptions.default_FD_file_path
 %   phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave
+%   phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil
 %   phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames 
 if ~exist('phoPipelineOptions','var')
     warning('phoPipelineOptions is missing! Using defaults specified in PhoLoadFinalDataStruct.m')
     phoPipelineOptions.default_FD_file_path = '';
     phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave = false;
+    phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil = true;
     phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames = [1, 30]; 
 end
 
@@ -70,7 +72,7 @@ fprintf('\t\t done.\n');
 %% "FD (final data)" file output:
 if phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave
     disp('\t Running baselineDFF_fds on finalDataStruct...')
-    finalDataStruct = baselineDFF_fds(finalDataStruct, sessionList, phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames); % Adds the DFF baseline to the finalDataStruct
+    finalDataStruct = baselineDFF_fds(finalDataStruct, sessionList, phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames, phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions); % Adds the DFF baseline to the finalDataStruct
     fprintf('\t writing final data struct with DFF back out to %s... ', FDPath);
     save(FDPath, 'finalDataStruct')  % Save out to the file
 end

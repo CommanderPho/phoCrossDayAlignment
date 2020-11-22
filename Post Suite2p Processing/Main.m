@@ -10,13 +10,14 @@ phoPipelineOptions.shouldSaveFiguresToDisk = false; % Note that this has no effe
 
 %%% PhoLoadFinalDataStruct Options:
 phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave = false;
+phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil = true;
 phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames = [1, 30];
 
 %%% PhoPostFinalDataStructAnalysis Options:
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal = 'anm265';
 % tuning_max_threshold_criteria: the threshold value for peakDFF
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria = 0.1;
-
+phoPipelineOptions.PhoPostFinalDataStructAnalysis.subtract_neuropil = true;
 
 %%% PhoTuningMeshExplorer Options:
 phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures';
