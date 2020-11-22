@@ -44,6 +44,7 @@ activeAnimalSessionList = sessionList(strcmpi({sessionList.anmID}, phoPipelineOp
 activeAnimalCompList = compList(strcmpi({compList.anmID}, phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal));
 %% Processing Options:
 dateStrings = {activeAnimalSessionList.date};  % Strings representing each date.
+numOfSessions = length(dateStrings); % The number of sessions (days) for this animal.
 
 compTable = struct2table(activeAnimalCompList);
 numCompListEntries = height(compTable); % The number of rows in the compTable. Should be a integer multiple of the number of unique comps (corresponding to multiple sessions/days for each unique comp)
@@ -54,9 +55,9 @@ compTable = [compTable indexColumn];
 uniqueComps = unique(compTable.compName,'stable'); % Each unique component corresponds to a cellROI
 num_cellROIs = length(uniqueComps); 
 
-multiSessionCellRoiCompIndicies = zeros(num_cellROIs, 3); % a list of comp indicies for each CellRoi
-compFirstDayTuningMaxPeak = zeros(num_cellROIs, 1); % Just the first day
-compSatisfiesFirstDayTuning = zeros(num_cellROIs, 1); % Just the first day
+multiSessionCellRoi_CompListIndicies = zeros(num_cellROIs, numOfSessions); % a list of comp indicies for each CellRoi
+cellROI_FirstDayTuningMaxPeak = zeros(num_cellROIs, 1); % Just the first day
+cellROI_SatisfiesFirstDayTuning = zeros(num_cellROIs, 1); % Just the first day
 
 multiSessionCellRoiSeriesOutResults = {};
 
@@ -71,16 +72,17 @@ componentAggregatePropeties.maxTuningPeakValue = zeros(numCompListEntries,1);
 componentAggregatePropeties.sumTuningPeaksValue = zeros(numCompListEntries,1);
 
 for i = 1:num_cellROIs
-   curr_comp = uniqueComps{i};
-   curr_comp_indicies = find(strcmp(compTable.compName, curr_comp)); % Should be a list of 3 relevant indicies, one corresponding to each day.
+   curr_cellROI = uniqueComps{i};
+   curr_cellROI_compListIndicies = find(strcmp(compTable.compName, curr_cellROI)); % Should be a list of 3 relevant indicies, one corresponding to each day.
    
-   fprintf('\t \t uniqueComp[%d]: %s', i, curr_comp);
-   disp(curr_comp_indicies');
-   multiSessionCellRoiCompIndicies(i,:) = curr_comp_indicies';
+   fprintf('\t \t uniqueComp[%d]: %s', i, curr_cellROI);
+   disp(curr_cellROI_compListIndicies');
+   multiSessionCellRoi_CompListIndicies(i,:) = curr_cellROI_compListIndicies';
 
+   % Iterate through each component (all days) for this cellROI
     currOutCells = {};
-	for j = 1:length(curr_comp_indicies)
-		curr_day_linear_comp_index = curr_comp_indicies(j); % The comp index, not the unique cellROI index
+	for j = 1:length(curr_cellROI_compListIndicies)
+		curr_day_linear_comp_index = curr_cellROI_compListIndicies(j); % The linear comp index, not the unique cellROI index
 		[currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(activeAnimalCompList, curr_day_linear_comp_index);
         [outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp);
         uniqueAmps = outputs.uniqueAmps;
@@ -106,26 +108,26 @@ for i = 1:num_cellROIs
         
         temp.isFirstSessionInCellRoi = (j == 1);
         if temp.isFirstSessionInCellRoi
-            compFirstDayTuningMaxPeak(i) = maxPeakSignal;
+            cellROI_FirstDayTuningMaxPeak(i) = maxPeakSignal;
             if maxPeakSignal > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria
-               compSatisfiesFirstDayTuning(i) = 1;
+               cellROI_SatisfiesFirstDayTuning(i) = 1;
 
             else
-                compSatisfiesFirstDayTuning(i) = 0;
+                cellROI_SatisfiesFirstDayTuning(i) = 0;
 %                 break; % Skip remaining comps for the other days if the first day doesn't meat the criteria
             end
                     
         else
 
-        end
+        end %% endif is first session
         
-	end
+    end %% endfor each comp session in this cellROI 
 
-end
+end %% endfor each cellROI
 
-compSatisfiesFirstDayTuning = (compFirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
+cellROI_SatisfiesFirstDayTuning = (cellROI_FirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
-fprintf('\t done. INFO: %d of %d cellROIs satisfy the tuning criteria of %f on the first day of the experiment. \n', sum(compSatisfiesFirstDayTuning), length(compFirstDayTuningMaxPeak), phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
+fprintf('\t done. INFO: %d of %d cellROIs satisfy the tuning criteria of %f on the first day of the experiment. \n', sum(cellROI_SatisfiesFirstDayTuning), length(cellROI_FirstDayTuningMaxPeak), phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
 
 % WARNING: This assumes that there are the same number of sessions for each cellROI

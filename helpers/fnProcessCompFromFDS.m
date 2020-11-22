@@ -1,39 +1,61 @@
 function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, currentComp)
     %TODO: Figure out how the 26 different stimuli (numStimuli) map to the uniqueAmps/uniqueFreqs points.
-    % outputs.uniqueStimuli: 26x2 double - contains each unique pair of stimuli, with first column being freq and second column being depth:
     
 	startSound=31;
 	endSound=90;
 	sampPeak = 2;
 	frameRate=30;
 	smoothValue = 5;
-        
+    
+    %%%+S- fnProcessCompFromFDS outputs
+    %= referenceMask - the reference mask for this component
+    %= stimList - 
+    %= uniqueStimuli - 26x2 double - contains each unique pair of stimuli, with first column being freq and second column being depth
+    %= tracesForEachStimulus - 
+    %= numStimuli - 
+    %= uniqueFreqs - 
+    %= uniqueAmps - 
+    %= indexMap_AmpsFreqs2StimulusArray - a map from each unique stimuli to a linear stimulus index. Each row contains a fixed amplitude, each column a fixed freq
+    %= indexMap_StimulusLinear2AmpsFreqsArray - each row contains a fixed linear stimulus, and the two entries in the adjacent columns contain the uniqueAmps index and the uniqueFreqs index.
+    %= imgDataToPlot - 
+    %= tbImg - make a timebase to plot as xAxis for traces
+    %= TracesForAllStimuli.meanData - The important red lines
+    %= TracesForAllStimuli.imgDataToPlot - 
+    %= TracesForAllStimuli.finalSeriesAmps - 2D projections of the plots
+    %= TracesForAllStimuli.finalSeriesFreqs - 2D projections of the plots
+    %= AMConditions.imgDataToPlot - 
+    %= AMConditions.peakSignal - get max of current signal only within the startSound:endSound range
+    %= finalOutGrid - 
+    %= maximallyPreferredStimulus - See reference structure
+    %
+
     imgData = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataDFF; %assumes you have this field
     
     outputs.referenceMask = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).segmentLabelMatrix; % get the reference mask for this component
-    
     
     [numTrials, numFrames] = size(imgData);
     
     if smoothValue>0
         for i = 1:numTrials
-            imgData(i,:)=smooth(imgData(i,:),smoothValue);
+            imgData(i,:) = smooth(imgData(i,:), smoothValue);
         end
     end
     
     [~, numFrames] = size(imgData);
     
+    % outputs.stimList: starts as a 520x2 double
 	outputs.stimList(:,1) = fStruct.(currentAnm).(currentSesh).behData.amFrequency;
     outputs.stimList(:,2) = fStruct.(currentAnm).(currentSesh).behData.amAmplitude;
     
+    %correct the 0 depth condition value glitch here; TODO: This appears that it's correcting for a data-entry error in outputs.stimList, where all trials that should been listed as [0, 0] were instead entered as [10 0].
+    zeroValIndicies = find(outputs.stimList(:,2)==0); % In the stimList list, several entries should be found.
+    outputs.stimList(zeroValIndicies, 1) = 0; % Set the invalid '10' entry to a zero.
+    
     [outputs.uniqueStimuli, ~, ib] = unique(outputs.stimList, 'rows');
-    %correct the 0 depth condition value glitch here
-    zeroVal = find(outputs.uniqueStimuli(:,2)==0);
-    outputs.uniqueStimuli(zeroVal, 1) = 0;
     
     outputs.tracesForEachStimulus = accumarray(ib, find(ib), [], @(rows){rows});
     
-    [outputs.numStimuli,~] = size(outputs.uniqueStimuli);
+    [outputs.numStimuli, ~] = size(outputs.uniqueStimuli);
     outputs.uniqueAmps = unique(outputs.uniqueStimuli(:,2));
     outputs.uniqueFreqs = unique(outputs.uniqueStimuli(:,1));
     numUniqueAmps = length(outputs.uniqueAmps);
@@ -43,19 +65,24 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     
     %% Build a map from each unique stimuli to a linear stimulus index:
     outputs.indexMap_AmpsFreqs2StimulusArray = zeros(numUniqueAmps, numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
+    outputs.indexMap_StimulusLinear2AmpsFreqsArray = zeros(outputs.numStimuli, 2); % each row contains a fixed linear stimulus, and the two entries in the adjacent columns contain the uniqueAmps index and the uniqueFreqs index.
+    
+    
     for i = 1:numUniqueAmps
         activeUniqueAmp = outputs.uniqueAmps(i);
         for j = 1:numUniqueFreqs
             activeUniqueFreq = outputs.uniqueFreqs(j);
             if (activeUniqueAmp == 0 || activeUniqueFreq == 0)
-                outputs.indexMap_AmpsFreqs2StimulusArray(i,j) = 1;
+                outputs.indexMap_AmpsFreqs2StimulusArray(i,j) = 1; % The linear index should be 1 (indicating the first entry) for all cases where either the freq or amp is zero.
+                outputs.indexMap_StimulusLinear2AmpsFreqsArray(1,:) = [1, 1];
             else
                 currentLinearStimulusIdx = find((outputs.uniqueStimuli(:,1)==activeUniqueFreq) & (outputs.uniqueStimuli(:,2)==activeUniqueAmp));
                 outputs.indexMap_AmpsFreqs2StimulusArray(i,j) = currentLinearStimulusIdx;
+                outputs.indexMap_StimulusLinear2AmpsFreqsArray(currentLinearStimulusIdx, :) = [i, j];
             end
         end
     end
-    
+
 	%pre-allocate
     outputs.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
     outputs.tbImg = linspace(0,numFrames/frameRate,numFrames); % make a timebase to plot as xAxis for traces
@@ -64,7 +91,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     outputs.TracesForAllStimuli.meanData = zeros(outputs.numStimuli, numFrames);
     
     outputs.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
-    outputs.AMConditions.peakSignal = zeros(outputs.numStimuli,1);
+    outputs.AMConditions.peakSignal = zeros(outputs.numStimuli, 1);
     
     %generate the dimensions of the subplots
     numRows = numel(nonzeros(outputs.uniqueFreqs))+1; %+1 because you have the zero mod condition too
@@ -74,7 +101,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         tracesToPlot = outputs.tracesForEachStimulus{b};
         %% plotTracesForAllStimuli_FDS Style
          %get the raw data that you're gonna plot
-        outputs.TracesForAllStimuli.imgDataToPlot = imgData(tracesToPlot, :);
+        outputs.TracesForAllStimuli.imgDataToPlot = imgData(tracesToPlot, :); % These are sets of stimuli for this entry.
         %make an average
         outputs.TracesForAllStimuli.meanData(b,:) = mean(outputs.TracesForAllStimuli.imgDataToPlot, 1); % this is that main red line that we care about, it contains 1x150 double
         
@@ -87,7 +114,6 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 
     % 2D projections of the plots:
     outputs.TracesForAllStimuli.finalSeriesAmps = {};
-%     finalSeries = {};
  % uniqueAmps: the [0%, 20%, 40%, 60%, 80%, 100%] data series
     for c = 1:numUniqueAmps
         activeUniqueAmp = outputs.uniqueAmps(c);
@@ -122,10 +148,13 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         
     end
     
-    % Loop through all amplitudes and frequencies:
+    
+    
+    %% Loop through all amplitudes and frequencies:
     % Build 2D Mesh for each component
     outputs.finalOutGrid = zeros(numUniqueAmps, numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
     
+    %% Compute the maximally preferred stimulus for this comp
     % outputs.maximallyPreferredStimulus
     %% LinearIndex % The linear stimulus index corresponding to the maximally preferred (amp, freq) pair for each comp.
     %% AmpFreqIndexTuple % A pair containing the index into the amp array followed by the index into the freq array corresponding to the maximally preferred (amp, freq) pair.
@@ -148,7 +177,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
             currPeaks = outputs.AMConditions.peakSignal(linearStimulusIndex); % 'Peak DF/F'
             outputs.finalOutGrid(i,j) = currPeaks;
             % Check if this new peak value exceeds the previous maximum, and if it does, keep track of the new value and index.
-            if currPeaks >= outputs.maximallyPreferredStimulus.Value 
+            if currPeaks > outputs.maximallyPreferredStimulus.Value 
                 outputs.maximallyPreferredStimulus.LinearIndex = linearStimulusIndex; % Set this linear index as the maximum one.
                 outputs.maximallyPreferredStimulus.AmpFreqIndexTuple = [i, j];
                 outputs.maximallyPreferredStimulus.AmpFreqValuesTuple = [activeUniqueAmp, activeUniqueFreq];
