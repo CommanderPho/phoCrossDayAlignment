@@ -165,13 +165,15 @@ if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_n
 end
             
 if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
-fprintf('\t done. INFO: %d of %d (%d of %d for neuropil) cellROIs satisfy the tuning criteria of %f on the first day of the experiment. \n',...
+    fprintf('\t done. INFO: %d of %d (%d of %d for neuropil) cellROIs satisfy the tuning criteria of %f on the first day of the experiment. \n',...
     sum(default_DFF.cellROI_SatisfiesFirstDayTuning), length(default_DFF.cellROI_FirstDayTuningMaxPeak), ...
     sum(minusNeuropil.cellROI_SatisfiesFirstDayTuning), length(minusNeuropil.cellROI_FirstDayTuningMaxPeak), ...
     phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
 else
-    fprintf('\t done. INFO: %d of %d cellROIs satisfy the tuning criteria of %f on the first day of the experiment. \n', sum(default_DFF.cellROI_SatisfiesFirstDayTuning), length(default_DFF.cellROI_FirstDayTuningMaxPeak), phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
+    fprintf('\t done. INFO: %d of %d cellROIs satisfy the tuning criteria of %f on the first day of the experiment. \n',...
+        sum(default_DFF.cellROI_SatisfiesFirstDayTuning), length(default_DFF.cellROI_FirstDayTuningMaxPeak),...
+        phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 end
 
 default_DFF.componentAggregatePropeties = updateComponentAggregateProperties(default_DFF.componentAggregatePropeties, phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
@@ -179,6 +181,10 @@ default_DFF.componentAggregatePropeties = updateComponentAggregateProperties(def
 if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
     minusNeuropil.componentAggregatePropeties = updateComponentAggregateProperties(minusNeuropil.componentAggregatePropeties, phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 end
+
+
+% finalOutComponentSegment.Masks = reshape(finalOutComponentSegment.Masks,[],3); % Reshape from linear to cellRoi indexing
+% finalOutComponentSegment.Edge = reshape(finalOutComponentSegment.Edge,[],3); % Reshape from linear to cellRoi indexing
 
 
 fprintf('\t done.\n');

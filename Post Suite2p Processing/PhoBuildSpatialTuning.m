@@ -71,9 +71,9 @@ init_matrix = ones(numOfSessions, 512, 512) * -1;
 amalgamationMask_PreferredStimulusAmplitude = init_matrix;
 amalgamationMask_PreferredStimulusFreq = init_matrix;
 
-for i = 1:length(uniqueComps)
+for i = 1:num_cellROIs
     %% Plot the grid as a test
-    temp.cellRoiIndex = cellRoiSortIndex(i);
+    temp.cellRoiIndex = cellRoiSortIndex(i); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
     %% cellROI Specific Score:
     temp.currRoiTuningScore = componentAggregatePropeties.tuningScore(temp.cellRoiIndex); % currently only uses first session?
@@ -95,15 +95,10 @@ for i = 1:length(uniqueComps)
         temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
         temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
 
-    %     temp.maxPrefAmpVal, temp.maxPrefFreqVal = temp.currCompMaximallyPreferredStimulusInfo.AmpFreqValuesTuple;
-
-        
-        
         temp.currCompSessionMask = logical(squeeze(finalOutComponentSegment.Masks(temp.currCompSessionIndex,:,:)));
 
         % Save the index of this cell in the reverse lookup table:
         amalgamationMask_cellROI_LookupMask(j, temp.currCompSessionMask) = temp.cellRoiIndex;
-
 
         % Set cells in this cellROI region to opaque:
         amalgamationMask_AlphaConjunctionMask(j, temp.currCompSessionMask) = 1.0;
