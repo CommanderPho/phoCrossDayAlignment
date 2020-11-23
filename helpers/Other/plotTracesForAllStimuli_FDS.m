@@ -8,7 +8,7 @@ frameRate=30;
 smoothValue=5;
 
 for a = 1:numel(compList)
-    currentAnm=compList(a).anmID;
+    currentAnm = compList(a).anmID;
     currentSesh = compList(a).date;
     currentComp = compList(a).compName;
     
