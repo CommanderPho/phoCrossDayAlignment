@@ -63,13 +63,12 @@ for i = 1:length(cellRoisToPlot)
     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
     temp.firstCompSessionIndex = temp.currAllSessionCompIndicies(1);
     
-    temp.firstCompSessionMask = squeeze(finalOutComponentSegmentMasks(temp.firstCompSessionIndex,:,:));
+%     temp.firstCompSessionMask = squeeze(finalOutComponentSegment.Masks(temp.firstCompSessionIndex,:,:));
 
     if phoPipelineOptions.shouldShowPlots
-        figure;
-        imshow(temp.firstCompSessionMask);
-        title(sprintf('Mask cellRoi[%d]', temp.cellRoiIndex));
-
+        % Mask Plot:
+        [figH_Blobs, ~] = fnPlotCellROIBlobs(dateStrings, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutComponentSegment);
+        
         % Make 2D Plots (Exploring):    
         [figH_2d, ~] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
 

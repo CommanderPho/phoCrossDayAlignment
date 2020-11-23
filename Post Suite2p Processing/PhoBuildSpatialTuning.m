@@ -86,7 +86,7 @@ for i = 1:length(uniqueComps)
 %     temp.maxPrefAmpVal, temp.maxPrefFreqVal = temp.currCompMaximallyPreferredStimulusInfo.AmpFreqValuesTuple;
     
     temp.currRoiTuningScore = componentAggregatePropeties.tuningScore(temp.cellRoiIndex);
-    temp.firstCompSessionMask = logical(squeeze(finalOutComponentSegmentMasks(temp.firstCompSessionIndex,:,:)));
+    temp.firstCompSessionMask = logical(squeeze(finalOutComponentSegment.Masks(temp.firstCompSessionIndex,:,:)));
 
     % Save the index of this cell in the reverse lookup table:
     amalgamationMask_cellROI_LookupMask(temp.firstCompSessionMask) = temp.cellRoiIndex;

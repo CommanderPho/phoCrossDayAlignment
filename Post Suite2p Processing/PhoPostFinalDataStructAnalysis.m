@@ -45,7 +45,10 @@ end
     %= Value - The actual Peak DF/F value
 %
 
-
+%%%+S- finalOutComponentSegment
+    %= Masks - the binary mask for each component. zeros(numCompListEntries, 512, 512)
+    %= Edge - the binary edge corresponding to each component in Masks
+%
 
 %% Filter down to entries for the current animal:
 activeAnimalDataStruct = finalDataStruct.(phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal); % get the final data struct for the current animal
@@ -65,8 +68,8 @@ uniqueComps = unique(compTable.compName,'stable'); % Each unique component corre
 num_cellROIs = length(uniqueComps); 
 
 multiSessionCellRoi_CompListIndicies = zeros(num_cellROIs, numOfSessions); % a list of comp indicies for each CellRoi
-finalOutComponentSegmentMasks = zeros(numCompListEntries, 512, 512);
-
+finalOutComponentSegment.Masks = zeros(numCompListEntries, 512, 512);
+finalOutComponentSegment.Edge = zeros(numCompListEntries, 512, 512);
 
 default_DFF.cellROI_FirstDayTuningMaxPeak = zeros(num_cellROIs, 1); % Just the first day
 default_DFF.cellROI_SatisfiesFirstDayTuning = zeros(num_cellROIs, 1); % Just the first day
@@ -105,7 +108,8 @@ for i = 1:num_cellROIs
         [outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp, phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions);
         uniqueAmps = outputs.uniqueAmps;
         uniqueFreqs = outputs.uniqueFreqs; %
-        finalOutComponentSegmentMasks(curr_day_linear_comp_index,:,:) = outputs.referenceMask;
+        finalOutComponentSegment.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMask;
+        finalOutComponentSegment.Edge(curr_day_linear_comp_index,:,:) = edge(outputs.referenceMask); %sobel by default;
         
         % Store the outputs in the grid:
         default_DFF.finalOutPeaksGrid(curr_day_linear_comp_index,:,:) = outputs.default_DFF.finalOutGrid;

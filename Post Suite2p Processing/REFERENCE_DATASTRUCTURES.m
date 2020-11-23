@@ -13,6 +13,7 @@
 
 %% DATA STRUCTURES:
 
+
 %% SPEC: finalDataStruct
 % finalDataStruct: 1x1 struct - 1 field: has one field for each animal
 %   anm265: 1x1 struct: has one field for each session ("day")
@@ -75,4 +76,9 @@
     %= AmpFreqIndexTuple - A pair containing the index into the amp array followed by the index into the freq array corresponding to the maximally preferred (amp, freq) pair.
     %= AmpFreqValuesTuple - The unique amp and freq values at the preferred index
     %= Value - The actual Peak DF/F value
+%
+
+%%%+S- finalOutComponentSegment
+    %= Masks - the binary mask for each component. zeros(numCompListEntries, 512, 512)
+    %= Edge - the binary edge corresponding to each component in Masks
 %

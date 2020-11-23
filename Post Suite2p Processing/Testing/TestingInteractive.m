@@ -34,6 +34,19 @@ function pho_plot_interactive_all(dateStrings, uniqueAmps, uniqueFreqs, finalOut
     pho_plot_3d_mesh(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH_3d, curr_cellRoiIndex);
 end
 
+
+
+
+function plotted_figH = pho_plot_cell_mask(dateStrings, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
+    % COMPUTED
+    temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
+
+    % Cell Mask Plots:
+    [plotted_figH, ~] = fnPlotCellROIBlobs(dateStrings, temp.currAllSessionCompIndicies, curr_cellRoiIndex, finalOutComponentSegment, extantFigH);
+    set(plotted_figH, 'Name', sprintf('Slider Controlled Blobs/ROIs Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted 
+end
+
+
 function plotted_figH = pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
     % COMPUTED
     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
