@@ -11,13 +11,20 @@ classdef FinalDataExplorer
         dateStrings
  
         stimuli_mapper
+        
         %% Outputs:
+        finalOutComponentSegment
         active_DFF
+        
     end
     methods
        function obj = set.active_DFF(obj, value)
            obj.active_DFF = value;
        end  
+       function obj = set.finalOutComponentSegment(obj, value)
+           obj.finalOutComponentSegment = value;
+       end  
+       
     end
     
     
@@ -25,6 +32,12 @@ classdef FinalDataExplorer
     properties (Dependent)
         num_cellROIs
         numOfSessions
+        componentAggregatePropeties
+        finalOutPeaksGrid
+        redTraceLinesForAllStimuli
+        uniqueAmps
+        uniqueFreqs
+        uniqueStimuli
     end
     methods
        function num_cellROIs = get.num_cellROIs(obj)
@@ -32,6 +45,24 @@ classdef FinalDataExplorer
        end
        function numOfSessions = get.numOfSessions(obj)
           numOfSessions = length(obj.dateStrings);
+       end
+       function componentAggregatePropeties = get.componentAggregatePropeties(obj)
+          componentAggregatePropeties = obj.active_DFF.componentAggregatePropeties;
+       end
+       function finalOutPeaksGrid = get.finalOutPeaksGrid(obj)
+          finalOutPeaksGrid = obj.active_DFF.finalOutPeaksGrid;
+       end
+       function redTraceLinesForAllStimuli = get.redTraceLinesForAllStimuli(obj)
+          redTraceLinesForAllStimuli = obj.active_DFF.redTraceLinesForAllStimuli;
+       end
+       function uniqueAmps = get.uniqueAmps(obj)
+          uniqueAmps = obj.stimuli_mapper.uniqueAmps;
+       end
+       function uniqueFreqs = get.uniqueFreqs(obj)
+          uniqueFreqs = obj.stimuli_mapper.uniqueFreqs;
+       end
+       function uniqueStimuli = get.uniqueStimuli(obj)
+          uniqueStimuli = obj.stimuli_mapper.uniqueStimuli;
        end
     end
     

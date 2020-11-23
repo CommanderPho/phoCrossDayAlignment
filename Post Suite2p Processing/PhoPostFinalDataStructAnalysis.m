@@ -248,7 +248,7 @@ end %% endfor each cellROI
 
 % Initialize the output object once the loop is finished.
 final_data_explorer_obj = FinalDataExplorer(uniqueComps, multiSessionCellRoi_CompListIndicies, dateStrings, stimuli_mapper);
-
+final_data_explorer_obj.finalOutComponentSegment = finalOutComponentSegment; % Set the finalOutComponentSegment, which contains the masks.
 
 default_DFF.cellROI_SatisfiesFirstDayTuning = (default_DFF.cellROI_FirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
