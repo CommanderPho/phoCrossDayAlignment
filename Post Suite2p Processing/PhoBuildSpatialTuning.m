@@ -11,6 +11,7 @@ fprintf('> Running PhoBuildSpatialTuning...\n');
 %   phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path
 %   phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
 %   phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode
+%   phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.edge_layering_is_outset_mode
 %   phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints
 %   phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels
 if ~exist('phoPipelineOptions','var')
@@ -20,9 +21,12 @@ if ~exist('phoPipelineOptions','var')
     %%% PhoBuildSpatialTuning Options:
     phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path = '';
     phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria = false; % If true, the cell region will be rendered with an opacity proporitional to the number of days it met the threshold critiera
-    phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode = true; % If true, colorful borders are drawn around each cellROI to represent its preferred stimuli for each day.
+    phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode = false; % If true, colorful borders are drawn around each cellROI to represent its preferred stimuli for each day.
+    phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.edge_layering_is_outset_mode = false; % edge_layering_is_outset_mode: if true, it uses the outer borders to draw
+    
     phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints = true;
     phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels = true;
+    
     
 end
 
@@ -39,7 +43,7 @@ if phoPipelineOptions.shouldShowPlots
    end
 end
 
-[amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode);
+[amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions);
 
 if phoPipelineOptions.shouldShowPlots
     [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions);
@@ -64,9 +68,10 @@ fprintf('\t done.\n')
 
 
 %% Build Spatial Info:
-function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, should_enable_edge_layering_mode)
+function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions)
     % should_enable_edge_layering_mode: if true, uses the borders surrounding each cell to reflect the preferred tuning at a given day.
-    edge_layering_is_outset_mode = false; % edge_layering_is_outset_mode: if true, it uses the outer borders to draw
+    should_enable_edge_layering_mode = phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode;
+    edge_layering_is_outset_mode = phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.edge_layering_is_outset_mode; % edge_layering_is_outset_mode: if true, it uses the outer borders to draw; % edge_layering_is_outset_mode: if true, it uses the outer borders to draw
 %     temp.structuring_element = strel('disk', 2);
 %     temp.structuring_element = strel('diamond', 2);
     temp.structuring_element = strel('square', 3);
@@ -165,22 +170,22 @@ function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs
                 % Save the index of this cell in the reverse lookup table:
                 amalgamationMasks.cellROI_LookupMask(temp.currCompSessionFill) = temp.cellRoiIndex;
                 amalgamationMasks.cellROI_LookupMask(temp.currCompSessionEdge) = temp.cellRoiIndex;
-%                 if should_enable_edge_layering_mode
-%                     amalgamationMasks.cellROI_LookupMask(BW2_Outer) = temp.cellRoiIndex;
-%                     amalgamationMasks.cellROI_LookupMask(BW3_Outer) = temp.cellRoiIndex;
-%                     amalgamationMasks.cellROI_LookupMask(BW4_Outer) = temp.cellRoiIndex;
-%                 end
+                if (should_enable_edge_layering_mode && edge_layering_is_outset_mode)
+                    amalgamationMasks.cellROI_LookupMask(BW2_Outer) = temp.cellRoiIndex;
+                    amalgamationMasks.cellROI_LookupMask(BW3_Outer) = temp.cellRoiIndex;
+                    amalgamationMasks.cellROI_LookupMask(BW4_Outer) = temp.cellRoiIndex;
+                end
 
                 % Set cells in this cellROI region to opaque:
                 amalgamationMasks.AlphaConjunctionMask(temp.currCompSessionMask) = 1.0;
                 % Set the opacity of cell in this cellROI region based on the number of days that the cell passed the threshold:
                 amalgamationMasks.AlphaRoiTuningScoreMask(temp.currCompSessionMask) = (double(temp.currRoiTuningScore) / 3.0);
                 
-%                 if should_enable_edge_layering_mode
-%                     amalgamationMasks.AlphaConjunctionMask(BW2_Outer) = 1.0;
-%                     amalgamationMasks.AlphaConjunctionMask(BW3_Outer) = 1.0;
-%                     amalgamationMasks.AlphaConjunctionMask(BW4_Outer) = 1.0;
-%                 end
+                if (should_enable_edge_layering_mode && edge_layering_is_outset_mode)
+                    amalgamationMasks.AlphaConjunctionMask(BW2_Outer) = 1.0;
+                    amalgamationMasks.AlphaConjunctionMask(BW3_Outer) = 1.0;
+                    amalgamationMasks.AlphaConjunctionMask(BW4_Outer) = 1.0;
+                end
                 
                 % Set the greyscale value to the ROIs tuning score, normalized by the maximum possible tuning score (indicating all three days were tuned)
                 amalgamationMasks.NumberOfTunedDays(temp.currCompSessionMask) = double(temp.currRoiTuningScore) / 3.0;
@@ -193,8 +198,6 @@ function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs
             temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
             temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
 
-            
-            
             if should_enable_edge_layering_mode
                 if j <= 1
                     if edge_layering_is_outset_mode
@@ -351,17 +354,21 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
                     textLabel = sprintf('%d', cellROI);
                     axH_centroidTextObjects(i) = text(x, y, textLabel, 'Color', 'r',...
                         'FontSize', 10,...
-                        'FontSmoothing', 'off',...
+                        'FontSmoothing', 'on',...
                         'HorizontalAlignment','center',...
                         'PickableParts','none',...
                         'Interpreter','none',...
                         'Tag','centroidTexts');
                     % When you click on a line, set the marker of just the line you clicked on.
                     set(axH_centroidTextObjects(i), 'ButtonDownFcn', @(src, evt) set(src, 'Color', 'g' ) );
-                    
-               end
+               end % end for numCentroids
+            else
+                axH_centroidTextObjects = []; % empty array
             end
             hold off
+        else
+            axH_centroidPoints = []; % empty array
+            axH_centroidTextObjects = []; % empty array
         end
     end
     
