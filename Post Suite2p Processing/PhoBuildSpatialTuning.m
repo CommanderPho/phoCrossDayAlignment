@@ -182,7 +182,7 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
     
     j = 1;
     %Preferred Stimulus Figure:
-    figH_roiTuningPreferredStimulus = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, j);
+    [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, j);
     
     %% Custom Tooltips:
     dcm_roiTuningPreferredStimulus = datacursormode(figH_roiTuningPreferredStimulus);
@@ -197,40 +197,41 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
     
     
     
-    function figH_roiTuningPreferredStimulus = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, j)
+    function [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, j)
         figH_roiTuningPreferredStimulus = createFigureWithNameIfNeeded('CellROI Aggregate: Preferred Stimulus Tuning');
         clf(figH_roiTuningPreferredStimulus);
         ha = tight_subplot(1,2);
         
-        axes(ha(1));
-        tempImH = imshow(squeeze(outputMaps.PreferredStimulusAmplitude(j,:,:)), amplitudeColorMap);
+        amplitudeHandles.axes = ha(1);
+        axes(amplitudeHandles.axes);
+        amplitudeHandles.tempImH = imshow(squeeze(outputMaps.PreferredStimulusAmplitude(j,:,:)), amplitudeColorMap);
         if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
-            set(tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
+            set(amplitudeHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
         else
-            set(tempImH, 'AlphaData', amalgamationMasks.AlphaConjunctionMask);
+            set(amplitudeHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaConjunctionMask);
         end
         title('Amplitude Tuning')
         fnAddSimpleLegend(uniqueAmpLabels, amplitudeColorMap)
-        [~, ~] = fnPlotAddCentroids(outputMaps, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
+        [amplitudeHandles.axH_centroidPoints, amplitudeHandles.axH_centroidTextObjects] = fnPlotAddCentroids(outputMaps, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
 
-
-        axes(ha(2));
-        tempImH = imshow(squeeze(outputMaps.PreferredStimulusFreq(j,:,:)), frequencyColorMap);
+        freqHandles.axes = ha(2);
+        axes(freqHandles.axes);
+        freqHandles.tempImH = imshow(squeeze(outputMaps.PreferredStimulusFreq(j,:,:)), frequencyColorMap);
         if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
-            set(tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
+            set(freqHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
         else
-            set(tempImH, 'AlphaData', amalgamationMasks.AlphaConjunctionMask);
+            set(freqHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaConjunctionMask);
         end
         title('Frequency Tuning')
         fnAddSimpleLegend(uniqueFreqLabels, frequencyColorMap)
-        [~, ~] = fnPlotAddCentroids(outputMaps, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
+        [freqHandles.axH_centroidPoints, freqHandles.axH_centroidTextObjects] = fnPlotAddCentroids(outputMaps, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
        
         
         sgtitle('Spatial Tuning Analysis')
     end
 
     %% Draws the centroid (center) points and text label
-    function [axH_centroidPoints, axH_centroidText] = fnPlotAddCentroids(outputMaps, shouldDrawCentroidPoints, shouldDrawCellROILabels)
+    function [axH_centroidPoints, axH_centroidTextObjects] = fnPlotAddCentroids(outputMaps, shouldDrawCentroidPoints, shouldDrawCellROILabels)
         % Requirements: amalgamationMasks
         if shouldDrawCentroidPoints
             hold on
@@ -241,20 +242,22 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
                 
             if shouldDrawCellROILabels
                numCentroids = size(outputMaps.computedProperties.centroids,1);
+%                axH_centroidTextObjects = zeros([numCentroids, 1],typename
                for i = 1:numCentroids
                     x = outputMaps.computedProperties.centroids(i,1);
                     y = outputMaps.computedProperties.centroids(i,2);
                     cellROI = amalgamationMasks.cellROI_LookupMask(round(y), round(x));
                     textLabel = sprintf('%d', cellROI);
-                    axH_centroidText = text(x, y, textLabel, 'Color', 'r',...
+                    axH_centroidTextObjects(i) = text(x, y, textLabel, 'Color', 'r',...
                         'FontSize', 10,...
                         'FontSmoothing', 'off',...
                         'HorizontalAlignment','center',...
                         'PickableParts','none',...
                         'Interpreter','none',...
-                        'Tag','centroidTexts'); %, ...
-%                         'FontSize', 18);
-%                     text(x+d,y,' \leftarrow G','FontSize',18) %where d is the distance from the point
+                        'Tag','centroidTexts');
+                    % When you click on a line, set the marker of just the line you clicked on.
+                    set(axH_centroidTextObjects(i), 'ButtonDownFcn', @(src, evt) set(src, 'Color', 'g' ) );
+                    
                end
             end
             hold off
