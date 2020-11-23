@@ -68,17 +68,27 @@ multiSessionCellRoi_CompListIndicies = zeros(num_cellROIs, numOfSessions); % a l
 cellROI_FirstDayTuningMaxPeak = zeros(num_cellROIs, 1); % Just the first day
 cellROI_SatisfiesFirstDayTuning = zeros(num_cellROIs, 1); % Just the first day
 
-multiSessionCellRoiSeriesOutResults = {};
+% multiSessionCellRoiSeriesOutResults = {};
+finalOutComponentSegmentMasks = zeros(numCompListEntries, 512, 512);
 
 % Build 2D Mesh for each component
 finalOutPeaksGrid = zeros(numCompListEntries,6,6);
-finalOutComponentSegmentMasks = zeros(numCompListEntries, 512, 512);
+
 
 % componentAggregatePropeties.maxTuningPeakValue: the maximum peak value for each signal
 componentAggregatePropeties.maxTuningPeakValue = zeros(numCompListEntries,1);
 
 % componentAggregatePropeties.sumTuningPeaksValue: the sum of all peaks
 componentAggregatePropeties.sumTuningPeaksValue = zeros(numCompListEntries,1);
+
+
+if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
+     % Generate similar grids for minusNeuropil outputs
+     minusNeuropil.finalOutPeaksGrid = finalOutPeaksGrid;
+    
+end
+        
+
 
 for i = 1:num_cellROIs
    curr_cellROI = uniqueComps{i};
@@ -95,25 +105,25 @@ for i = 1:num_cellROIs
 		[currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(activeAnimalCompList, curr_day_linear_comp_index);
         [outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp, phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions);
         uniqueAmps = outputs.uniqueAmps;
-        uniqueFreqs = outputs.uniqueFreqs;
-        peakSignals = outputs.AMConditions.peakSignal;
-        maxPeakSignal = max(peakSignals);
-        sumPeaksSignal = sum(peakSignals);
-        
-        % Store the outputs in the grid:
-        finalOutPeaksGrid(curr_day_linear_comp_index,:,:) = outputs.finalOutGrid;
+        uniqueFreqs = outputs.uniqueFreqs; %
         finalOutComponentSegmentMasks(curr_day_linear_comp_index,:,:) = outputs.referenceMask;
         
-        % outputs.maximallyPreferredStimulus
-        %% LinearIndex % The linear stimulus index corresponding to the maximally preferred (amp, freq) pair for each comp.
-        %% AmpFreqIndexTuple % A pair containing the index into the amp array followed by the index into the freq array corresponding to the maximally preferred (amp, freq) pair.
-        %% AmpFreqValuesTuple % The unique amp and freq values at the preferred index
-        %% Value % The actual Peak DF/F value
-        %
-        componentAggregatePropeties.maximallyPreferredStimulusInfo(curr_day_linear_comp_index) = outputs.maximallyPreferredStimulus; 
-        
+        % Store the outputs in the grid:
+        finalOutPeaksGrid(curr_day_linear_comp_index,:,:) = outputs.default_DFF.finalOutGrid;
+        componentAggregatePropeties.maximallyPreferredStimulusInfo(curr_day_linear_comp_index) = outputs.default_DFF.maximallyPreferredStimulus; 
+        peakSignals = outputs.default_DFF.AMConditions.peakSignal; % used
+        maxPeakSignal = max(peakSignals); % used
         componentAggregatePropeties.maxTuningPeakValue(curr_day_linear_comp_index) = maxPeakSignal; 
-        componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_comp_index) = sumPeaksSignal;
+        componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_comp_index) = sum(peakSignals);
+        
+        
+        if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
+            % Store the outputs in the grid:
+            minusNeuropil.finalOutPeaksGrid(curr_day_linear_comp_index,:,:) = outputs.minusNeuropil_DFF.finalOutGrid;
+            peakSignals = outputs.default_DFF.AMConditions.peakSignal; % used
+        end
+
+        
         
         temp.isFirstSessionInCellRoi = (j == 1);
         if temp.isFirstSessionInCellRoi

@@ -38,7 +38,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     imgDataDFF = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataDFF;  % 520x150 double. %assumes you have this field
     
     if processingOptions.compute_neuropil_corrected_versions
-       outputs.imagingDataMinusNeuropilDFF = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataMinusNeuropilDFF;  % 520x150 double. %assumes you have this field
+       imagingDataMinusNeuropilDFF = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataMinusNeuropilDFF;  % 520x150 double. %assumes you have this field
        outputs.imgDataNeuropil = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataNeuropil; % 520x150 double
     
     end
@@ -53,7 +53,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         for i = 1:numTrials
             imgDataDFF(i,:) = smooth(imgDataDFF(i,:), processingOptions.smoothValue);
             if processingOptions.compute_neuropil_corrected_versions
-                outputs.imagingDataMinusNeuropilDFF(i,:) = smooth(outputs.imagingDataMinusNeuropilDFF(i,:), processingOptions.smoothValue);
+                imagingDataMinusNeuropilDFF(i,:) = smooth(imagingDataMinusNeuropilDFF(i,:), processingOptions.smoothValue);
             end
     
         end
@@ -107,73 +107,85 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     % The important red lines:
     outputs.TracesForAllStimuli.meanData = zeros(outputs.numStimuli, numFrames);
     
-    outputs.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
-    outputs.AMConditions.peakSignal = zeros(outputs.numStimuli, 1);
+    outputs.default_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
+    outputs.default_DFF.AMConditions.peakSignal = zeros(outputs.numStimuli, 1);
     
-    %generate the dimensions of the subplots
-    numRows = numel(nonzeros(outputs.uniqueFreqs))+1; %+1 because you have the zero mod condition too
-    numCol = numel(nonzeros(outputs.uniqueAmps));
+    if processingOptions.compute_neuropil_corrected_versions
+        outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
+        outputs.minusNeuropil_DFF.AMConditions.peakSignal = zeros(outputs.numStimuli, 1);
+    end
     
+    %% Loop through all stimuli:
     for b = 1:outputs.numStimuli
         tracesToPlot = outputs.tracesForEachStimulus{b};
         %% plotTracesForAllStimuli_FDS Style
-         %get the raw data that you're gonna plot
-        outputs.TracesForAllStimuli.imgDataToPlot = imgDataDFF(tracesToPlot, :); % These are sets of stimuli for this entry.
-        if processingOptions.compute_neuropil_corrected_versions
-%             outputs.imagingDataMinusNeuropilDFF(i,:) = smooth(outputs.imagingDataMinusNeuropilDFF(i,:), processingOptions.smoothValue);
-        end
-            
-        %make an average
-        outputs.TracesForAllStimuli.meanData(b,:) = mean(outputs.TracesForAllStimuli.imgDataToPlot, 1); % this is that main red line that we care about, it contains 1x150 double
+%          %get the raw data that you're gonna plot
+%         outputs.TracesForAllStimuli.imgDataToPlot = imgDataDFF(tracesToPlot, :); % These are sets of stimuli for this entry.
+%         %make an average
+%         outputs.TracesForAllStimuli.meanData(b,:) = mean(outputs.TracesForAllStimuli.imgDataToPlot, 1); % this is that main red line that we care about, it contains 1x150 double
         
         %% plotAMConditions_FDS Style
-        outputs.AMConditions.imgDataToPlot(b,:) = mean(imgDataDFF(tracesToPlot,:));
-        [~,maxInd] = max(outputs.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
+        outputs.default_DFF.AMConditions.imgDataToPlot(b,:) = mean(imgDataDFF(tracesToPlot,:));
+        [~,maxInd] = max(outputs.default_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
         maxInd = maxInd+processingOptions.startSound-1;
-        outputs.AMConditions.peakSignal(b) = mean(outputs.AMConditions.imgDataToPlot(b, maxInd-processingOptions.sampPeak:maxInd+processingOptions.sampPeak));
+        outputs.default_DFF.AMConditions.peakSignal(b) = mean(outputs.default_DFF.AMConditions.imgDataToPlot(b, maxInd-processingOptions.sampPeak:maxInd+processingOptions.sampPeak));
+        
+        
+        if processingOptions.compute_neuropil_corrected_versions
+%             outputs.TracesForAllStimuli.neuroPillCorrected = imagingDataMinusNeuropilDFF(tracesToPlot, :); % These are sets of stimuli for this entry.
+%             %make an average
+%             outputs.TracesForAllStimuli.neuroPillCorrected_meanData(b,:) = mean(outputs.TracesForAllStimuli.neuroPillCorrected, 1); % this is that main red line that we care about, it contains 1x150 double
+
+            %% plotAMConditions_FDS Style
+            outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b,:) = mean(imagingDataMinusNeuropilDFF(tracesToPlot,:));
+            [~, maxInd] = max(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
+            maxInd = maxInd + processingOptions.startSound - 1;
+            outputs.minusNeuropil_DFF.AMConditions.peakSignal(b) = mean(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, maxInd-processingOptions.sampPeak:maxInd+processingOptions.sampPeak));
+        end
+    
     end
 
     % 2D projections of the plots:
-    outputs.TracesForAllStimuli.finalSeriesAmps = {};
- % uniqueAmps: the [0%, 20%, 40%, 60%, 80%, 100%] data series
-    for c = 1:numUniqueAmps
-        activeUniqueAmp = outputs.uniqueAmps(c);
-        currentAmpIdx = find(outputs.uniqueStimuli(:,2)==activeUniqueAmp); % this varies in size. for the 0 element it's 1x1, but for index 2 for example it's 5x1
-        theseFreqs = outputs.uniqueStimuli(currentAmpIdx,1); % AM Depth (%)
-        thesePeaks = outputs.AMConditions.peakSignal(currentAmpIdx); % 'Peak DF/F'
-        
-        tempCurrOutput = struct;
-        tempCurrOutput.ampIdx = currentAmpIdx;
-        tempCurrOutput.ampValue = activeUniqueAmp;
-        tempCurrOutput.freqs = theseFreqs;
-        tempCurrOutput.peaks = thesePeaks;
-
-        outputs.TracesForAllStimuli.finalSeriesAmps{end+1} = tempCurrOutput;
-    end
+%     outputs.TracesForAllStimuli.finalSeriesAmps = {};
+%  % uniqueAmps: the [0%, 20%, 40%, 60%, 80%, 100%] data series
+%     for c = 1:numUniqueAmps
+%         activeUniqueAmp = outputs.uniqueAmps(c);
+%         currentAmpIdx = find(outputs.uniqueStimuli(:,2)==activeUniqueAmp); % this varies in size. for the 0 element it's 1x1, but for index 2 for example it's 5x1
+%         theseFreqs = outputs.uniqueStimuli(currentAmpIdx,1); % AM Depth (%)
+%         thesePeaks = outputs.default_DFF.AMConditions.peakSignal(currentAmpIdx); % 'Peak DF/F'
+%         
+%         tempCurrOutput = struct;
+%         tempCurrOutput.ampIdx = currentAmpIdx;
+%         tempCurrOutput.ampValue = activeUniqueAmp;
+%         tempCurrOutput.freqs = theseFreqs;
+%         tempCurrOutput.peaks = thesePeaks;
+% 
+%         outputs.TracesForAllStimuli.finalSeriesAmps{end+1} = tempCurrOutput;
+%     end
      
-    outputs.TracesForAllStimuli.finalSeriesFreqs = {};
-    % uniqueFreqs: the [0, 10, 20, 50, 100, 200 Hz] data series
-    for d=1:numUniqueFreqs
-        activeUniqueFreq = outputs.uniqueFreqs(d);
-        currentFreqIdx = find(outputs.uniqueStimuli(:,1)==activeUniqueFreq);
-        theseAmps = outputs.uniqueStimuli(currentFreqIdx,2);
-        thesePeaks = outputs.AMConditions.peakSignal(currentFreqIdx); % 'Peak DF/F'
-        
-        tempCurrOutput = struct;
-        tempCurrOutput.freqIdx = currentFreqIdx;
-        tempCurrOutput.freqValue = activeUniqueFreq;
-        tempCurrOutput.amps = theseAmps;
-        tempCurrOutput.peaks = thesePeaks;
-
-        outputs.TracesForAllStimuli.finalSeriesFreqs{end+1} = tempCurrOutput;
-        
-    end
+%     outputs.TracesForAllStimuli.finalSeriesFreqs = {};
+%     % uniqueFreqs: the [0, 10, 20, 50, 100, 200 Hz] data series
+%     for d=1:numUniqueFreqs
+%         activeUniqueFreq = outputs.uniqueFreqs(d);
+%         currentFreqIdx = find(outputs.uniqueStimuli(:,1)==activeUniqueFreq);
+%         theseAmps = outputs.uniqueStimuli(currentFreqIdx,2);
+%         thesePeaks = outputs.default_DFF.AMConditions.peakSignal(currentFreqIdx); % 'Peak DF/F'
+%         
+%         tempCurrOutput = struct;
+%         tempCurrOutput.freqIdx = currentFreqIdx;
+%         tempCurrOutput.freqValue = activeUniqueFreq;
+%         tempCurrOutput.amps = theseAmps;
+%         tempCurrOutput.peaks = thesePeaks;
+% 
+%         outputs.TracesForAllStimuli.finalSeriesFreqs{end+1} = tempCurrOutput;
+%         
+%     end
     
     
     
     %% Loop through all amplitudes and frequencies:
     % Build 2D Mesh for each component
-    outputs.finalOutGrid = zeros(numUniqueAmps, numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
+    outputs.default_DFF.finalOutGrid = zeros(numUniqueAmps, numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
     
     %% Compute the maximally preferred stimulus for this comp
     % outputs.maximallyPreferredStimulus
@@ -184,10 +196,16 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     %
     
     % Also build information about the (amp, freq) pair corresponding to the maximum Peak DF/F for this comp.
-    outputs.maximallyPreferredStimulus.LinearIndex = -1; % The linear stimulus index corresponding to the maximally preferred (amp, freq) pair for each comp.
-    outputs.maximallyPreferredStimulus.AmpFreqIndexTuple = [-1, -1]; % A pair containing the index into the amp array followed by the index into the freq array corresponding to the maximally preferred (amp, freq) pair.
-    outputs.maximallyPreferredStimulus.AmpFreqValuesTuple = [-1, -1]; % The unique amp and freq values at the preferred index
-    outputs.maximallyPreferredStimulus.Value = 0.0; % The actual Peak DF/F value
+    outputs.default_DFF.maximallyPreferredStimulus.LinearIndex = -1; % The linear stimulus index corresponding to the maximally preferred (amp, freq) pair for each comp.
+    outputs.default_DFF.maximallyPreferredStimulus.AmpFreqIndexTuple = [-1, -1]; % A pair containing the index into the amp array followed by the index into the freq array corresponding to the maximally preferred (amp, freq) pair.
+    outputs.default_DFF.maximallyPreferredStimulus.AmpFreqValuesTuple = [-1, -1]; % The unique amp and freq values at the preferred index
+    outputs.default_DFF.maximallyPreferredStimulus.Value = 0.0; % The actual Peak DF/F value
+    
+    if processingOptions.compute_neuropil_corrected_versions
+        outputs.minusNeuropil_DFF.finalOutGrid = outputs.default_DFF.finalOutGrid; % just a copy of the default_DFF one.
+        outputs.minusNeuropil_DFF.maximallyPreferredStimulus = outputs.default_DFF.maximallyPreferredStimulus; % just a copy of the default_DFF one.
+    end
+    
     
     for i = 1:numUniqueAmps
         activeUniqueAmp = outputs.uniqueAmps(i);
@@ -195,15 +213,29 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
             activeUniqueFreq = outputs.uniqueFreqs(j);
             % Get the appropriate linear index from the map
             linearStimulusIndex = outputs.indexMap_AmpsFreqs2StimulusArray(i, j);
-            currPeaks = outputs.AMConditions.peakSignal(linearStimulusIndex); % 'Peak DF/F'
-            outputs.finalOutGrid(i,j) = currPeaks;
+            currPeaks = outputs.default_DFF.AMConditions.peakSignal(linearStimulusIndex); % 'Peak DF/F'
+            outputs.default_DFF.finalOutGrid(i,j) = currPeaks;
             % Check if this new peak value exceeds the previous maximum, and if it does, keep track of the new value and index.
-            if currPeaks > outputs.maximallyPreferredStimulus.Value 
-                outputs.maximallyPreferredStimulus.LinearIndex = linearStimulusIndex; % Set this linear index as the maximum one.
-                outputs.maximallyPreferredStimulus.AmpFreqIndexTuple = [i, j];
-                outputs.maximallyPreferredStimulus.AmpFreqValuesTuple = [activeUniqueAmp, activeUniqueFreq];
-                outputs.maximallyPreferredStimulus.Value = currPeaks;
+            if currPeaks > outputs.default_DFF.maximallyPreferredStimulus.Value 
+                outputs.default_DFF.maximallyPreferredStimulus.LinearIndex = linearStimulusIndex; % Set this linear index as the maximum one.
+                outputs.default_DFF.maximallyPreferredStimulus.AmpFreqIndexTuple = [i, j];
+                outputs.default_DFF.maximallyPreferredStimulus.AmpFreqValuesTuple = [activeUniqueAmp, activeUniqueFreq];
+                outputs.default_DFF.maximallyPreferredStimulus.Value = currPeaks;
             end
+            
+            % neuropil-corrected version
+            if processingOptions.compute_neuropil_corrected_versions
+                currPeaks = outputs.minusNeuropil_DFF.AMConditions.peakSignal(linearStimulusIndex); % 'Peak DF/F'
+                outputs.minusNeuropil_DFF.finalOutGrid(i,j) = currPeaks;
+                % Check if this new peak value exceeds the previous maximum, and if it does, keep track of the new value and index.
+                if currPeaks > outputs.minusNeuropil_DFF.maximallyPreferredStimulus.Value 
+                    outputs.minusNeuropil_DFF.maximallyPreferredStimulus.LinearIndex = linearStimulusIndex; % Set this linear index as the maximum one.
+                    outputs.minusNeuropil_DFF.maximallyPreferredStimulus.AmpFreqIndexTuple = [i, j];
+                    outputs.minusNeuropil_DFF.maximallyPreferredStimulus.AmpFreqValuesTuple = [activeUniqueAmp, activeUniqueFreq];
+                    outputs.minusNeuropil_DFF.maximallyPreferredStimulus.Value = currPeaks;
+                end
+            end
+    
         end
     end
 
