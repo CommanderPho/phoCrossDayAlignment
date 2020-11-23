@@ -58,9 +58,9 @@ frequencyColorMap(1,:) = [0, 0, 0];
 
 % componentAggregatePropeties.maxTuningPeakValue
 
-amalgamationMask_cellROI_LookupMask = zeros(numOfSessions, 512, 512); % Maps every pixel in the image to the cellROI index of the cell it belongs to, if one exists.
+amalgamationMask_cellROI_LookupMask = zeros(512, 512); % Maps every pixel in the image to the cellROI index of the cell it belongs to, if one exists.
 
-amalgamationMask_AlphaConjunctionMask = zeros(numOfSessions, 512, 512);
+amalgamationMask_AlphaConjunctionMask = zeros(512, 512);
 amalgamationMask_AlphaRoiTuningScoreMask = zeros(512, 512);
 amalgamationMask_NumberOfTunedDays = zeros(512, 512);
 
@@ -71,51 +71,61 @@ init_matrix = ones(numOfSessions, 512, 512) * -1;
 amalgamationMask_PreferredStimulusAmplitude = init_matrix;
 amalgamationMask_PreferredStimulusFreq = init_matrix;
 
+% amalgamationMask_DidPreferredStimulusChange: keeps track of whether the preferredStimulus amplitude or frequency changed for a cellROI between sessions.
+amalgamationMask_DidPreferredStimulusChange = zeros(num_cellROIs, (numOfSessions-1));
+
 for i = 1:num_cellROIs
     %% Plot the grid as a test
     temp.cellRoiIndex = cellRoiSortIndex(i); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
     %% cellROI Specific Score:
     temp.currRoiTuningScore = componentAggregatePropeties.tuningScore(temp.cellRoiIndex); % currently only uses first session?
-    
-%     temp.currAllSessionCompMaximallyPreferredStimulusInfo = componentAggregatePropeties.maximallyPreferredStimulusInfo(temp.currAllSessionCompIndicies); % 1x3 struct array
-%     temp.currAllSessionsMaximalIndexTuples = temp.currAllSessionCompMaximallyPreferredStimulusInfo.AmpFreqIndexTuple; %Check this to make sure it's always (0, 0) when one of the tuple elements are zero.
-%     temp.maxPrefAmpIndex = temp.currAllSessionsMaximalIndexTuples(1);
-%     temp.maxPrefFreqIndex = temp.currAllSessionsMaximalIndexTuples(2);
-        
     temp.numSessions = length(temp.currAllSessionCompIndicies);
+    
     
     for j = 1:temp.numSessions
     
         temp.currCompSessionIndex = temp.currAllSessionCompIndicies(j);
 
+        %% Results common across all sessions of this cellROI:
+        % Check if this is the first session for this cellROI as not to recompute it needlessly when it doesn't change across sessions.
+        if j == 1
+            temp.currCompSessionMask = logical(squeeze(finalOutComponentSegment.Masks(temp.currCompSessionIndex,:,:)));
+            % Save the index of this cell in the reverse lookup table:
+            amalgamationMask_cellROI_LookupMask(temp.currCompSessionMask) = temp.cellRoiIndex;
+
+            % Set cells in this cellROI region to opaque:
+            amalgamationMask_AlphaConjunctionMask(temp.currCompSessionMask) = 1.0;
+            % Set the opacity of cell in this cellROI region based on the number of days that the cell passed the threshold:
+            amalgamationMask_AlphaRoiTuningScoreMask(temp.currCompSessionMask) = (double(temp.currRoiTuningScore) / 3.0);
+
+            % Set the greyscale value to the ROIs tuning score, normalized by the maximum possible tuning score (indicating all three days were tuned)
+            %     if temp.currRoiTuningScore > 0
+                    amalgamationMask_NumberOfTunedDays(temp.currCompSessionMask) = double(temp.currRoiTuningScore) / 3.0;
+            %     else
+            %         amalgamationMask_NumberOfTunedDays(temp.currCompSessionMask) = -1.0;
+            %     end
+        end
+        
         % Currently just use the preferred stimulus info from the first of the three sessions:
         temp.currCompMaximallyPreferredStimulusInfo = componentAggregatePropeties.maximallyPreferredStimulusInfo(temp.currCompSessionIndex);
         temp.currMaximalIndexTuple = temp.currCompMaximallyPreferredStimulusInfo.AmpFreqIndexTuple; %Check this to make sure it's always (0, 0) when one of the tuple elements are zero.
         temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
         temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
 
-        temp.currCompSessionMask = logical(squeeze(finalOutComponentSegment.Masks(temp.currCompSessionIndex,:,:)));
-
-        % Save the index of this cell in the reverse lookup table:
-        amalgamationMask_cellROI_LookupMask(j, temp.currCompSessionMask) = temp.cellRoiIndex;
-
-        % Set cells in this cellROI region to opaque:
-        amalgamationMask_AlphaConjunctionMask(j, temp.currCompSessionMask) = 1.0;
-        % Set the opacity of cell in this cellROI region based on the number of days that the cell passed the threshold:
-        amalgamationMask_AlphaRoiTuningScoreMask(j, temp.currCompSessionMask) = (double(temp.currRoiTuningScore) / 3.0);
-
         amalgamationMask_PreferredStimulusAmplitude(j, temp.currCompSessionMask) = double(temp.maxPrefAmpIndex);
-
         amalgamationMask_PreferredStimulusFreq(j, temp.currCompSessionMask) = double(temp.maxPrefFreqIndex);
+            
+        % If we're not on the first session, see if the preferred values changed between the sessions.
+        if j > 1
+            didPreferAmpIndexChange = (temp.prev.maxPrefAmpIndex ~= temp.maxPrefAmpIndex);
+            didPreferFreqIndexChange = (temp.prev.maxPrefFreqIndex ~= temp.maxPrefFreqIndex);
+            amalgamationMask_DidPreferredStimulusChange(i,j-1) = didPreferAmpIndexChange | didPreferFreqIndexChange;
+        end
+        % Update the prev values:
+        temp.prev.maxPrefAmpIndex = temp.maxPrefAmpIndex;
+        temp.prev.maxPrefFreqIndex = temp.maxPrefFreqIndex;
 
-        % Set the greyscale value to the ROIs tuning score, normalized by the maximum possible tuning score (indicating all three days were tuned)
-    %     if temp.currRoiTuningScore > 0
-            amalgamationMask_NumberOfTunedDays(temp.currCompSessionMask) = double(temp.currRoiTuningScore) / 3.0;
-    %     else
-    %         amalgamationMask_NumberOfTunedDays(temp.currCompSessionMask) = -1.0;
-    %     end
-    
     end
     
 end
