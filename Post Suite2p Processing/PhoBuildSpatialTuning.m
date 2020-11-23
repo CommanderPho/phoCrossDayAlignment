@@ -43,7 +43,9 @@ if phoPipelineOptions.shouldShowPlots
     end
 end
 
-[amalgamationMasks, outputMaps, cellRoiSortIndex] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions);
+% [amalgamationMasks, outputMaps, cellRoiSortIndex] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions);
+[amalgamationMasks, outputMaps, cellRoiSortIndex] = final_data_explorer_obj.buildSpatialTuningInfo(phoPipelineOptions);
+
 
 if phoPipelineOptions.shouldShowPlots
     [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, cellRoiSortIndex, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions);
@@ -67,179 +69,179 @@ end
 fprintf('\t done.\n')
 
 
-%% Build Spatial Info:
-function [amalgamationMasks, outputMaps, cellRoiSortIndex] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions)
-% should_enable_edge_layering_mode: if true, uses the borders surrounding each cell to reflect the preferred tuning at a given day.
-should_enable_edge_layering_mode = phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode;
-edge_layering_is_outset_mode = phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.edge_layering_is_outset_mode; % edge_layering_is_outset_mode: if true, it uses the outer borders to draw; % edge_layering_is_outset_mode: if true, it uses the outer borders to draw
-%     temp.structuring_element = strel('disk', 2);
-%     temp.structuring_element = strel('diamond', 2);
-temp.structuring_element = strel('square', 3);
+% %% Build Spatial Info:
+% function [amalgamationMasks, outputMaps, cellRoiSortIndex] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions)
+% 	% should_enable_edge_layering_mode: if true, uses the borders surrounding each cell to reflect the preferred tuning at a given day.
+% 	should_enable_edge_layering_mode = phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode;
+% 	edge_layering_is_outset_mode = phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.edge_layering_is_outset_mode; % edge_layering_is_outset_mode: if true, it uses the outer borders to draw; % edge_layering_is_outset_mode: if true, it uses the outer borders to draw
+% 	%     temp.structuring_element = strel('disk', 2);
+% 	%     temp.structuring_element = strel('diamond', 2);
+% 	temp.structuring_element = strel('square', 3);
 
-%% Sort based on tuning score:
-[sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
+% 	%% Sort based on tuning score:
+% 	[sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
 
-amalgamationMasks.cellROI_LookupMask = zeros(512, 512); % Maps every pixel in the image to the cellROI index of the cell it belongs to, if one exists.
+% 	amalgamationMasks.cellROI_LookupMask = zeros(512, 512); % Maps every pixel in the image to the cellROI index of the cell it belongs to, if one exists.
 
-amalgamationMasks.AlphaConjunctionMask = zeros(512, 512);
-amalgamationMasks.AlphaRoiTuningScoreMask = zeros(512, 512);
-amalgamationMasks.NumberOfTunedDays = zeros(512, 512);
+% 	amalgamationMasks.AlphaConjunctionMask = zeros(512, 512);
+% 	amalgamationMasks.AlphaRoiTuningScoreMask = zeros(512, 512);
+% 	amalgamationMasks.NumberOfTunedDays = zeros(512, 512);
 
-% outputMaps.masks: one for each cellROI
-outputMaps.masks.Fill = zeros(num_cellROIs,512,512);
-outputMaps.masks.Edge = zeros(num_cellROIs,512,512);
+% 	% outputMaps.masks: one for each cellROI
+% 	outputMaps.masks.Fill = zeros(num_cellROIs,512,512);
+% 	outputMaps.masks.Edge = zeros(num_cellROIs,512,512);
 
-outputMaps.masks.OutsetEdge0 = zeros(num_cellROIs,512,512);
-outputMaps.masks.OutsetEdge1 = zeros(num_cellROIs,512,512);
-outputMaps.masks.OutsetEdge2 = zeros(num_cellROIs,512,512);
+% 	outputMaps.masks.OutsetEdge0 = zeros(num_cellROIs,512,512);
+% 	outputMaps.masks.OutsetEdge1 = zeros(num_cellROIs,512,512);
+% 	outputMaps.masks.OutsetEdge2 = zeros(num_cellROIs,512,512);
 
-outputMaps.masks.InsetEdge0 = zeros(num_cellROIs,512,512);
-outputMaps.masks.InsetEdge1 = zeros(num_cellROIs,512,512);
-outputMaps.masks.InsetEdge2 = zeros(num_cellROIs,512,512);
+% 	outputMaps.masks.InsetEdge0 = zeros(num_cellROIs,512,512);
+% 	outputMaps.masks.InsetEdge1 = zeros(num_cellROIs,512,512);
+% 	outputMaps.masks.InsetEdge2 = zeros(num_cellROIs,512,512);
 
-% amalgamationMasks.PreferredStimulusAmplitude = zeros(512, 512, 3);
-% init_matrix = zeros(512, 512);
-init_matrix = ones(numOfSessions, 512, 512) * -1;
+% 	% amalgamationMasks.PreferredStimulusAmplitude = zeros(512, 512, 3);
+% 	% init_matrix = zeros(512, 512);
+% 	init_matrix = ones(numOfSessions, 512, 512) * -1;
 
-outputMaps.PreferredStimulusAmplitude = init_matrix;
-outputMaps.PreferredStimulusFreq = init_matrix;
-
-
-outputMaps.PreferredStimulus = zeros(num_cellROIs, numOfSessions, 2);
+% 	outputMaps.PreferredStimulusAmplitude = init_matrix;
+% 	outputMaps.PreferredStimulusFreq = init_matrix;
 
 
-% amalgamationMasks.DidPreferredStimulusChange: keeps track of whether the preferredStimulus amplitude or frequency changed for a cellROI between sessions.
-outputMaps.DidPreferredStimulusChange = zeros(num_cellROIs, (numOfSessions-1));
+% 	outputMaps.PreferredStimulus = zeros(num_cellROIs, numOfSessions, 2);
 
-outputMaps.computedProperties.areas = zeros(num_cellROIs, 1);
-outputMaps.computedProperties.boundingBoxes = zeros(num_cellROIs, 4);
-outputMaps.computedProperties.centroids = zeros(num_cellROIs, 2);
 
-for i = 1:num_cellROIs
-    %% Plot the grid as a test
-    temp.cellRoiIndex = cellRoiSortIndex(i); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
-    temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
-    %% cellROI Specific Score:
-    temp.currRoiTuningScore = componentAggregatePropeties.tuningScore(temp.cellRoiIndex); % currently only uses first session?
-    temp.numSessions = length(temp.currAllSessionCompIndicies);
-    
-    for j = 1:temp.numSessions
-        
-        temp.currCompSessionIndex = temp.currAllSessionCompIndicies(j);
-        
-        %% Results common across all sessions of this cellROI:
-        % Check if this is the first session for this cellROI as not to recompute it needlessly when it doesn't change across sessions.
-        if j == 1
-            temp.currCompSessionFill = logical(squeeze(finalOutComponentSegment.Masks(temp.currCompSessionIndex,:,:)));
-            temp.currCompSessionEdge = logical(squeeze(finalOutComponentSegment.Edge(temp.currCompSessionIndex,:,:)));
-            
-            outputMaps.masks.Fill(i,:,:) = temp.currCompSessionFill;
-            outputMaps.masks.Edge(i,:,:) = temp.currCompSessionEdge;
-            
-            BW2_Inner = imerode(temp.currCompSessionFill, temp.structuring_element);
-            BW3_Inner = imerode(BW2_Inner, temp.structuring_element);
-            BW4_Inner = imerode(BW3_Inner, temp.structuring_element);
-         
-            %% Inset Elements:
-            outputMaps.masks.InsetEdge0(i,:,:) = BW2_Inner;
-            outputMaps.masks.InsetEdge1(i,:,:) = BW3_Inner;
-            outputMaps.masks.InsetEdge2(i,:,:) = BW4_Inner;
-                        
-            %% Outside Elements:
-            BW2_Outer = imdilate(temp.currCompSessionFill, temp.structuring_element);
-            BW3_Outer = imdilate(BW2_Outer, temp.structuring_element);
-            BW4_Outer = imdilate(BW3_Outer, temp.structuring_element);
-            outputMaps.masks.OutsetEdge0(i,:,:) = BW2_Outer;
-            outputMaps.masks.OutsetEdge1(i,:,:) = BW3_Outer;
-            outputMaps.masks.OutsetEdge2(i,:,:) = BW4_Outer;
-            %                 temp.currCompSessionMask = temp.currCompSessionEdge; % Use the edges instead of the fills
-            temp.currCompSessionMask = temp.currCompSessionFill; % Use the fills
-            
-            
-            s = regionprops(temp.currCompSessionFill,'Centroid','Area','BoundingBox');
-            outputMaps.computedProperties.areas(i) = s.Area;
-            outputMaps.computedProperties.boundingBoxes(i,:) = s.BoundingBox;
-            outputMaps.computedProperties.centroids(i,:) = s.Centroid;
-            
-            % Save the index of this cell in the reverse lookup table:
-            amalgamationMasks.cellROI_LookupMask(temp.currCompSessionFill) = temp.cellRoiIndex;
-            amalgamationMasks.cellROI_LookupMask(temp.currCompSessionEdge) = temp.cellRoiIndex;
-            if (should_enable_edge_layering_mode && edge_layering_is_outset_mode)
-                amalgamationMasks.cellROI_LookupMask(BW2_Outer) = temp.cellRoiIndex;
-                amalgamationMasks.cellROI_LookupMask(BW3_Outer) = temp.cellRoiIndex;
-                amalgamationMasks.cellROI_LookupMask(BW4_Outer) = temp.cellRoiIndex;
-            end
-            
-            % Set cells in this cellROI region to opaque:
-            amalgamationMasks.AlphaConjunctionMask(temp.currCompSessionMask) = 1.0;
-            % Set the opacity of cell in this cellROI region based on the number of days that the cell passed the threshold:
-            amalgamationMasks.AlphaRoiTuningScoreMask(temp.currCompSessionMask) = (double(temp.currRoiTuningScore) / 3.0);
-            
-            if (should_enable_edge_layering_mode && edge_layering_is_outset_mode)
-                amalgamationMasks.AlphaConjunctionMask(BW2_Outer) = 1.0;
-                amalgamationMasks.AlphaConjunctionMask(BW3_Outer) = 1.0;
-                amalgamationMasks.AlphaConjunctionMask(BW4_Outer) = 1.0;
-            end
-            
-            % Set the greyscale value to the ROIs tuning score, normalized by the maximum possible tuning score (indicating all three days were tuned)
-            amalgamationMasks.NumberOfTunedDays(temp.currCompSessionMask) = double(temp.currRoiTuningScore) / 3.0;
-            
-        end
-        
-        % Currently just use the preferred stimulus info from the first of the three sessions:
-        temp.currCompMaximallyPreferredStimulusInfo = componentAggregatePropeties.maximallyPreferredStimulusInfo(temp.currCompSessionIndex);
-        temp.currMaximalIndexTuple = temp.currCompMaximallyPreferredStimulusInfo.AmpFreqIndexTuple; %Check this to make sure it's always (0, 0) when one of the tuple elements are zero.
-        temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
-        temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
-        
-        outputMaps.PreferredStimulus(i,j,:) =  temp.currMaximalIndexTuple;
-        
-        if should_enable_edge_layering_mode
-            if j <= 1
-                if edge_layering_is_outset_mode
-                    temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.OutsetEdge0(i,:,:)));
-                else
-                    temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.InsetEdge2(i,:,:)));
-                end
-            elseif j == 2
-                if edge_layering_is_outset_mode
-                    temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.OutsetEdge1(i,:,:)));
-                else
-                    temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.InsetEdge1(i,:,:)));
-                end
-            else
-                if edge_layering_is_outset_mode
-                    temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.OutsetEdge2(i,:,:)));
-                else
-                    temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.InsetEdge0(i,:,:)));
-                end
-            end
-            outputMaps.PreferredStimulusAmplitude(j, temp.currCompSessionCustomEdgeMask) = double(temp.maxPrefAmpIndex);
-            outputMaps.PreferredStimulusFreq(j, temp.currCompSessionCustomEdgeMask) = double(temp.maxPrefFreqIndex);
-            if edge_layering_is_outset_mode
-                % Fill in the main fill with nothing
-                outputMaps.PreferredStimulusAmplitude(j, temp.currCompSessionFill) = -1.0;
-                outputMaps.PreferredStimulusFreq(j, temp.currCompSessionFill) = -1.0;
-            end
-        else
-            outputMaps.PreferredStimulusAmplitude(j, temp.currCompSessionMask) = double(temp.maxPrefAmpIndex);
-            outputMaps.PreferredStimulusFreq(j, temp.currCompSessionMask) = double(temp.maxPrefFreqIndex);
-        end
-        
-        % If we're not on the first session, see if the preferred values changed between the sessions.
-        if j > 1
-            didPreferredAmpIndexChange = (temp.prev.maxPrefAmpIndex ~= temp.maxPrefAmpIndex);
-            didPreferredFreqIndexChange = (temp.prev.maxPrefFreqIndex ~= temp.maxPrefFreqIndex);
-            outputMaps.DidPreferredStimulusChange(i,j-1) = didPreferredAmpIndexChange | didPreferredFreqIndexChange;
-        end
-        % Update the prev values:
-        temp.prev.maxPrefAmpIndex = temp.maxPrefAmpIndex;
-        temp.prev.maxPrefFreqIndex = temp.maxPrefFreqIndex;
-        
-    end % end for numSessions
-    
-end % end for each cell ROI
-end
+% 	% amalgamationMasks.DidPreferredStimulusChange: keeps track of whether the preferredStimulus amplitude or frequency changed for a cellROI between sessions.
+% 	outputMaps.DidPreferredStimulusChange = zeros(num_cellROIs, (numOfSessions-1));
+
+% 	outputMaps.computedProperties.areas = zeros(num_cellROIs, 1);
+% 	outputMaps.computedProperties.boundingBoxes = zeros(num_cellROIs, 4);
+% 	outputMaps.computedProperties.centroids = zeros(num_cellROIs, 2);
+
+% 	for i = 1:num_cellROIs
+% 		%% Plot the grid as a test
+% 		temp.cellRoiIndex = cellRoiSortIndex(i); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
+% 		temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
+% 		%% cellROI Specific Score:
+% 		temp.currRoiTuningScore = componentAggregatePropeties.tuningScore(temp.cellRoiIndex); % currently only uses first session?
+% 		temp.numSessions = length(temp.currAllSessionCompIndicies);
+		
+% 		for j = 1:temp.numSessions
+			
+% 			temp.currCompSessionIndex = temp.currAllSessionCompIndicies(j);
+			
+% 			%% Results common across all sessions of this cellROI:
+% 			% Check if this is the first session for this cellROI as not to recompute it needlessly when it doesn't change across sessions.
+% 			if j == 1
+% 				temp.currCompSessionFill = logical(squeeze(finalOutComponentSegment.Masks(temp.currCompSessionIndex,:,:)));
+% 				temp.currCompSessionEdge = logical(squeeze(finalOutComponentSegment.Edge(temp.currCompSessionIndex,:,:)));
+				
+% 				outputMaps.masks.Fill(i,:,:) = temp.currCompSessionFill;
+% 				outputMaps.masks.Edge(i,:,:) = temp.currCompSessionEdge;
+				
+% 				BW2_Inner = imerode(temp.currCompSessionFill, temp.structuring_element);
+% 				BW3_Inner = imerode(BW2_Inner, temp.structuring_element);
+% 				BW4_Inner = imerode(BW3_Inner, temp.structuring_element);
+			
+% 				%% Inset Elements:
+% 				outputMaps.masks.InsetEdge0(i,:,:) = BW2_Inner;
+% 				outputMaps.masks.InsetEdge1(i,:,:) = BW3_Inner;
+% 				outputMaps.masks.InsetEdge2(i,:,:) = BW4_Inner;
+							
+% 				%% Outside Elements:
+% 				BW2_Outer = imdilate(temp.currCompSessionFill, temp.structuring_element);
+% 				BW3_Outer = imdilate(BW2_Outer, temp.structuring_element);
+% 				BW4_Outer = imdilate(BW3_Outer, temp.structuring_element);
+% 				outputMaps.masks.OutsetEdge0(i,:,:) = BW2_Outer;
+% 				outputMaps.masks.OutsetEdge1(i,:,:) = BW3_Outer;
+% 				outputMaps.masks.OutsetEdge2(i,:,:) = BW4_Outer;
+% 				%                 temp.currCompSessionMask = temp.currCompSessionEdge; % Use the edges instead of the fills
+% 				temp.currCompSessionMask = temp.currCompSessionFill; % Use the fills
+				
+				
+% 				s = regionprops(temp.currCompSessionFill,'Centroid','Area','BoundingBox');
+% 				outputMaps.computedProperties.areas(i) = s.Area;
+% 				outputMaps.computedProperties.boundingBoxes(i,:) = s.BoundingBox;
+% 				outputMaps.computedProperties.centroids(i,:) = s.Centroid;
+				
+% 				% Save the index of this cell in the reverse lookup table:
+% 				amalgamationMasks.cellROI_LookupMask(temp.currCompSessionFill) = temp.cellRoiIndex;
+% 				amalgamationMasks.cellROI_LookupMask(temp.currCompSessionEdge) = temp.cellRoiIndex;
+% 				if (should_enable_edge_layering_mode && edge_layering_is_outset_mode)
+% 					amalgamationMasks.cellROI_LookupMask(BW2_Outer) = temp.cellRoiIndex;
+% 					amalgamationMasks.cellROI_LookupMask(BW3_Outer) = temp.cellRoiIndex;
+% 					amalgamationMasks.cellROI_LookupMask(BW4_Outer) = temp.cellRoiIndex;
+% 				end
+				
+% 				% Set cells in this cellROI region to opaque:
+% 				amalgamationMasks.AlphaConjunctionMask(temp.currCompSessionMask) = 1.0;
+% 				% Set the opacity of cell in this cellROI region based on the number of days that the cell passed the threshold:
+% 				amalgamationMasks.AlphaRoiTuningScoreMask(temp.currCompSessionMask) = (double(temp.currRoiTuningScore) / 3.0);
+				
+% 				if (should_enable_edge_layering_mode && edge_layering_is_outset_mode)
+% 					amalgamationMasks.AlphaConjunctionMask(BW2_Outer) = 1.0;
+% 					amalgamationMasks.AlphaConjunctionMask(BW3_Outer) = 1.0;
+% 					amalgamationMasks.AlphaConjunctionMask(BW4_Outer) = 1.0;
+% 				end
+				
+% 				% Set the greyscale value to the ROIs tuning score, normalized by the maximum possible tuning score (indicating all three days were tuned)
+% 				amalgamationMasks.NumberOfTunedDays(temp.currCompSessionMask) = double(temp.currRoiTuningScore) / 3.0;
+				
+% 			end
+			
+% 			% Currently just use the preferred stimulus info from the first of the three sessions:
+% 			temp.currCompMaximallyPreferredStimulusInfo = componentAggregatePropeties.maximallyPreferredStimulusInfo(temp.currCompSessionIndex);
+% 			temp.currMaximalIndexTuple = temp.currCompMaximallyPreferredStimulusInfo.AmpFreqIndexTuple; %Check this to make sure it's always (0, 0) when one of the tuple elements are zero.
+% 			temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
+% 			temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
+			
+% 			outputMaps.PreferredStimulus(i,j,:) =  temp.currMaximalIndexTuple;
+			
+% 			if should_enable_edge_layering_mode
+% 				if j <= 1
+% 					if edge_layering_is_outset_mode
+% 						temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.OutsetEdge0(i,:,:)));
+% 					else
+% 						temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.InsetEdge2(i,:,:)));
+% 					end
+% 				elseif j == 2
+% 					if edge_layering_is_outset_mode
+% 						temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.OutsetEdge1(i,:,:)));
+% 					else
+% 						temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.InsetEdge1(i,:,:)));
+% 					end
+% 				else
+% 					if edge_layering_is_outset_mode
+% 						temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.OutsetEdge2(i,:,:)));
+% 					else
+% 						temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.InsetEdge0(i,:,:)));
+% 					end
+% 				end
+% 				outputMaps.PreferredStimulusAmplitude(j, temp.currCompSessionCustomEdgeMask) = double(temp.maxPrefAmpIndex);
+% 				outputMaps.PreferredStimulusFreq(j, temp.currCompSessionCustomEdgeMask) = double(temp.maxPrefFreqIndex);
+% 				if edge_layering_is_outset_mode
+% 					% Fill in the main fill with nothing
+% 					outputMaps.PreferredStimulusAmplitude(j, temp.currCompSessionFill) = -1.0;
+% 					outputMaps.PreferredStimulusFreq(j, temp.currCompSessionFill) = -1.0;
+% 				end
+% 			else
+% 				outputMaps.PreferredStimulusAmplitude(j, temp.currCompSessionMask) = double(temp.maxPrefAmpIndex);
+% 				outputMaps.PreferredStimulusFreq(j, temp.currCompSessionMask) = double(temp.maxPrefFreqIndex);
+% 			end
+			
+% 			% If we're not on the first session, see if the preferred values changed between the sessions.
+% 			if j > 1
+% 				didPreferredAmpIndexChange = (temp.prev.maxPrefAmpIndex ~= temp.maxPrefAmpIndex);
+% 				didPreferredFreqIndexChange = (temp.prev.maxPrefFreqIndex ~= temp.maxPrefFreqIndex);
+% 				outputMaps.DidPreferredStimulusChange(i,j-1) = didPreferredAmpIndexChange | didPreferredFreqIndexChange;
+% 			end
+% 			% Update the prev values:
+% 			temp.prev.maxPrefAmpIndex = temp.maxPrefAmpIndex;
+% 			temp.prev.maxPrefFreqIndex = temp.maxPrefFreqIndex;
+			
+% 		end % end for numSessions
+		
+% 	end % end for each cell ROI
+% end
 
 %% Master Plotting Function
 function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, cellRoiSortIndex, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions)
