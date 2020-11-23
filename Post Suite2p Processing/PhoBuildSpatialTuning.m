@@ -10,6 +10,7 @@ fprintf('> Running PhoBuildSpatialTuning...\n');
 %   phoPipelineOptions.shouldShowPlots
 %   phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path
 %   phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
+%   phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode
 %   phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints
 %   phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels
 if ~exist('phoPipelineOptions','var')
@@ -19,8 +20,10 @@ if ~exist('phoPipelineOptions','var')
     %%% PhoBuildSpatialTuning Options:
     phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path = '';
     phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria = false; % If true, the cell region will be rendered with an opacity proporitional to the number of days it met the threshold critiera
+    phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode = true; % If true, colorful borders are drawn around each cellROI to represent its preferred stimuli for each day.
     phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints = true;
     phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels = true;
+    
 end
 
 % If it's needed, make sure the export directory is set up appropriately
@@ -36,8 +39,7 @@ if phoPipelineOptions.shouldShowPlots
    end
 end
 
-[amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties);
-
+[amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode);
 
 if phoPipelineOptions.shouldShowPlots
     [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions);
@@ -62,8 +64,8 @@ fprintf('\t done.\n')
 
 
 %% Build Spatial Info:
-function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties)
-    should_enable_edge_layering_mode = true; % if true, uses the borders surrounding each cell to reflect the preferred tuning at a given day.
+function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, should_enable_edge_layering_mode)
+    % should_enable_edge_layering_mode: if true, uses the borders surrounding each cell to reflect the preferred tuning at a given day.
 
     %% Sort based on tuning score:
     [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
@@ -84,8 +86,6 @@ function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs
 
     outputMaps.masks.InsetEdge0 = zeros(num_cellROIs,512,512);
     outputMaps.masks.InsetEdge1 = zeros(num_cellROIs,512,512);
-    
-    
     
     % amalgamationMasks.PreferredStimulusAmplitude = zeros(512, 512, 3);
     % init_matrix = zeros(512, 512);
@@ -173,8 +173,6 @@ function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs
                     amalgamationMasks.AlphaConjunctionMask(BW3) = 1.0;
                 end
                 
-                
-
                 % Set the greyscale value to the ROIs tuning score, normalized by the maximum possible tuning score (indicating all three days were tuned)
                 amalgamationMasks.NumberOfTunedDays(temp.currCompSessionMask) = double(temp.currRoiTuningScore) / 3.0;
 
@@ -243,10 +241,21 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
         dcm_numDaysCriteria.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks));
     end
     
-    
-    j = 1;
-    %Preferred Stimulus Figure:
-    [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, j);
+    if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode
+        temp.currPreferredStimulusAmplitude = squeeze(sum(outputMaps.PreferredStimulusAmplitude, 1));
+        temp.currPreferredStimulusFrequency = squeeze(sum(outputMaps.PreferredStimulusFreq, 1));
+        
+        %Preferred Stimulus Figure:
+        [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
+    else
+        % Can only plot a single session, such as j=1:
+        j = 1;
+        temp.currPreferredStimulusAmplitude = squeeze(outputMaps.PreferredStimulusAmplitude(j,:,:));
+        temp.currPreferredStimulusFrequency = squeeze(outputMaps.PreferredStimulusFreq(j,:,:));
+        
+        %Preferred Stimulus Figure:
+        [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
+    end
     
     %% Custom Tooltips:
     dcm_roiTuningPreferredStimulus = datacursormode(figH_roiTuningPreferredStimulus);
@@ -260,15 +269,17 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
     
     
     
-    
-    function [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, j)
+    % fnPlotROITuningPreferredStimulusFigure
+    function [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, currPreferredStimulusAmplitude, currPreferredStimulusFrequency)
+        
+        
         figH_roiTuningPreferredStimulus = createFigureWithNameIfNeeded('CellROI Aggregate: Preferred Stimulus Tuning');
         clf(figH_roiTuningPreferredStimulus);
         ha = tight_subplot(1,2);
         
         amplitudeHandles.axes = ha(1);
         axes(amplitudeHandles.axes);
-        amplitudeHandles.tempImH = imshow(squeeze(outputMaps.PreferredStimulusAmplitude(j,:,:)), amplitudeColorMap);
+        amplitudeHandles.tempImH = imshow(temp.currPreferredStimulusAmplitude, amplitudeColorMap);
         if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
             set(amplitudeHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
         else
@@ -280,7 +291,7 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
 
         freqHandles.axes = ha(2);
         axes(freqHandles.axes);
-        freqHandles.tempImH = imshow(squeeze(outputMaps.PreferredStimulusFreq(j,:,:)), frequencyColorMap);
+        freqHandles.tempImH = imshow(temp.currPreferredStimulusFrequency, frequencyColorMap);
         if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
             set(freqHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
         else
