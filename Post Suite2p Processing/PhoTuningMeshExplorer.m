@@ -5,6 +5,22 @@
 
 fprintf('> Running PhoTuningMeshExplorer...\n');
 
+%% Need to get the appropriate version:
+should_show_neuropil_corrected_version = true;
+
+
+if should_show_neuropil_corrected_version
+    fprintf('\t Showing Neuropil Corrected Results...\n');
+    componentAggregatePropeties = minusNeuropil.componentAggregatePropeties;
+    finalOutPeaksGrid = minusNeuropil.finalOutPeaksGrid;
+else
+    fprintf('\t Showing non-Neuropil Corrected Results...\n');
+    componentAggregatePropeties = default_DFF.componentAggregatePropeties;
+    finalOutPeaksGrid = default_DFF.finalOutPeaksGrid;
+end
+
+
+
 %% Sort based on tuning score:
 [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
 
