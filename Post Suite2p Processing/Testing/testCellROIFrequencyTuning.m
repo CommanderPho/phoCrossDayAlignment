@@ -5,3 +5,11 @@ temp.currPreferredStimulusFrequency = squeeze(outputMaps.PreferredStimulusFreq(j
 
 %Preferred Stimulus Figure:
 [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
+
+
+
+% function [figH] = fnTestStimulusTracesPlot(index)
+    temp.cellRoiIndex = 1;
+    temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
+    [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, outputs.tbImg, redTraceLinesForAllStimuli);
+% end
