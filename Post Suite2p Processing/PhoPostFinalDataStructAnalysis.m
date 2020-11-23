@@ -65,27 +65,26 @@ uniqueComps = unique(compTable.compName,'stable'); % Each unique component corre
 num_cellROIs = length(uniqueComps); 
 
 multiSessionCellRoi_CompListIndicies = zeros(num_cellROIs, numOfSessions); % a list of comp indicies for each CellRoi
-cellROI_FirstDayTuningMaxPeak = zeros(num_cellROIs, 1); % Just the first day
-cellROI_SatisfiesFirstDayTuning = zeros(num_cellROIs, 1); % Just the first day
-
-% multiSessionCellRoiSeriesOutResults = {};
 finalOutComponentSegmentMasks = zeros(numCompListEntries, 512, 512);
 
+
+default_DFF.cellROI_FirstDayTuningMaxPeak = zeros(num_cellROIs, 1); % Just the first day
+default_DFF.cellROI_SatisfiesFirstDayTuning = zeros(num_cellROIs, 1); % Just the first day
 % Build 2D Mesh for each component
-finalOutPeaksGrid = zeros(numCompListEntries,6,6);
-
-
+default_DFF.finalOutPeaksGrid = zeros(numCompListEntries,6,6);
 % componentAggregatePropeties.maxTuningPeakValue: the maximum peak value for each signal
-componentAggregatePropeties.maxTuningPeakValue = zeros(numCompListEntries,1);
-
+default_DFF.componentAggregatePropeties.maxTuningPeakValue = zeros(numCompListEntries,1);
 % componentAggregatePropeties.sumTuningPeaksValue: the sum of all peaks
-componentAggregatePropeties.sumTuningPeaksValue = zeros(numCompListEntries,1);
+default_DFF.componentAggregatePropeties.sumTuningPeaksValue = zeros(numCompListEntries,1);
 
 
 if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
      % Generate similar grids for minusNeuropil outputs
-     minusNeuropil.finalOutPeaksGrid = finalOutPeaksGrid;
-    
+     minusNeuropil.finalOutPeaksGrid = default_DFF.finalOutPeaksGrid;
+     minusNeuropil.cellROI_FirstDayTuningMaxPeak = default_DFF.cellROI_FirstDayTuningMaxPeak; % Just the first day
+     minusNeuropil.cellROI_SatisfiesFirstDayTuning = default_DFF.cellROI_SatisfiesFirstDayTuning; % Just the first day
+     minusNeuropil.componentAggregatePropeties.maxTuningPeakValue = default_DFF.componentAggregatePropeties.maxTuningPeakValue;
+     minusNeuropil.componentAggregatePropeties.sumTuningPeaksValue = default_DFF.componentAggregatePropeties.sumTuningPeaksValue;
 end
         
 
@@ -109,31 +108,41 @@ for i = 1:num_cellROIs
         finalOutComponentSegmentMasks(curr_day_linear_comp_index,:,:) = outputs.referenceMask;
         
         % Store the outputs in the grid:
-        finalOutPeaksGrid(curr_day_linear_comp_index,:,:) = outputs.default_DFF.finalOutGrid;
-        componentAggregatePropeties.maximallyPreferredStimulusInfo(curr_day_linear_comp_index) = outputs.default_DFF.maximallyPreferredStimulus; 
-        peakSignals = outputs.default_DFF.AMConditions.peakSignal; % used
-        maxPeakSignal = max(peakSignals); % used
-        componentAggregatePropeties.maxTuningPeakValue(curr_day_linear_comp_index) = maxPeakSignal; 
-        componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_comp_index) = sum(peakSignals);
+        default_DFF.finalOutPeaksGrid(curr_day_linear_comp_index,:,:) = outputs.default_DFF.finalOutGrid;
+        default_DFF.componentAggregatePropeties.maximallyPreferredStimulusInfo(curr_day_linear_comp_index) = outputs.default_DFF.maximallyPreferredStimulus; 
+        default_DFF.peakSignals = outputs.default_DFF.AMConditions.peakSignal; % used
+        default_DFF.maxPeakSignal = max(default_DFF.peakSignals); % used
+        default_DFF.componentAggregatePropeties.maxTuningPeakValue(curr_day_linear_comp_index) = default_DFF.maxPeakSignal; 
+        default_DFF.componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_comp_index) = sum(default_DFF.peakSignals);
         
         
         if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
             % Store the outputs in the grid:
             minusNeuropil.finalOutPeaksGrid(curr_day_linear_comp_index,:,:) = outputs.minusNeuropil_DFF.finalOutGrid;
-            peakSignals = outputs.default_DFF.AMConditions.peakSignal; % used
+            minusNeuropil.componentAggregatePropeties.maximallyPreferredStimulusInfo(curr_day_linear_comp_index) = outputs.minusNeuropil_DFF.maximallyPreferredStimulus; 
+            minusNeuropil.peakSignals = outputs.minusNeuropil_DFF.AMConditions.peakSignal; % used
+            minusNeuropil.maxPeakSignal = max(minusNeuropil.peakSignals); % used
+            minusNeuropil.componentAggregatePropeties.maxTuningPeakValue(curr_day_linear_comp_index) = minusNeuropil.maxPeakSignal; 
+            minusNeuropil.componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_comp_index) = sum(minusNeuropil.peakSignals);
         end
 
-        
-        
         temp.isFirstSessionInCellRoi = (j == 1);
         if temp.isFirstSessionInCellRoi
-            cellROI_FirstDayTuningMaxPeak(i) = maxPeakSignal;
-            if maxPeakSignal > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria
-               cellROI_SatisfiesFirstDayTuning(i) = 1;
-
+            default_DFF.cellROI_FirstDayTuningMaxPeak(i) = default_DFF.maxPeakSignal;
+            if default_DFF.maxPeakSignal > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria
+               default_DFF.cellROI_SatisfiesFirstDayTuning(i) = 1;
             else
-                cellROI_SatisfiesFirstDayTuning(i) = 0;
+                default_DFF.cellROI_SatisfiesFirstDayTuning(i) = 0;
 %                 break; % Skip remaining comps for the other days if the first day doesn't meat the criteria
+            end
+            
+            if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
+                minusNeuropil.cellROI_FirstDayTuningMaxPeak(i) = minusNeuropil.maxPeakSignal;
+                if minusNeuropil.maxPeakSignal > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria
+                   minusNeuropil.cellROI_SatisfiesFirstDayTuning(i) = 1;
+                else
+                    minusNeuropil.cellROI_SatisfiesFirstDayTuning(i) = 0;
+                end
             end
                     
         else
@@ -144,24 +153,44 @@ for i = 1:num_cellROIs
 
 end %% endfor each cellROI
 
-cellROI_SatisfiesFirstDayTuning = (cellROI_FirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
-fprintf('\t done. INFO: %d of %d cellROIs satisfy the tuning criteria of %f on the first day of the experiment. \n', sum(cellROI_SatisfiesFirstDayTuning), length(cellROI_FirstDayTuningMaxPeak), phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
+default_DFF.cellROI_SatisfiesFirstDayTuning = (default_DFF.cellROI_FirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
+if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
+    minusNeuropil.cellROI_SatisfiesFirstDayTuning = (minusNeuropil.cellROI_FirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
+end
+            
+if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
+fprintf('\t done. INFO: %d of %d (%d of %d for neuropil) cellROIs satisfy the tuning criteria of %f on the first day of the experiment. \n',...
+    sum(default_DFF.cellROI_SatisfiesFirstDayTuning), length(default_DFF.cellROI_FirstDayTuningMaxPeak), ...
+    sum(minusNeuropil.cellROI_SatisfiesFirstDayTuning), length(minusNeuropil.cellROI_FirstDayTuningMaxPeak), ...
+    phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
-% WARNING: This assumes that there are the same number of sessions for each cellROI
-componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria = (componentAggregatePropeties.maxTuningPeakValue > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
+else
+    fprintf('\t done. INFO: %d of %d cellROIs satisfy the tuning criteria of %f on the first day of the experiment. \n', sum(default_DFF.cellROI_SatisfiesFirstDayTuning), length(default_DFF.cellROI_FirstDayTuningMaxPeak), phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
+end
 
-componentAggregatePropeties.maxTuningPeakValue = reshape(componentAggregatePropeties.maxTuningPeakValue,[],3); % Reshape from linear to cellRoi indexing
-componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria = reshape(componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria,[],3); % Reshape from linear to cellRoi indexing
+default_DFF.componentAggregatePropeties = updateComponentAggregateProperties(default_DFF.componentAggregatePropeties);
 
-% componentAggregatePropeties.tuningScore: the number of days the cellRoi meets the criteria
-componentAggregatePropeties.tuningScore = sum(componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria, 2);
+if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
+    minusNeuropil.componentAggregatePropeties = updateComponentAggregateProperties(minusNeuropil.componentAggregatePropeties);
+end
+
 
 fprintf('\t done.\n');
 
 
+function [componentAggregatePropeties] = updateComponentAggregateProperties(componentAggregatePropeties)
+    % WARNING: This assumes that there are the same number of sessions for each cellROI
+    componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria = (componentAggregatePropeties.maxTuningPeakValue > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
+    componentAggregatePropeties.maxTuningPeakValue = reshape(componentAggregatePropeties.maxTuningPeakValue,[],3); % Reshape from linear to cellRoi indexing
+    componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria = reshape(componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria,[],3); % Reshape from linear to cellRoi indexing
+
+    % componentAggregatePropeties.tuningScore: the number of days the cellRoi meets the criteria
+    componentAggregatePropeties.tuningScore = sum(componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria, 2);
+
+end
 
 
 
