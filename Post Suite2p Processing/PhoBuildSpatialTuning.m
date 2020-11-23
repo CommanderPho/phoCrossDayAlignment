@@ -316,7 +316,8 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
         [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
     else
         % Can only plot a single session, such as j=1:
-        j = 1;
+%         j = 1;
+        j = 1:3;
         temp.currPreferredStimulusAmplitude = squeeze(outputMaps.PreferredStimulusAmplitude(j,:,:));
         temp.currPreferredStimulusFrequency = squeeze(outputMaps.PreferredStimulusFreq(j,:,:));
         
@@ -336,32 +337,60 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
         
         figH_roiTuningPreferredStimulus = createFigureWithNameIfNeeded('CellROI Aggregate: Preferred Stimulus Tuning');
         clf(figH_roiTuningPreferredStimulus);
-        ha = tight_subplot(1,2);
         
-        amplitudeHandles.axes = ha(1);
-        axes(amplitudeHandles.axes);
-        amplitudeHandles.tempImH = imshow(currPreferredStimulusAmplitude, amplitudeColorMap);
-        if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
-            set(amplitudeHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
+        input_size = size(currPreferredStimulusAmplitude); % [512, 512]; [3 512 512] 
+        input_size_num_dims = length(input_size); % 1x2 double, 1x3 double
+        
+        if input_size_num_dims == 2
+            num_sessions = 1;
+        elseif input_size_num_dims == 3
+            num_sessions = size(currPreferredStimulusAmplitude,1);
         else
-            set(amplitudeHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaConjunctionMask);
+            error('Unexpected input dimensions!')
         end
-        title('Amplitude Tuning')
-        fnAddSimpleLegend(uniqueAmpLabels, amplitudeColorMap)
-        [amplitudeHandles.axH_centroidPoints, amplitudeHandles.axH_centroidTextObjects] = fnPlotAddCentroids(outputMaps, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
+        
+        ha = tight_subplot(num_sessions,2);
+        
+        
+        amplitudeHandles.axes = ha(1:2:length(ha)); % odd indicies [1 3 5]
+        freqHandles.axes = ha(2:2:length(ha)); % even indicies, [2 4 6]
+        
+        for i = 1:num_sessions
+            % Get the current amplitude and frequencies to plot
+            if (input_size_num_dims == 3)
+                temp.currPreferredStimulusAmplitude = squeeze(currPreferredStimulusAmplitude(i,:,:));
+                temp.currPreferredStimulusFrequency = squeeze(currPreferredStimulusFrequency(i,:,:));
+            else
+                temp.currPreferredStimulusAmplitude = currPreferredStimulusAmplitude;
+                temp.currPreferredStimulusFrequency = currPreferredStimulusFrequency;
+            end
+        
+%             amplitudeHandles.axes(i) = ha(i);
+            axes(amplitudeHandles.axes(i));
+            amplitudeHandles.tempImH = imshow(temp.currPreferredStimulusAmplitude, amplitudeColorMap, 'Parent', amplitudeHandles.axes(i));
+            if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
+                set(amplitudeHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
+            else
+                set(amplitudeHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaConjunctionMask);
+            end
+            title(amplitudeHandles.axes(i), 'Amplitude Tuning')
+            fnAddSimpleLegend(uniqueAmpLabels, amplitudeColorMap);
+            [amplitudeHandles.axH_centroidPoints, amplitudeHandles.axH_centroidTextObjects] = fnPlotAddCentroids(outputMaps, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
 
-        freqHandles.axes = ha(2);
-        axes(freqHandles.axes);
-        freqHandles.tempImH = imshow(currPreferredStimulusFrequency, frequencyColorMap);
-        if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
-            set(freqHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
-        else
-            set(freqHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaConjunctionMask);
+%             freqHandles.axes(i) = ha(2*i);
+            axes(freqHandles.axes(i));
+            freqHandles.tempImH = imshow(temp.currPreferredStimulusFrequency, frequencyColorMap, 'Parent', freqHandles.axes(i));
+            if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
+                set(freqHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
+            else
+                set(freqHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaConjunctionMask);
+            end
+            title(freqHandles.axes(i), 'Frequency Tuning')
+            fnAddSimpleLegend(uniqueFreqLabels, frequencyColorMap);
+            [freqHandles.axH_centroidPoints, freqHandles.axH_centroidTextObjects] = fnPlotAddCentroids(outputMaps, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
+
         end
-        title('Frequency Tuning')
-        fnAddSimpleLegend(uniqueFreqLabels, frequencyColorMap)
-        [freqHandles.axH_centroidPoints, freqHandles.axH_centroidTextObjects] = fnPlotAddCentroids(outputMaps, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
-       
+        
         sgtitle('Spatial Tuning Analysis')
     end
 
