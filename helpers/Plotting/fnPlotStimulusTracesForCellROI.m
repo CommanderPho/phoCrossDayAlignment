@@ -19,10 +19,13 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
     numRows = numel(nonzeros(uniqueFreqs))+1; %+1 because you have the zero mod condition too
     numCol = numel(nonzeros(uniqueAmps));
 
+%     ha = tight_subplot(numRows, numCol);
+    
     curr_linear_subplot_index = 1;
+    session_colors = {'r','g','b'};
+    
     % For each session in this cell ROI
-%     for i = 1:temp.numSessions
-        i = 1;
+    for i = 1:temp.numSessions
         % Get the index for this session of this cell ROI
         temp.compIndex = currAllSessionCompIndicies(i); 
         % Gets the grid for this session of this cell ROI
@@ -35,6 +38,8 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
 %         axH = plot(tbImg, temp.currRedTraceLinesForAllStimuli);
         
         for b = 1:numStimuli
+%             [ampsIndex, freqsIndex] = indexMap_StimulusLinear2AmpsFreqsArray(b,:,:);
+            
             %stimulusList = flip(uniqueStimuli);
 %             tracesToPlot = squeeze(temp.currRedTraceLinesForAllStimuli(b,:));
 %             %get the raw data that you're gonna plot
@@ -44,16 +49,22 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
 %             meanData=mean(imgDataToPlot,1);
 
             meanData = squeeze(temp.currRedTraceLinesForAllStimuli(b,:));
+%             axes(ha(numStimuli-b+1));
+            
             subplot(numRows, numCol, numStimuli-b+1);
 %             plot(tbImg, imgDataToPlot,'color','black')
 %             hold on
-            plot(tbImg, meanData, 'color', 'red', 'linewidth', 2);
+            h_PlotObj = plot(tbImg, meanData);
+            set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 2);
             title(strcat(num2str(uniqueStimuli(b,1)), {' '}, 'Hz', {' '}, 'at', {' '}, num2str(uniqueStimuli(b,2)*100), {' '}, '% Depth'))
             xlim([0, 5]);
+            hold on;
+            
         end
         
         
-    % end %% end for session
-
+    end %% end for session
+    
+    sgtitle(['cellRoi: ' num2str(cellRoiIndex)]);
 end
 

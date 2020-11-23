@@ -9,7 +9,7 @@ temp.currPreferredStimulusFrequency = squeeze(outputMaps.PreferredStimulusFreq(j
 
 
 % function [figH] = fnTestStimulusTracesPlot(index)
-    temp.cellRoiIndex = 1;
+    temp.cellRoiIndex = 5;
     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
     [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, outputs.tbImg, outputs.uniqueStimuli, outputs.indexMap_StimulusLinear2AmpsFreqsArray, redTraceLinesForAllStimuli);
 % end
