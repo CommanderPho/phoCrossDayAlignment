@@ -82,10 +82,9 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
         end
         set(axH,'LineWidth', 1.0);
         
-        set(axH,'Marker',meshPointsMarkerSymbol,'MarkerSize', meshPointsMarkerSize); % Dots
+        set(axH,'Marker', meshPointsMarkerSymbol, 'MarkerSize', meshPointsMarkerSize); % Dots
         if exist('meshPointsMarkerColor','var')
             set(axH,'MarkerFaceColor', meshPointsMarkerColor{i}, 'MarkerEdgeColor', meshPointsMarkerColor{i});
-            set(axH,'Marker');
         end
         hold on;
 

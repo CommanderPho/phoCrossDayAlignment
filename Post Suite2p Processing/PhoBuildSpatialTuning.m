@@ -159,16 +159,16 @@ if phoPipelineOptions.shouldShowPlots
     
     %% Optional Export to disk:
     if phoPipelineOptions.shouldSaveFiguresToDisk
-            %% Export plots:
-            fig_name = sprintf('cellROI_shaded_by_number_of_days.fig');
-            fig_numDaysCriteria_export_path = fullfile(phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path, fig_name);
-            savefig(figH_numDaysCriteria, fig_numDaysCriteria_export_path);
-            close(figH_numDaysCriteria);
+        %% Export plots:
+        fig_name = sprintf('cellROI_shaded_by_number_of_days.fig');
+        fig_numDaysCriteria_export_path = fullfile(phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path, fig_name);
+        savefig(figH_numDaysCriteria, fig_numDaysCriteria_export_path);
+        close(figH_numDaysCriteria);
 
-            fig_name = sprintf('cellROI_TuningPreferredStimulus.fig');
-            fig_export_path = fullfile(phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path, fig_name);
-            savefig(figH_roiTuningPreferredStimulus, fig_export_path);
-            close(figH_roiTuningPreferredStimulus);
+        fig_name = sprintf('cellROI_TuningPreferredStimulus.fig');
+        fig_export_path = fullfile(phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path, fig_name);
+        savefig(figH_roiTuningPreferredStimulus, fig_export_path);
+        close(figH_roiTuningPreferredStimulus);
     end
         
     

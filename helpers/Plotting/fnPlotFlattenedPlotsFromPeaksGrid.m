@@ -30,8 +30,6 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
         temp.currPeaksGrid = squeeze(finalOutPeaksGrid(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x6x6)
         temp.currDateString = dateStrings{i};
         
-        
-        
         curr_ax = subplot(2, temp.numSessions, curr_linear_subplot_index);
         colororder(curr_ax, amplitudeColorMap)
         hold on; % required for colororder to take effect
@@ -44,7 +42,7 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
          
         freq_zero = uniqueFreqs(1);
         peak_zero = temp.currPeaksGrid(1,1);
-        plot(freq_zero, peak_zero,'x','Color','black','MarkerSize',20) % Draws a single point
+        plot(freq_zero, peak_zero,'x','Color','black','MarkerSize',20); % Draws a single point
         hold on;
 %         text(max(tbImg),c-1,strcat(num2str(uniqueAmps(c)*100),'%'))
         
