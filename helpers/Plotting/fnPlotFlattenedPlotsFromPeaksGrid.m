@@ -42,13 +42,14 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
          
         freq_zero = uniqueFreqs(1);
         peak_zero = temp.currPeaksGrid(1,1);
-        plot(freq_zero, peak_zero,'x','Color','black','MarkerSize',20); % Draws a single point
+        plot(freq_zero, peak_zero,'x','Color','black','MarkerSize',20,...
+            'LineWidth',3); % Draws a single point
         hold on;
 %         text(max(tbImg),c-1,strcat(num2str(uniqueAmps(c)*100),'%'))
         
         h_x_amp = plot(repmat(uniqueFreqs(2:end)', [length(uniqueAmps(2:end)) 1])', temp.currPeaksGrid(2:end,2:end)');
         set(h_x_amp, 'linewidth', 2);
-        
+        set(h_x_amp, 'Marker', '.', 'MarkerSize', 20);
        
         ylabel('Peak DF/F')
         xlabel('AM Rate (Hz)')
@@ -63,11 +64,13 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
         
         amp_zero = uniqueAmps(1);
         peak_zero = temp.currPeaksGrid(1,1);
-        plot(amp_zero, peak_zero,'x','Color','black','MarkerSize',20) % Draws a single point
+        plot(amp_zero, peak_zero,'x','Color','black','MarkerSize',20,...
+            'LineWidth',3) % Draws a single point
         hold on;
         
         h_x_freq = plot(repmat(uniqueAmps(2:end)', [length(uniqueFreqs(2:end)) 1])', temp.currPeaksGrid(2:end,2:end)');
         set(h_x_freq, 'linewidth', 2);
+        set(h_x_freq, 'Marker', '.', 'MarkerSize', 20);
         ylabel('Peak DF/F')
         xlabel('AM Depth (%)')
         legend(uniqueFreqLabels);

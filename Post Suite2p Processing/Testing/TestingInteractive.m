@@ -8,6 +8,9 @@
 
 addpath(genpath('../../helpers'));
 
+%% Options:
+should_show_masking_plot = false;
+
 temp.cellRoiIndex = 5;
 
 
@@ -19,22 +22,22 @@ end
 % Build a new slider controller
 iscInfo.curr_i = temp.cellRoiIndex;
 iscInfo.NumberOfSeries = length(uniqueComps);
-% curr_callback = 
-% slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, @(extantFigH, curr_i) (pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH, curr_i)) );
-% extantFigH_plot_masking = figure('Name','Slider Controlled Masking Plot','NumberTitle','off');
-% extantFigH_plot_2d = figure('Name','Slider Controlled 2D Plot','NumberTitle','off');
-% extantFigH_plot_3d = figure('Name','Slider Controlled 3D Mesh Plot','NumberTitle','off');
 
-extantFigH_plot_masking = createFigureWithNameIfNeeded('Slider Controlled Masking Plot');
+
+if should_show_masking_plot
+    extantFigH_plot_masking = createFigureWithNameIfNeeded('Slider Controlled Masking Plot');
+end
 extantFigH_plot_2d = createFigureWithNameIfNeeded('Slider Controlled 2D Plot');
 extantFigH_plot_3d = createFigureWithNameIfNeeded('Slider Controlled 3D Mesh Plot');
 
 main_plot_callback = @(curr_i) (pho_plot_interactive_all(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH_plot_2d, extantFigH_plot_3d, curr_i));
-secondary_plot_callback = @(curr_i) (pho_plot_interactive_masking_all(dateStrings, finalOutComponentSegment, multiSessionCellRoi_CompListIndicies, extantFigH_plot_masking, curr_i));
+if should_show_masking_plot
+    secondary_plot_callback = @(curr_i) (pho_plot_interactive_masking_all(dateStrings, finalOutComponentSegment, multiSessionCellRoi_CompListIndicies, extantFigH_plot_masking, curr_i));
+    plot_callbacks = {main_plot_callback, secondary_plot_callback};
+else
+    plot_callbacks = {main_plot_callback};
+end
 
-plot_callbacks = {main_plot_callback, secondary_plot_callback};
-% slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, @(curr_i) (pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH_plot_2d, curr_i)) );
-% slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, main_plot_callback);
 slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, plot_callbacks);
 
 
