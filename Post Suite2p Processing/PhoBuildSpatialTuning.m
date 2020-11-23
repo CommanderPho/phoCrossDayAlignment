@@ -43,10 +43,10 @@ if phoPipelineOptions.shouldShowPlots
    end
 end
 
-[amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions);
+[amalgamationMasks, outputMaps, cellRoiSortIndex] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions);
 
 if phoPipelineOptions.shouldShowPlots
-    [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions);
+    [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, cellRoiSortIndex, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions);
     
     %% Optional Export to disk:
     if phoPipelineOptions.shouldSaveFiguresToDisk
@@ -68,7 +68,7 @@ fprintf('\t done.\n')
 
 
 %% Build Spatial Info:
-function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions)
+function [amalgamationMasks, outputMaps, cellRoiSortIndex] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions)
     % should_enable_edge_layering_mode: if true, uses the borders surrounding each cell to reflect the preferred tuning at a given day.
     should_enable_edge_layering_mode = phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode;
     edge_layering_is_outset_mode = phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.edge_layering_is_outset_mode; % edge_layering_is_outset_mode: if true, it uses the outer borders to draw; % edge_layering_is_outset_mode: if true, it uses the outer borders to draw
@@ -246,7 +246,7 @@ function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs
 end
 
 %% Master Plotting Function
-function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions)
+function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, cellRoiSortIndex, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions)
     uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),{'% Depth'});
     uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
     %specify colormaps for your figure. This is important!!
@@ -270,21 +270,53 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
         dcm_numDaysCriteria.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks));
     end
     
-    if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode
-        temp.currPreferredStimulusAmplitude = squeeze(sum(outputMaps.PreferredStimulusAmplitude, 1));
-        temp.currPreferredStimulusFrequency = squeeze(sum(outputMaps.PreferredStimulusFreq, 1));
+    
+    
+    
+    num_cellROIs = size(outputMaps.masks.Fill, 1);
+    
+    for cellROI_Index = 1:num_cellROIs
+        temp.cellRoiIndex = cellRoiSortIndex(cellROI_Index); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
+        squeeze(outputMaps.masks.Fill(cellROI_Index,:,:));
         
-        %Preferred Stimulus Figure:
-        [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
-    else
-        % Can only plot a single session, such as j=1:
-        j = 1;
-        temp.currPreferredStimulusAmplitude = squeeze(outputMaps.PreferredStimulusAmplitude(j,:,:));
-        temp.currPreferredStimulusFrequency = squeeze(outputMaps.PreferredStimulusFreq(j,:,:));
         
-        %Preferred Stimulus Figure:
-        [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
+    
+    
+    
+    
+    
+    
+    
+%     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
+%     %% cellROI Specific Score:
+%     temp.currRoiTuningScore = componentAggregatePropeties.tuningScore(temp.cellRoiIndex); % currently only uses first session?
+%     temp.numSessions = length(temp.currAllSessionCompIndicies);
+% 
+%         for j = 1:temp.numSessions
+% 
+%             temp.currCompSessionIndex = temp.currAllSessionCompIndicies(j);
+% 
+% 
+%         end
+
+
     end
+    
+%     if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode
+%         temp.currPreferredStimulusAmplitude = squeeze(sum(outputMaps.PreferredStimulusAmplitude, 1));
+%         temp.currPreferredStimulusFrequency = squeeze(sum(outputMaps.PreferredStimulusFreq, 1));
+%         
+%         %Preferred Stimulus Figure:
+%         [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
+%     else
+%         % Can only plot a single session, such as j=1:
+%         j = 1;
+%         temp.currPreferredStimulusAmplitude = squeeze(outputMaps.PreferredStimulusAmplitude(j,:,:));
+%         temp.currPreferredStimulusFrequency = squeeze(outputMaps.PreferredStimulusFreq(j,:,:));
+%         
+%         %Preferred Stimulus Figure:
+%         [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
+%     end
     
     %% Custom Tooltips:
     dcm_roiTuningPreferredStimulus = datacursormode(figH_roiTuningPreferredStimulus);
