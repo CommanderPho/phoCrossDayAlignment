@@ -103,6 +103,10 @@ function [amalgamationMasks, outputMaps, cellRoiSortIndex] = fnBuildSpatialTunin
 
     outputMaps.PreferredStimulusAmplitude = init_matrix;
     outputMaps.PreferredStimulusFreq = init_matrix;
+    
+    
+    outputMaps.PreferredStimulus = zeros(num_cellROIs, numOfSessions, 2);
+
 
     % amalgamationMasks.DidPreferredStimulusChange: keeps track of whether the preferredStimulus amplitude or frequency changed for a cellROI between sessions.
     outputMaps.DidPreferredStimulusChange = zeros(num_cellROIs, (numOfSessions-1));
@@ -198,6 +202,8 @@ function [amalgamationMasks, outputMaps, cellRoiSortIndex] = fnBuildSpatialTunin
             temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
             temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
 
+            outputMaps.PreferredStimulus(i,j,:) =  temp.currMaximalIndexTuple;
+                
             if should_enable_edge_layering_mode
                 if j <= 1
                     if edge_layering_is_outset_mode
@@ -272,13 +278,24 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
     
     
     
+    outputMaps.PreferredStimulus(i,j,:)
     
-    num_cellROIs = size(outputMaps.masks.Fill, 1);
+    num_cellROIs = size(outputMaps.PreferredStimulus, 1);
+    num_sessions = size(outputMaps.PreferredStimulus, 2);
     
     for cellROI_Index = 1:num_cellROIs
         temp.cellRoiIndex = cellRoiSortIndex(cellROI_Index); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
-        squeeze(outputMaps.masks.Fill(cellROI_Index,:,:));
+%         squeeze(outputMaps.masks.Fill(cellROI_Index,:,:));
         
+        currPreferredMatrix = outputMaps.PreferredStimulus(temp.cellRoiIndex, :,:); % Returns the [amp freq] tuples for all sessions
+        
+%         
+%         for session_Index = 1:num_sessions
+%            currPreferredPair = outputMaps.PreferredStimulus(temp.cellRoiIndex, session_Index,:); % Returns the [amp freq] tuple
+%            
+%             
+%             
+%         end
         
     
     
