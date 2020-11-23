@@ -105,13 +105,13 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     outputs.tbImg = linspace(0,numFrames/processingOptions.frameRate, numFrames); % make a timebase to plot as xAxis for traces
     
     % The important red lines:
-    outputs.TracesForAllStimuli.meanData = zeros(outputs.numStimuli, numFrames);
+%     outputs.TracesForAllStimuli.meanData = zeros(outputs.numStimuli, numFrames);
     
-    outputs.default_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
+    outputs.default_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, numFrames); % The important red lines:
     outputs.default_DFF.AMConditions.peakSignal = zeros(outputs.numStimuli, 1);
     
     if processingOptions.compute_neuropil_corrected_versions
-        outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
+        outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, numFrames); % The important red lines:
         outputs.minusNeuropil_DFF.AMConditions.peakSignal = zeros(outputs.numStimuli, 1);
     end
     
@@ -187,14 +187,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     % Build 2D Mesh for each component
     outputs.default_DFF.finalOutGrid = zeros(numUniqueAmps, numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
     
-    %% Compute the maximally preferred stimulus for this comp
-    % outputs.maximallyPreferredStimulus
-    %% LinearIndex % The linear stimulus index corresponding to the maximally preferred (amp, freq) pair for each comp.
-    %% AmpFreqIndexTuple % A pair containing the index into the amp array followed by the index into the freq array corresponding to the maximally preferred (amp, freq) pair.
-    %% AmpFreqValuesTuple % The unique amp and freq values at the preferred index
-    %% Value % The actual Peak DF/F value
-    %
-    
+    %% Computes the maximally preferred stimulus for this comp    
     % Also build information about the (amp, freq) pair corresponding to the maximum Peak DF/F for this comp.
     outputs.default_DFF.maximallyPreferredStimulus.LinearIndex = -1; % The linear stimulus index corresponding to the maximally preferred (amp, freq) pair for each comp.
     outputs.default_DFF.maximallyPreferredStimulus.AmpFreqIndexTuple = [-1, -1]; % A pair containing the index into the amp array followed by the index into the freq array corresponding to the maximally preferred (amp, freq) pair.

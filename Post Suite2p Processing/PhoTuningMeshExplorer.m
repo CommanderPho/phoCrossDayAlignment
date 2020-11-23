@@ -47,18 +47,21 @@ if phoPipelineOptions.PhoTuningMeshExplorer.should_show_neuropil_corrected_versi
     fprintf('\t Showing Neuropil Corrected Results...\n');
     componentAggregatePropeties = minusNeuropil.componentAggregatePropeties;
     finalOutPeaksGrid = minusNeuropil.finalOutPeaksGrid;
+    redTraceLinesForAllStimuli = minusNeuropil.redTraceLinesForAllStimuli;
+    
 else
     fprintf('\t Showing non-Neuropil Corrected Results...\n');
     componentAggregatePropeties = default_DFF.componentAggregatePropeties;
     finalOutPeaksGrid = default_DFF.finalOutPeaksGrid;
+    redTraceLinesForAllStimuli = default_DFF.redTraceLinesForAllStimuli;
 end
 
 %% Perform main plot:
-[cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, finalOutPeaksGrid, phoPipelineOptions);
+[cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, finalOutPeaksGrid, redTraceLinesForAllStimuli, phoPipelineOptions);
 fprintf('\t done.\n');
 
 
-function [cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, finalOutPeaksGrid, phoPipelineOptions)
+function [cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, finalOutPeaksGrid, redTraceLinesForAllStimuli, phoPipelineOptions)
 
 %     %% Sort based on tuning score:
     [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');

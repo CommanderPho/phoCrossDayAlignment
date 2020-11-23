@@ -78,6 +78,8 @@ finalOutComponentSegment.Edge = zeros(numCompListEntries, 512, 512);
 
 default_DFF.cellROI_FirstDayTuningMaxPeak = zeros(num_cellROIs, 1); % Just the first day
 default_DFF.cellROI_SatisfiesFirstDayTuning = zeros(num_cellROIs, 1); % Just the first day
+
+default_DFF.redTraceLinesForAllStimuli = zeros(numCompListEntries, 26, 150);
 % Build 2D Mesh for each component
 default_DFF.finalOutPeaksGrid = zeros(numCompListEntries,6,6);
 % componentAggregatePropeties.maxTuningPeakValue: the maximum peak value for each signal
@@ -85,8 +87,10 @@ default_DFF.componentAggregatePropeties.maxTuningPeakValue = zeros(numCompListEn
 % componentAggregatePropeties.sumTuningPeaksValue: the sum of all peaks
 default_DFF.componentAggregatePropeties.sumTuningPeaksValue = zeros(numCompListEntries,1);
 
+
 if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
      % Generate similar grids for minusNeuropil outputs
+     minusNeuropil.redTraceLinesForAllStimuli = default_DFF.redTraceLinesForAllStimuli;
      minusNeuropil.finalOutPeaksGrid = default_DFF.finalOutPeaksGrid;
      minusNeuropil.cellROI_FirstDayTuningMaxPeak = default_DFF.cellROI_FirstDayTuningMaxPeak; % Just the first day
      minusNeuropil.cellROI_SatisfiesFirstDayTuning = default_DFF.cellROI_SatisfiesFirstDayTuning; % Just the first day
@@ -97,7 +101,7 @@ end
 
 
 for i = 1:num_cellROIs
-   curr_cellROI = uniqueComps{i};
+   curr_cellROI = uniqueComps{i}; % Get the name of the current cellROI. It has a name like 'comp14'
    curr_cellROI_compListIndicies = find(strcmp(compTable.compName, curr_cellROI)); % Should be a list of 3 relevant indicies, one corresponding to each day.
    
    fprintf('\t \t uniqueComp[%d]: %s', i, curr_cellROI);
@@ -105,7 +109,7 @@ for i = 1:num_cellROIs
    multiSessionCellRoi_CompListIndicies(i,:) = curr_cellROI_compListIndicies';
 
    % Iterate through each component (all days) for this cellROI
-    currOutCells = {};
+%     currOutCells = {};
 	for j = 1:length(curr_cellROI_compListIndicies)
 		curr_day_linear_comp_index = curr_cellROI_compListIndicies(j); % The linear comp index, not the unique cellROI index
 		[currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(activeAnimalCompList, curr_day_linear_comp_index);
@@ -122,7 +126,7 @@ for i = 1:num_cellROIs
         default_DFF.maxPeakSignal = max(default_DFF.peakSignals); % used
         default_DFF.componentAggregatePropeties.maxTuningPeakValue(curr_day_linear_comp_index) = default_DFF.maxPeakSignal; 
         default_DFF.componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_comp_index) = sum(default_DFF.peakSignals);
-        
+        default_DFF.redTraceLinesForAllStimuli(curr_day_linear_comp_index, :, :) = outputs.default_DFF.AMConditions.imgDataToPlot; % [26   150]
         
         if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
             % Store the outputs in the grid:
@@ -132,6 +136,7 @@ for i = 1:num_cellROIs
             minusNeuropil.maxPeakSignal = max(minusNeuropil.peakSignals); % used
             minusNeuropil.componentAggregatePropeties.maxTuningPeakValue(curr_day_linear_comp_index) = minusNeuropil.maxPeakSignal; 
             minusNeuropil.componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_comp_index) = sum(minusNeuropil.peakSignals);
+            minusNeuropil.redTraceLinesForAllStimuli(curr_day_linear_comp_index, :, :) = outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot;
         end
 
         temp.isFirstSessionInCellRoi = (j == 1);
@@ -140,7 +145,7 @@ for i = 1:num_cellROIs
             if default_DFF.maxPeakSignal > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria
                default_DFF.cellROI_SatisfiesFirstDayTuning(i) = 1;
             else
-                default_DFF.cellROI_SatisfiesFirstDayTuning(i) = 0;
+               default_DFF.cellROI_SatisfiesFirstDayTuning(i) = 0;
 %                 break; % Skip remaining comps for the other days if the first day doesn't meat the criteria
             end
             
@@ -154,6 +159,7 @@ for i = 1:num_cellROIs
             end
                     
         else
+            % If it isn't the first session
 
         end %% endif is first session
         
@@ -187,12 +193,11 @@ if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_n
 end
 
 
-% finalOutComponentSegment.Masks = reshape(finalOutComponentSegment.Masks,[],3); % Reshape from linear to cellRoi indexing
-% finalOutComponentSegment.Edge = reshape(finalOutComponentSegment.Edge,[],3); % Reshape from linear to cellRoi indexing
-
 fprintf('\t done.\n');
 
 
+
+% updateComponentAggregateProperties(...): small helper function that adds some reshaped properties
 function [componentAggregatePropeties] = updateComponentAggregateProperties(componentAggregatePropeties, tuning_max_threshold_criteria)
     % WARNING: This assumes that there are the same number of sessions for each cellROI
     componentAggregatePropeties.maxTuningPeakValueSatisfiedCriteria = (componentAggregatePropeties.maxTuningPeakValue > tuning_max_threshold_criteria);
