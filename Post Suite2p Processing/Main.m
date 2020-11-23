@@ -8,6 +8,9 @@ phoPipelineOptions.default_FD_file_path = '/Users/pho/Dropbox/Classes/Fall 2020/
 phoPipelineOptions.shouldShowPlots = true;
 phoPipelineOptions.shouldSaveFiguresToDisk = false; % Note that this has no effect if phoPipelineOptions.shouldShowPlots is false.
 
+phoPipelineOptions.ignoredCellROIs = [3, 50, 132, 157, 116];
+
+
 %%% PhoLoadFinalDataStruct Options:
 phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave = false;
 phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil = true;

@@ -26,6 +26,8 @@ if ~exist('phoPipelineOptions','var')
 	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.frameRate=30;
 	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.smoothValue = 5;
     
+    phoPipelineOptions.ignoredCellROIs = [];
+    
 end
 
 %% Primary Outputs:
@@ -63,14 +65,43 @@ activeAnimalCompList = compList(strcmpi({compList.anmID}, phoPipelineOptions.Pho
 dateStrings = {activeAnimalSessionList.date};  % Strings representing each date.
 numOfSessions = length(dateStrings); % The number of sessions (days) for this animal.
 
+%% This will need to be modified for bad/ignored cellROIs:
 compTable = struct2table(activeAnimalCompList);
 numCompListEntries = height(compTable); % The number of rows in the compTable. Should be a integer multiple of the number of unique comps (corresponding to multiple sessions/days for each unique comp)
+
+uniqueComps = unique(compTable.compName,'stable'); % Each unique component corresponds to a cellROI
+% Make a backup before removing anything:
+backup.uniqueComps = uniqueComps;
+backup.compList = compList;
+backup.activeAnimalCompList = activeAnimalCompList;
+
+%% Filter:
+excludedCompsList = uniqueComps(phoPipelineOptions.ignoredCellROIs); % Before removing them, get the list of the component names that are being removed.
+uniqueComps(phoPipelineOptions.ignoredCellROIs) = []; % Remove the comps that are excluded
+
+backup.compTable = compTable;
+
+for i = 1:length(excludedCompsList)
+   curr_ignoredCellROI_OriginalIndex = phoPipelineOptions.ignoredCellROIs(i);
+   curr_ignoredCellROI_ComponentName = excludedCompsList{i};
+   
+   rowsToRemove = strcmpi(compTable.compName, curr_ignoredCellROI_ComponentName);
+   compTable(rowsToRemove,:) = []; % Remove these rows
+    
+   compList(rowsToRemove) = [];
+   activeAnimalCompList(rowsToRemove) = [];
+   
+end
+
+num_cellROIs = length(uniqueComps); 
+
+% Add an index column to the table:
 indexArray = 1:height(compTable);
 indexColumn = table(indexArray','VariableNames',{'index'});
 compTable = [compTable indexColumn];
+% update numCompListEntries after removing the irrelevant ones
+numCompListEntries = height(compTable); 
 
-uniqueComps = unique(compTable.compName,'stable'); % Each unique component corresponds to a cellROI
-num_cellROIs = length(uniqueComps); 
 
 multiSessionCellRoi_CompListIndicies = zeros(num_cellROIs, numOfSessions); % a list of comp indicies for each CellRoi
 finalOutComponentSegment.Masks = zeros(numCompListEntries, 512, 512);
