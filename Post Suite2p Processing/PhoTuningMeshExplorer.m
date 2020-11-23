@@ -61,7 +61,7 @@ for i = 1:length(cellRoisToPlot)
     %% Plot the grid as a test
     temp.cellRoiIndex = cellRoisToPlot(i);
     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
-    temp.firstCompSessionIndex = temp.currAllSessionCompIndicies(1);
+%     temp.firstCompSessionIndex = temp.currAllSessionCompIndicies(1);
     
 %     temp.firstCompSessionMask = squeeze(finalOutComponentSegment.Masks(temp.firstCompSessionIndex,:,:));
 
