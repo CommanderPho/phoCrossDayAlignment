@@ -136,25 +136,15 @@ for i = 1:num_cellROIs
             outputMaps.masks.Fill(i,:,:) = temp.currCompSessionFill;
             outputMaps.masks.Edge(i,:,:) = temp.currCompSessionEdge;
             
-            %                 [B,L] = bwboundaries(temp.currCompSessionFill,'noholes');
             BW2_Inner = imerode(temp.currCompSessionFill, temp.structuring_element);
             BW3_Inner = imerode(BW2_Inner, temp.structuring_element);
             BW4_Inner = imerode(BW3_Inner, temp.structuring_element);
-            %                 BW2 = bwperim(temp.currCompSessionFill);
-            %                 BW3 = bwperim(BW2);
-            
-            %                 figure(1446)
-            %                 subplot(1,2,1)
-            %                 imshowpair(temp.currCompSessionFill, BW2)
-            %                 subplot(1,2,2)
-            %                 imshowpair(BW2, BW3)
-            
+         
             %% Inset Elements:
             outputMaps.masks.InsetEdge0(i,:,:) = BW2_Inner;
             outputMaps.masks.InsetEdge1(i,:,:) = BW3_Inner;
             outputMaps.masks.InsetEdge2(i,:,:) = BW4_Inner;
-            
-            
+                        
             %% Outside Elements:
             BW2_Outer = imdilate(temp.currCompSessionFill, temp.structuring_element);
             BW3_Outer = imdilate(BW2_Outer, temp.structuring_element);
@@ -276,8 +266,8 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
         [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
     else
         % Can only plot a single session, such as j=1:
-        j = 1;
-    %     j = 1:3;
+%         j = 1;
+        j = 1:3;
         temp.currPreferredStimulusAmplitude = squeeze(outputMaps.PreferredStimulusAmplitude(j,:,:));
         temp.currPreferredStimulusFrequency = squeeze(outputMaps.PreferredStimulusFreq(j,:,:));
 
@@ -359,9 +349,9 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
         dcm.Enable = 'on';
         dcm.DisplayStyle = 'window';
         if exist('slider_controller','var')
-            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, slider_controller));
+            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, outputMaps, slider_controller));
         else
-            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks));
+            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, outputMaps));
         end
 
     end
@@ -428,7 +418,7 @@ function figH_numDaysCriteria = fnPlotNumberOfDaysCriteriaFigure(amalgamationMas
 end
 
 %% Custom ToolTip callback function that displays the clicked cell ROI as well as the x,y position.
-function txt = displayCoordinates(figH, info, amalgamationMasks, activeSliderController)
+function txt = displayCoordinates(figH, info, amalgamationMasks, outputMaps, activeSliderController)
     x = info.Position(1);
     y = info.Position(2);
     cellROI = amalgamationMasks.cellROI_LookupMask(y, x);
@@ -438,8 +428,24 @@ function txt = displayCoordinates(figH, info, amalgamationMasks, activeSliderCon
     else
         cellROIString = 'None';
     end
+    
+    cellROI_PreferredStimulusMatrix = squeeze(outputMaps.PreferredStimulus(cellROI,:,:));
+    disp(cellROI_PreferredStimulusMatrix);
+    % 3 sessions x [preferredAmp, preferredFreq]
+%     numSessions = size(cellROI_PreferredStimulusMatrix, 1);
+%     
+%     for i = 1:numSessions
+%         preferredAmpFreq = cellROI_PreferredStimulusMatrix(i,:);
+%         
+%         
+%     end
+        
+    
     txt = ['(' num2str(x) ', ' num2str(y) '): cellROI: ' cellROIString];
 
+    txt = ['(' num2str(x) ', ' num2str(y) '): cellROI: ' cellROIString];
+    
+    
     fprintf('selected cellROI: %d...\n', cellROI);
 
     if exist('activeSliderController','var')
