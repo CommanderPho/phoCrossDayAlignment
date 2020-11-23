@@ -21,11 +21,21 @@ iscInfo.curr_i = temp.cellRoiIndex;
 iscInfo.NumberOfSeries = length(uniqueComps);
 % curr_callback = 
 % slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, @(extantFigH, curr_i) (pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH, curr_i)) );
+% extantFigH_plot_masking = figure('Name','Slider Controlled Masking Plot','NumberTitle','off');
+% extantFigH_plot_2d = figure('Name','Slider Controlled 2D Plot','NumberTitle','off');
+% extantFigH_plot_3d = figure('Name','Slider Controlled 3D Mesh Plot','NumberTitle','off');
 
-extantFigH_plot_2d = figure('Name','Slider Controlled 2D Plot','NumberTitle','off');
-extantFigH_plot_3d = figure('Name','Slider Controlled 3D Mesh Plot','NumberTitle','off');
+extantFigH_plot_masking = createFigureWithNameIfNeeded('Slider Controlled Masking Plot');
+extantFigH_plot_2d = createFigureWithNameIfNeeded('Slider Controlled 2D Plot');
+extantFigH_plot_3d = createFigureWithNameIfNeeded('Slider Controlled 3D Mesh Plot');
+
+main_plot_callback = @(curr_i) (pho_plot_interactive_all(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH_plot_2d, extantFigH_plot_3d, curr_i));
+secondary_plot_callback = @(curr_i) (pho_plot_interactive_masking_all(dateStrings, finalOutComponentSegment, multiSessionCellRoi_CompListIndicies, extantFigH_plot_masking, curr_i));
+
+plot_callbacks = {main_plot_callback, secondary_plot_callback};
 % slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, @(curr_i) (pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH_plot_2d, curr_i)) );
-slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, @(curr_i) (pho_plot_interactive_all(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH_plot_2d, extantFigH_plot_3d, curr_i)) );
+% slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, main_plot_callback);
+slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, plot_callbacks);
 
 
 %% Plot function called as a callback on update
@@ -35,9 +45,11 @@ function pho_plot_interactive_all(dateStrings, uniqueAmps, uniqueFreqs, finalOut
 end
 
 
+function pho_plot_interactive_masking_all(dateStrings, finalOutComponentSegment, multiSessionCellRoi_CompListIndicies, extantFigH_masking, curr_cellRoiIndex)
+    pho_plot_cell_mask(dateStrings, finalOutComponentSegment, multiSessionCellRoi_CompListIndicies, extantFigH_masking, curr_cellRoiIndex);
+end
 
-
-function plotted_figH = pho_plot_cell_mask(dateStrings, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
+function plotted_figH = pho_plot_cell_mask(dateStrings, finalOutComponentSegment, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
     % COMPUTED
     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
 
