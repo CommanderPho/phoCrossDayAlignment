@@ -253,10 +253,7 @@ if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_n
     minusNeuropil.componentAggregatePropeties = updateComponentAggregateProperties(minusNeuropil.componentAggregatePropeties, phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 end
 
-
 fprintf('\t done.\n');
-
-
 
 % updateComponentAggregateProperties(...): small helper function that adds some reshaped properties
 function [componentAggregatePropeties] = updateComponentAggregateProperties(componentAggregatePropeties, tuning_max_threshold_criteria)
