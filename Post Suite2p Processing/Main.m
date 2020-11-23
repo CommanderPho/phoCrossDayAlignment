@@ -34,11 +34,13 @@ phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.endSound=90;
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.sampPeak = 2;
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.frameRate=30;
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.smoothValue = 5;
+
+phoPipelineOptions.PhoPostFinalDataStructAnalysis.should_use_neuropil_corrected_version = true;
     
     
 %%% PhoTuningMeshExplorer Options:
 phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures';
-phoPipelineOptions.PhoTuningMeshExplorer.should_show_neuropil_corrected_version = true;
+% phoPipelineOptions.PhoTuningMeshExplorer.should_show_neuropil_corrected_version = true;
 phoPipelineOptions.PhoTuningMeshExplorer.numToCompare = 0;
 
 % phoPipelineOptions.PhoTuningMeshExplorer.cellRoisToPlot = [];

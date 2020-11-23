@@ -12,6 +12,7 @@ fprintf('> Running PhoPostFinalDataStructAnalysis...\n');
 %   phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria
 %   phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions
 %   phoPipelineOptions.PhoPostFinalDataStructAnalysis.compute_neuropil_corrected_versions
+%   phoPipelineOptions.PhoPostFinalDataStructAnalysis.should_use_neuropil_corrected_version
 if ~exist('phoPipelineOptions','var')
     warning('phoPipelineOptions is missing! Using defaults specified in PhoPostFinalDataStructAnalysis.m')
     %%% PhoPostFinalDataStructAnalysis Options:
@@ -25,6 +26,8 @@ if ~exist('phoPipelineOptions','var')
 	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.sampPeak = 2;
 	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.frameRate=30;
 	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.smoothValue = 5;
+    
+    phoPipelineOptions.PhoPostFinalDataStructAnalysis.should_use_neuropil_corrected_version = true;
     
     phoPipelineOptions.ignoredCellROIs = [];
     
@@ -158,7 +161,14 @@ if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_n
      minusNeuropil.componentAggregatePropeties.maxTuningPeakValue = default_DFF.componentAggregatePropeties.maxTuningPeakValue;
      minusNeuropil.componentAggregatePropeties.sumTuningPeaksValue = default_DFF.componentAggregatePropeties.sumTuningPeaksValue;
 end
-        
+   
+
+if exist('stimuli_mapper','var')
+    clear stimuli_mapper;
+end
+% if exist('final_data_explorer_obj','var')
+%     clear final_data_explorer_obj;
+% end
 
 
 for i = 1:num_cellROIs
@@ -179,6 +189,14 @@ for i = 1:num_cellROIs
         uniqueFreqs = outputs.uniqueFreqs; %
         finalOutComponentSegment.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMask;
         finalOutComponentSegment.Edge(curr_day_linear_comp_index,:,:) = edge(outputs.referenceMask); %sobel by default;
+        
+        if ~exist('stimuli_mapper','var')
+            % Only allow initialization once, if it doesn't exist.
+            stimuli_mapper = StimuliIndexMapper(outputs.uniqueStimuli,...
+                uniqueAmps,...
+                uniqueFreqs,...
+                outputs.indexMap_AmpsFreqs2StimulusArray, outputs.indexMap_StimulusLinear2AmpsFreqsArray);
+        end
         
         % Store the outputs in the grid:
         default_DFF.finalOutPeaksGrid(curr_day_linear_comp_index,:,:) = outputs.default_DFF.finalOutGrid;
@@ -228,6 +246,9 @@ for i = 1:num_cellROIs
 
 end %% endfor each cellROI
 
+% Initialize the output object once the loop is finished.
+final_data_explorer_obj = FinalDataExplorer(uniqueComps, multiSessionCellRoi_CompListIndicies, dateStrings, stimuli_mapper);
+
 
 default_DFF.cellROI_SatisfiesFirstDayTuning = (default_DFF.cellROI_FirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
@@ -252,6 +273,24 @@ default_DFF.componentAggregatePropeties = updateComponentAggregateProperties(def
 if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
     minusNeuropil.componentAggregatePropeties = updateComponentAggregateProperties(minusNeuropil.componentAggregatePropeties, phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 end
+
+
+
+%% Need to get the appropriate version:
+if phoPipelineOptions.PhoPostFinalDataStructAnalysis.should_use_neuropil_corrected_version
+    fprintf('\t Using Neuropil Corrected Results...\n');
+%     componentAggregatePropeties = minusNeuropil.componentAggregatePropeties;
+%     finalOutPeaksGrid = minusNeuropil.finalOutPeaksGrid;
+%     redTraceLinesForAllStimuli = minusNeuropil.redTraceLinesForAllStimuli;
+    final_data_explorer_obj.active_DFF = minusNeuropil;
+else
+    fprintf('\t Using non-Neuropil Corrected Results...\n');
+%     componentAggregatePropeties = default_DFF.componentAggregatePropeties;
+%     finalOutPeaksGrid = default_DFF.finalOutPeaksGrid;
+%     redTraceLinesForAllStimuli = default_DFF.redTraceLinesForAllStimuli;
+    final_data_explorer_obj.active_DFF = default_DFF;
+end
+
 
 fprintf('\t done.\n');
 

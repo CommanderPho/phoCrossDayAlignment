@@ -14,7 +14,7 @@ fprintf('> Running PhoTuningMeshExplorer...\n');
 %   phoPipelineOptions.shouldSaveFiguresToDisk
 %   phoPipelineOptions.shouldShowPlots
 %   phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path
-%   phoPipelineOptions.PhoTuningMeshExplorer.should_show_neuropil_corrected_version
+% %   phoPipelineOptions.PhoTuningMeshExplorer.should_show_neuropil_corrected_version
 %   phoPipelineOptions.PhoTuningMeshExplorer.numToCompare
 
 if ~exist('phoPipelineOptions','var')
@@ -23,7 +23,7 @@ if ~exist('phoPipelineOptions','var')
     phoPipelineOptions.shouldShowPlots = true;
     %%% PhoTuningMeshExplorer Options:
     phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = '';
-    phoPipelineOptions.PhoTuningMeshExplorer.should_show_neuropil_corrected_version = true;
+%     phoPipelineOptions.PhoTuningMeshExplorer.should_show_neuropil_corrected_version = true;
     phoPipelineOptions.PhoTuningMeshExplorer.numToCompare = 1;
 %     phoPipelineOptions.PhoTuningMeshExplorer.cellRoisToPlot = [];
 end
@@ -42,19 +42,7 @@ if phoPipelineOptions.shouldShowPlots
 end
 
 
-%% Need to get the appropriate version:
-if phoPipelineOptions.PhoTuningMeshExplorer.should_show_neuropil_corrected_version
-    fprintf('\t Showing Neuropil Corrected Results...\n');
-    componentAggregatePropeties = minusNeuropil.componentAggregatePropeties;
-    finalOutPeaksGrid = minusNeuropil.finalOutPeaksGrid;
-    redTraceLinesForAllStimuli = minusNeuropil.redTraceLinesForAllStimuli;
-    
-else
-    fprintf('\t Showing non-Neuropil Corrected Results...\n');
-    componentAggregatePropeties = default_DFF.componentAggregatePropeties;
-    finalOutPeaksGrid = default_DFF.finalOutPeaksGrid;
-    redTraceLinesForAllStimuli = default_DFF.redTraceLinesForAllStimuli;
-end
+
 
 %% Perform main plot:
 [cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, finalOutPeaksGrid, redTraceLinesForAllStimuli, phoPipelineOptions);
