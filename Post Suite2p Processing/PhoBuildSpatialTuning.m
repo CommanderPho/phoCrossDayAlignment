@@ -266,15 +266,7 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
     % Number of Days Meeting Criteria Figure:
     figH_numDaysCriteria = fnPlotNumberOfDaysCriteriaFigure(amalgamationMasks, componentAggregatePropeties);
     % Custom Tooltips:
-    % [dcm_numDaysCriteria] = fnAddCustomDataCursor(figH_numDaysCriteria);
-%     dcm_numDaysCriteria = datacursormode(figH_numDaysCriteria);
-%     dcm_numDaysCriteria.Enable = 'on';
-%     dcm_numDaysCriteria.DisplayStyle = 'window';
-%     if exist('slider_controller','var')
-%         dcm_numDaysCriteria.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, slider_controller));
-%     else
-%         dcm_numDaysCriteria.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks));
-%     end
+    [dcm_numDaysCriteria] = fnAddCustomDataCursor(figH_numDaysCriteria);
 
     if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode
         temp.currPreferredStimulusAmplitude = squeeze(sum(outputMaps.PreferredStimulusAmplitude, 1));
@@ -295,12 +287,7 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
     end
 
     %% Custom Tooltips:
-    % [dcm_roiTuningPreferredStimulus] = fnAddCustomDataCursor(figH_roiTuningPreferredStimulus);
-    % if exist('slider_controller','var')
-    %     dcm_roiTuningPreferredStimulus.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, slider_controller));
-    % else
-    %     dcm_roiTuningPreferredStimulus.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks));
-    % end
+    [dcm_roiTuningPreferredStimulus] = fnAddCustomDataCursor(figH_roiTuningPreferredStimulus);
 
 
     % fnPlotROITuningPreferredStimulusFigure
@@ -335,7 +322,6 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
                 temp.currPreferredStimulusFrequency = currPreferredStimulusFrequency;
             end
             
-            %             amplitudeHandles.axes(i) = ha(i);
             axes(amplitudeHandles.axes(i));
             amplitudeHandles.tempImH = imshow(temp.currPreferredStimulusAmplitude, amplitudeColorMap, 'Parent', amplitudeHandles.axes(i));
             if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
@@ -347,7 +333,6 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
             fnAddSimpleLegend(uniqueAmpLabels, amplitudeColorMap);
             [amplitudeHandles.axH_centroidPoints, amplitudeHandles.axH_centroidTextObjects] = fnPlotAddCentroids(outputMaps, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
             
-            %             freqHandles.axes(i) = ha(2*i);
             axes(freqHandles.axes(i));
             freqHandles.tempImH = imshow(temp.currPreferredStimulusFrequency, frequencyColorMap, 'Parent', freqHandles.axes(i));
             if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
@@ -368,11 +353,17 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
         sgtitle('Spatial Tuning Analysis')
     end
 
-% fnAddCustomDataCursor: adds a custom datacursor to the figure
-    function [dcm] = fnAddCustomDataCursor(figH)
+    % fnAddCustomDataCursor: adds a custom datacursor to the figure
+    function [dcm] = fnAddCustomDataCursor(figH, slider_controller)
         dcm = datacursormode(figH);
         dcm.Enable = 'on';
         dcm.DisplayStyle = 'window';
+        if exist('slider_controller','var')
+            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, slider_controller));
+        else
+            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks));
+        end
+
     end
 
 
@@ -449,11 +440,12 @@ function txt = displayCoordinates(figH, info, amalgamationMasks, activeSliderCon
     end
     txt = ['(' num2str(x) ', ' num2str(y) '): cellROI: ' cellROIString];
 
+    fprintf('selected cellROI: %d...\n', cellROI);
+
     if exist('activeSliderController','var')
         fprintf('updating activeSliderController programmatically to value %d...\n', cellROI);
         activeSliderController.controller.Slider.Value = cellROI;
     end
-    fprintf('selected cellROI: %d...\n', cellROI);
 end
     
 
