@@ -9,7 +9,9 @@ fprintf('> Running PhoBuildSpatialTuning...\n');
 %   phoPipelineOptions.shouldSaveFiguresToDisk
 %   phoPipelineOptions.shouldShowPlots
 %   phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path
-
+%   phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
+%   phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints
+%   phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels
 if ~exist('phoPipelineOptions','var')
     warning('phoPipelineOptions is missing! Using defaults specified in PhoBuildSpatialTuning.m')
     phoPipelineOptions.shouldSaveFiguresToDisk = true;
@@ -17,6 +19,8 @@ if ~exist('phoPipelineOptions','var')
     %%% PhoBuildSpatialTuning Options:
     phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path = '';
     phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria = false; % If true, the cell region will be rendered with an opacity proporitional to the number of days it met the threshold critiera
+    phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints = true;
+    phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels = true;
 end
 
 % If it's needed, make sure the export directory is set up appropriately
@@ -32,11 +36,11 @@ if phoPipelineOptions.shouldShowPlots
    end
 end
 
-[amalgamationMasks] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties);
+[amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties);
 
 
 if phoPipelineOptions.shouldShowPlots
-    [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, componentAggregatePropeties, amalgamationMasks, phoPipelineOptions);
+    [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions);
     
     %% Optional Export to disk:
     if phoPipelineOptions.shouldSaveFiguresToDisk
@@ -58,7 +62,7 @@ fprintf('\t done.\n')
 
 
 
-function [amalgamationMasks] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties)
+function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties)
 
     %% Sort based on tuning score:
     [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
@@ -74,12 +78,17 @@ function [amalgamationMasks] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessi
     % init_matrix = zeros(512, 512);
     init_matrix = ones(numOfSessions, 512, 512) * -1;
 
-    amalgamationMasks.PreferredStimulusAmplitude = init_matrix;
-    amalgamationMasks.PreferredStimulusFreq = init_matrix;
+    outputMaps.PreferredStimulusAmplitude = init_matrix;
+    outputMaps.PreferredStimulusFreq = init_matrix;
 
     % amalgamationMasks.DidPreferredStimulusChange: keeps track of whether the preferredStimulus amplitude or frequency changed for a cellROI between sessions.
-    amalgamationMasks.DidPreferredStimulusChange = zeros(num_cellROIs, (numOfSessions-1));
+    outputMaps.DidPreferredStimulusChange = zeros(num_cellROIs, (numOfSessions-1));
+    
+    outputMaps.computedProperties.areas = zeros(num_cellROIs, 1);
+    outputMaps.computedProperties.boundingBoxes = zeros(num_cellROIs, 4);
+    outputMaps.computedProperties.centroids = zeros(num_cellROIs, 2);
 
+    
     for i = 1:num_cellROIs
         %% Plot the grid as a test
         temp.cellRoiIndex = cellRoiSortIndex(i); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
@@ -99,10 +108,17 @@ function [amalgamationMasks] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessi
                 temp.currCompSessionEdge = logical(squeeze(finalOutComponentSegment.Edge(temp.currCompSessionIndex,:,:)));
 
                 temp.currCompSessionMask = temp.currCompSessionEdge; % Use the edges instead of the fills
-
+                
+%                 [B,L,N,A] = bwboundaries(temp.currCompSessionFill);
+                s = regionprops(temp.currCompSessionFill,'Centroid','Area','BoundingBox');
+%                 centroids = cat(1,s.Centroid);
+                outputMaps.computedProperties.areas(i) = s.Area;
+                outputMaps.computedProperties.boundingBoxes(i,:) = s.BoundingBox;
+                outputMaps.computedProperties.centroids(i,:) = s.Centroid;
                 
                 % Save the index of this cell in the reverse lookup table:
-                amalgamationMasks.cellROI_LookupMask(temp.currCompSessionMask) = temp.cellRoiIndex;
+                amalgamationMasks.cellROI_LookupMask(temp.currCompSessionFill) = temp.cellRoiIndex;
+                amalgamationMasks.cellROI_LookupMask(temp.currCompSessionEdge) = temp.cellRoiIndex;
 
                 % Set cells in this cellROI region to opaque:
                 amalgamationMasks.AlphaConjunctionMask(temp.currCompSessionMask) = 1.0;
@@ -120,14 +136,14 @@ function [amalgamationMasks] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessi
             temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
             temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
 
-            amalgamationMasks.PreferredStimulusAmplitude(j, temp.currCompSessionMask) = double(temp.maxPrefAmpIndex);
-            amalgamationMasks.PreferredStimulusFreq(j, temp.currCompSessionMask) = double(temp.maxPrefFreqIndex);
+            outputMaps.PreferredStimulusAmplitude(j, temp.currCompSessionMask) = double(temp.maxPrefAmpIndex);
+            outputMaps.PreferredStimulusFreq(j, temp.currCompSessionMask) = double(temp.maxPrefFreqIndex);
 
             % If we're not on the first session, see if the preferred values changed between the sessions.
             if j > 1
                 didPreferredAmpIndexChange = (temp.prev.maxPrefAmpIndex ~= temp.maxPrefAmpIndex);
                 didPreferredFreqIndexChange = (temp.prev.maxPrefFreqIndex ~= temp.maxPrefFreqIndex);
-                amalgamationMasks.DidPreferredStimulusChange(i,j-1) = didPreferredAmpIndexChange | didPreferredFreqIndexChange;
+                outputMaps.DidPreferredStimulusChange(i,j-1) = didPreferredAmpIndexChange | didPreferredFreqIndexChange;
             end
             % Update the prev values:
             temp.prev.maxPrefAmpIndex = temp.maxPrefAmpIndex;
@@ -139,7 +155,7 @@ function [amalgamationMasks] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessi
 end
 
 %% Master Plotting Function
-function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, componentAggregatePropeties, amalgamationMasks, phoPipelineOptions)
+function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions)
     uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),{'% Depth'});
     uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
     %specify colormaps for your figure. This is important!!
@@ -164,30 +180,30 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
     end
     
     
-    
     j = 1;
     %Preferred Stimulus Figure:
-    figH_roiTuningPreferredStimulus = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, j);
+    figH_roiTuningPreferredStimulus = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, j);
     
     %% Custom Tooltips:
     dcm_roiTuningPreferredStimulus = datacursormode(figH_roiTuningPreferredStimulus);
     dcm_roiTuningPreferredStimulus.Enable = 'on';
     dcm_roiTuningPreferredStimulus.DisplayStyle = 'window';
     if exist('slider_controller','var')
-        dcm_roiTuningPreferredStimulus.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, slider_controller));
+        dcm_roiTuningPreferredStimulus.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, outputMaps, slider_controller));
     else
-        dcm_roiTuningPreferredStimulus.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks));
+        dcm_roiTuningPreferredStimulus.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, outputMaps));
     end
     
     
     
     
-    function figH_roiTuningPreferredStimulus = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, j)
+    function figH_roiTuningPreferredStimulus = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, j)
         figH_roiTuningPreferredStimulus = createFigureWithNameIfNeeded('CellROI Aggregate: Preferred Stimulus Tuning');
+        clf(figH_roiTuningPreferredStimulus);
         ha = tight_subplot(1,2);
         
         axes(ha(1));
-        tempImH = imshow(squeeze(amalgamationMasks.PreferredStimulusAmplitude(j,:,:)), amplitudeColorMap);
+        tempImH = imshow(squeeze(outputMaps.PreferredStimulusAmplitude(j,:,:)), amplitudeColorMap);
         if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
             set(tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
         else
@@ -195,9 +211,11 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
         end
         title('Amplitude Tuning')
         fnAddSimpleLegend(uniqueAmpLabels, amplitudeColorMap)
+        [~, ~] = fnPlotAddCentroids(outputMaps, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
+
 
         axes(ha(2));
-        tempImH = imshow(squeeze(amalgamationMasks.PreferredStimulusFreq(j,:,:)), frequencyColorMap);
+        tempImH = imshow(squeeze(outputMaps.PreferredStimulusFreq(j,:,:)), frequencyColorMap);
         if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
             set(tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
         else
@@ -205,15 +223,42 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
         end
         title('Frequency Tuning')
         fnAddSimpleLegend(uniqueFreqLabels, frequencyColorMap)
-
+        [~, ~] = fnPlotAddCentroids(outputMaps, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
+       
+        
         sgtitle('Spatial Tuning Analysis')
     end
 
-
-    
+    %% Draws the centroid (center) points and text label
+    function [axH_centroidPoints, axH_centroidText] = fnPlotAddCentroids(outputMaps, shouldDrawCentroidPoints, shouldDrawCellROILabels)
+        % Requirements: amalgamationMasks
+        if shouldDrawCentroidPoints
+            hold on
+            axH_centroidPoints = plot(outputMaps.computedProperties.centroids(:,1), outputMaps.computedProperties.centroids(:,2),'.r');
+            if shouldDrawCellROILabels
+               numCentroids = size(outputMaps.computedProperties.centroids,1);
+               for i = 1:numCentroids
+                    x = outputMaps.computedProperties.centroids(i,1);
+                    y = outputMaps.computedProperties.centroids(i,2);
+                    cellROI = amalgamationMasks.cellROI_LookupMask(round(y), round(x));
+                    textLabel = sprintf('%d', cellROI);
+                    axH_centroidText = text(x, y, textLabel, 'Color', 'r',...
+                        'FontSize', 10,...
+                        'FontSmoothing', 'off',...
+                        'HorizontalAlignment','center',...
+                        'PickableParts','none',...
+                        'Interpreter','none'); %, ...
+%                         'FontSize', 18);
+%                     text(x+d,y,' \leftarrow G','FontSize',18) %where d is the distance from the point
+               end
+            end
+            hold off
+        end
+    end
     
     function figH_numDaysCriteria = fnPlotNumberOfDaysCriteriaFigure(amalgamationMasks)
         figH_numDaysCriteria = createFigureWithNameIfNeeded('CellROI Aggregate: Number of Days Meeting Criteria');
+        clf(figH_numDaysCriteria);
         tempImH = fnPhoMatrixPlot(amalgamationMasks.NumberOfTunedDays);
         xticks([])
         yticks([])
@@ -226,7 +271,7 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
     end
 
     %% Custom ToolTip callback function that displays the clicked cell ROI as well as the x,y position.
-    function txt = displayCoordinates(~, info, amalgamationMasks, activeSliderController)
+    function txt = displayCoordinates(~, info, amalgamationMasks, outputMaps, activeSliderController)
         x = info.Position(1);
         y = info.Position(2);
         cellROI = amalgamationMasks.cellROI_LookupMask(y, x);

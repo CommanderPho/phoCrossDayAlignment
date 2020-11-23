@@ -3,6 +3,8 @@
 
 result = fnTestCellROIBlob_AlignmentAcrossSessions(cellRoiSortIndex, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment);
 
+
+
 % test.numDiffs = result.totalDifferences;
 % test.totalDiffCounts = sum(result.totalDifferences,'all')
 
