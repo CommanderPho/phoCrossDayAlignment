@@ -131,6 +131,7 @@ for i = 1:num_cellROIs
 end
 
 if phoPipelineOptions.shouldShowPlots
+    j = 1;
     % Number of Days Meeting Criteria Figure:
     figH_numDaysCriteria = createFigureWithNameIfNeeded('CellROI Aggregate: Number of Days Meeting Criteria');
     tempImH = fnPhoMatrixPlot(amalgamationMask_NumberOfTunedDays);
@@ -148,7 +149,7 @@ if phoPipelineOptions.shouldShowPlots
     %Preferred Stimulus Figure:
     figH_roiTuningPreferredStimulus = createFigureWithNameIfNeeded('CellROI Aggregate: Preferred Stimulus Tuning');
     subplot(1,2,1)
-    tempImH = imshow(amalgamationMask_PreferredStimulusAmplitude, amplitudeColorMap);
+    tempImH = imshow(squeeze(amalgamationMask_PreferredStimulusAmplitude(j,:,:)), amplitudeColorMap);
     if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
         set(tempImH, 'AlphaData', amalgamationMask_AlphaRoiTuningScoreMask);
     else
@@ -158,7 +159,7 @@ if phoPipelineOptions.shouldShowPlots
     fnAddSimpleLegend(uniqueAmpLabels, amplitudeColorMap)
 
     subplot(1,2,2)
-    tempImH = imshow(amalgamationMask_PreferredStimulusFreq, frequencyColorMap);
+    tempImH = imshow(squeeze(amalgamationMask_PreferredStimulusFreq(j,:,:)), frequencyColorMap);
     if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
         set(tempImH, 'AlphaData', amalgamationMask_AlphaRoiTuningScoreMask);
     else
