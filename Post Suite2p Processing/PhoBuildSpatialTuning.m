@@ -95,10 +95,12 @@ function [amalgamationMasks] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessi
             %% Results common across all sessions of this cellROI:
             % Check if this is the first session for this cellROI as not to recompute it needlessly when it doesn't change across sessions.
             if j == 1
-                temp.currCompSessionMask = logical(squeeze(finalOutComponentSegment.Masks(temp.currCompSessionIndex,:,:)));
+                temp.currCompSessionFill = logical(squeeze(finalOutComponentSegment.Masks(temp.currCompSessionIndex,:,:)));
                 temp.currCompSessionEdge = logical(squeeze(finalOutComponentSegment.Edge(temp.currCompSessionIndex,:,:)));
 
+                temp.currCompSessionMask = temp.currCompSessionEdge; % Use the edges instead of the fills
 
+                
                 % Save the index of this cell in the reverse lookup table:
                 amalgamationMasks.cellROI_LookupMask(temp.currCompSessionMask) = temp.cellRoiIndex;
 
@@ -163,7 +165,7 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
     
     
     
-    j = 2;
+    j = 1;
     %Preferred Stimulus Figure:
     figH_roiTuningPreferredStimulus = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, j);
     
@@ -182,7 +184,9 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
     
     function figH_roiTuningPreferredStimulus = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, j)
         figH_roiTuningPreferredStimulus = createFigureWithNameIfNeeded('CellROI Aggregate: Preferred Stimulus Tuning');
-        subplot(1,2,1)
+        ha = tight_subplot(1,2);
+        
+        axes(ha(1));
         tempImH = imshow(squeeze(amalgamationMasks.PreferredStimulusAmplitude(j,:,:)), amplitudeColorMap);
         if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
             set(tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
@@ -192,7 +196,7 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
         title('Amplitude Tuning')
         fnAddSimpleLegend(uniqueAmpLabels, amplitudeColorMap)
 
-        subplot(1,2,2)
+        axes(ha(2));
         tempImH = imshow(squeeze(amalgamationMasks.PreferredStimulusFreq(j,:,:)), frequencyColorMap);
         if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
             set(tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
