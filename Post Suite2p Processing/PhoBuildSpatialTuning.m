@@ -264,92 +264,75 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
     
 
     % Number of Days Meeting Criteria Figure:
-    figH_numDaysCriteria = fnPlotNumberOfDaysCriteriaFigure(amalgamationMasks);
+    figH_numDaysCriteria = fnPlotNumberOfDaysCriteriaFigure(amalgamationMasks, componentAggregatePropeties);
+    % Custom Tooltips:
+    [dcm_numDaysCriteria] = fnAddCustomDataCursor(figH_numDaysCriteria);
 
-    %% Custom Tooltips:
-    dcm_numDaysCriteria = datacursormode(figH_numDaysCriteria);
-    dcm_numDaysCriteria.Enable = 'on';
-    dcm_numDaysCriteria.DisplayStyle = 'window';
-    if exist('slider_controller','var')
-        dcm_numDaysCriteria.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, slider_controller));
-    else
-        dcm_numDaysCriteria.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks));
-    end
-    
-    
-    
-    outputMaps.PreferredStimulus(i,j,:)
-    
-    num_cellROIs = size(outputMaps.PreferredStimulus, 1);
-    num_sessions = size(outputMaps.PreferredStimulus, 2);
-    
-    for cellROI_Index = 1:num_cellROIs
-        temp.cellRoiIndex = cellRoiSortIndex(cellROI_Index); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
-%         squeeze(outputMaps.masks.Fill(cellROI_Index,:,:));
-        
-        currPreferredMatrix = outputMaps.PreferredStimulus(temp.cellRoiIndex, :,:); % Returns the [amp freq] tuples for all sessions
-        
+   
+%     num_cellROIs = size(outputMaps.PreferredStimulus, 1);
+%     num_sessions = size(outputMaps.PreferredStimulus, 2);
+%     
+%     for cellROI_Index = 1:num_cellROIs
+%         temp.cellRoiIndex = cellRoiSortIndex(cellROI_Index); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
+% %         squeeze(outputMaps.masks.Fill(cellROI_Index,:,:));
 %         
-%         for session_Index = 1:num_sessions
-%            currPreferredPair = outputMaps.PreferredStimulus(temp.cellRoiIndex, session_Index,:); % Returns the [amp freq] tuple
-%            
-%             
-%             
-%         end
-        
-    
-    
-    
-    
-    
-    
-    
-%     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
-%     %% cellROI Specific Score:
-%     temp.currRoiTuningScore = componentAggregatePropeties.tuningScore(temp.cellRoiIndex); % currently only uses first session?
-%     temp.numSessions = length(temp.currAllSessionCompIndicies);
-% 
-%         for j = 1:temp.numSessions
-% 
-%             temp.currCompSessionIndex = temp.currAllSessionCompIndicies(j);
-% 
-% 
-%         end
-
-
-    end
-    
-%     if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode
-%         temp.currPreferredStimulusAmplitude = squeeze(sum(outputMaps.PreferredStimulusAmplitude, 1));
-%         temp.currPreferredStimulusFrequency = squeeze(sum(outputMaps.PreferredStimulusFreq, 1));
+%         currPreferredMatrix = outputMaps.PreferredStimulus(temp.cellRoiIndex, :,:); % Returns the [amp freq] tuples for all sessions
 %         
-%         %Preferred Stimulus Figure:
-%         [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
-%     else
-%         % Can only plot a single session, such as j=1:
-%         j = 1;
-%         temp.currPreferredStimulusAmplitude = squeeze(outputMaps.PreferredStimulusAmplitude(j,:,:));
-%         temp.currPreferredStimulusFrequency = squeeze(outputMaps.PreferredStimulusFreq(j,:,:));
+% %         
+% %         for session_Index = 1:num_sessions
+% %            currPreferredPair = outputMaps.PreferredStimulus(temp.cellRoiIndex, session_Index,:); % Returns the [amp freq] tuple
+% %            
+% %             
+% %             
+% %         end
 %         
-%         %Preferred Stimulus Figure:
-%         [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
+%     
+%     
+%     
+%     
+%     
+%     
+%     
+% %     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
+% %     %% cellROI Specific Score:
+% %     temp.currRoiTuningScore = componentAggregatePropeties.tuningScore(temp.cellRoiIndex); % currently only uses first session?
+% %     temp.numSessions = length(temp.currAllSessionCompIndicies);
+% % 
+% %         for j = 1:temp.numSessions
+% % 
+% %             temp.currCompSessionIndex = temp.currAllSessionCompIndicies(j);
+% % 
+% % 
+% %         end
+% 
+% 
 %     end
     
-    %% Custom Tooltips:
-    dcm_roiTuningPreferredStimulus = datacursormode(figH_roiTuningPreferredStimulus);
-    dcm_roiTuningPreferredStimulus.Enable = 'on';
-    dcm_roiTuningPreferredStimulus.DisplayStyle = 'window';
-    if exist('slider_controller','var')
-        dcm_roiTuningPreferredStimulus.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, outputMaps, slider_controller));
+    if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode
+        temp.currPreferredStimulusAmplitude = squeeze(sum(outputMaps.PreferredStimulusAmplitude, 1));
+        temp.currPreferredStimulusFrequency = squeeze(sum(outputMaps.PreferredStimulusFreq, 1));
+        
+        %Preferred Stimulus Figure:
+        [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
     else
-        dcm_roiTuningPreferredStimulus.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, outputMaps));
+        % Can only plot a single session, such as j=1:
+        j = 1;
+        temp.currPreferredStimulusAmplitude = squeeze(outputMaps.PreferredStimulusAmplitude(j,:,:));
+        temp.currPreferredStimulusFrequency = squeeze(outputMaps.PreferredStimulusFreq(j,:,:));
+        
+        %Preferred Stimulus Figure:
+        [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
+        
+        
     end
+    
+    %% Custom Tooltips:
+    [dcm_roiTuningPreferredStimulus] = fnAddCustomDataCursor(figH_roiTuningPreferredStimulus);
     
     
     
     % fnPlotROITuningPreferredStimulusFigure
     function [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, currPreferredStimulusAmplitude, currPreferredStimulusFrequency)
-        
         
         figH_roiTuningPreferredStimulus = createFigureWithNameIfNeeded('CellROI Aggregate: Preferred Stimulus Tuning');
         clf(figH_roiTuningPreferredStimulus);
@@ -357,7 +340,7 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
         
         amplitudeHandles.axes = ha(1);
         axes(amplitudeHandles.axes);
-        amplitudeHandles.tempImH = imshow(temp.currPreferredStimulusAmplitude, amplitudeColorMap);
+        amplitudeHandles.tempImH = imshow(currPreferredStimulusAmplitude, amplitudeColorMap);
         if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
             set(amplitudeHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
         else
@@ -369,7 +352,7 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
 
         freqHandles.axes = ha(2);
         axes(freqHandles.axes);
-        freqHandles.tempImH = imshow(temp.currPreferredStimulusFrequency, frequencyColorMap);
+        freqHandles.tempImH = imshow(currPreferredStimulusFrequency, frequencyColorMap);
         if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
             set(freqHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
         else
@@ -379,9 +362,22 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
         fnAddSimpleLegend(uniqueFreqLabels, frequencyColorMap)
         [freqHandles.axH_centroidPoints, freqHandles.axH_centroidTextObjects] = fnPlotAddCentroids(outputMaps, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
        
-        
         sgtitle('Spatial Tuning Analysis')
     end
+
+    % fnAddCustomDataCursor: adds a custom datacursor to the figure
+    function [dcm] = fnAddCustomDataCursor(figH)
+        dcm = datacursormode(figH);
+        dcm.Enable = 'on';
+        dcm.DisplayStyle = 'window';
+        if exist('slider_controller','var')
+            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, outputMaps, slider_controller));
+        else
+            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, outputMaps));
+        end
+        
+    end
+
 
     %% Draws the centroid (center) points and text label
     function [axH_centroidPoints, axH_centroidTextObjects] = fnPlotAddCentroids(outputMaps, shouldDrawCentroidPoints, shouldDrawCellROILabels)
@@ -421,19 +417,7 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
         end
     end
     
-    function figH_numDaysCriteria = fnPlotNumberOfDaysCriteriaFigure(amalgamationMasks)
-        figH_numDaysCriteria = createFigureWithNameIfNeeded('CellROI Aggregate: Number of Days Meeting Criteria');
-        clf(figH_numDaysCriteria);
-        tempImH = fnPhoMatrixPlot(amalgamationMasks.NumberOfTunedDays);
-        xticks([])
-        yticks([])
-        set(tempImH, 'AlphaData', amalgamationMasks.AlphaConjunctionMask);
-        title('number of days meeting tuning criteria for each cellRoi');
-        uniqueNumberOfTunedDaysLabels = strcat(num2str(unique(componentAggregatePropeties.tuningScore)),{' days'});
-        curr_color_map = colormap(jet(length(uniqueNumberOfTunedDaysLabels)));
-        colorbar('off')
-        fnAddSimpleLegend(uniqueNumberOfTunedDaysLabels, curr_color_map);
-    end
+
 
     %% Custom ToolTip callback function that displays the clicked cell ROI as well as the x,y position.
     function txt = displayCoordinates(~, info, amalgamationMasks, outputMaps, activeSliderController)
@@ -455,3 +439,21 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
     end
 
 end
+
+
+
+function figH_numDaysCriteria = fnPlotNumberOfDaysCriteriaFigure(amalgamationMasks, componentAggregatePropeties)
+    figH_numDaysCriteria = createFigureWithNameIfNeeded('CellROI Aggregate: Number of Days Meeting Criteria');
+    clf(figH_numDaysCriteria);
+    tempImH = fnPhoMatrixPlot(amalgamationMasks.NumberOfTunedDays);
+    xticks([])
+    yticks([])
+    set(tempImH, 'AlphaData', amalgamationMasks.AlphaConjunctionMask);
+    title('number of days meeting tuning criteria for each cellRoi');
+    uniqueNumberOfTunedDaysLabels = strcat(num2str(unique(componentAggregatePropeties.tuningScore)),{' days'});
+    curr_color_map = colormap(jet(length(uniqueNumberOfTunedDaysLabels)));
+    colorbar('off')
+    fnAddSimpleLegend(uniqueNumberOfTunedDaysLabels, curr_color_map);
+end
+    
+    
