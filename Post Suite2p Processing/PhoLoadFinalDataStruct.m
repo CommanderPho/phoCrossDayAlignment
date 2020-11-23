@@ -30,52 +30,15 @@
 
 addpath(genpath('../helpers'));
 
-fprintf('> Running PhoLoadFinalDataStruct...\n');
-
-%% Options:
-% Uses:
-%   phoPipelineOptions.default_FD_file_path
-%   phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave
-%   phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil
-%   phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames 
 if ~exist('phoPipelineOptions','var')
-    warning('phoPipelineOptions is missing! Using defaults specified in PhoLoadFinalDataStruct.m')
-    phoPipelineOptions.default_FD_file_path = '';
-    phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave = false;
-    phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil = true;
-    phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames = [1, 30]; 
+    phoPipelineOptions = [];
 end
-
-
 if ~exist('finalDataStruct','var')
-    if isempty(phoPipelineOptions.default_FD_file_path)
-        [filename, path] = uigetfile('*.mat', 'Select a finalDataStruct .mat file');
-    else
-        [filename, path] = uigetfile(phoPipelineOptions.default_FD_file_path, 'Select a finalDataStruct .mat file');
-    end
-   
-    if isequal(filename,0)
-        warning('User selected Cancel');
-    else
-        FDPath = fullfile(path, filename);
-        fprintf('\t Loading %s...',FDPath);
-        load(FDPath);
-        fprintf('done.\n');
-    end
+    finalDataStruct = [];
 end
 
-% TODO: Check if the fields exist (DFF already computed):
-fprintf('\t Running makeSessionList_FDS on finalDataStruct...\n');
-[sessionList, compList] = makeSessionList_FDS(finalDataStruct); %make a list of sessions and comps in FDS
-fprintf('\t\t done.\n');
+[finalDataStruct, sessionList, compList] = fnPhoLoadFinalDataStruct(finalDataStruct, phoPipelineOptions);
 
-%% "FD (final data)" file output:
-if phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave
-    disp('\t Running baselineDFF_fds on finalDataStruct...')
-    finalDataStruct = baselineDFF_fds(finalDataStruct, sessionList, phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames, phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions); % Adds the DFF baseline to the finalDataStruct
-    fprintf('\t writing final data struct with DFF back out to %s... ', FDPath);
-    save(FDPath, 'finalDataStruct')  % Save out to the file
-end
 fprintf('\t done.\n');
 % %plotting
 % disp('Plotting finalDataStruct...')
@@ -86,4 +49,79 @@ fprintf('\t done.\n');
 
 % plotAMConditions_FDS(finalDataStruct, compList(4))
 
+function [finalDataStruct, sessionList, compList] = fnPhoLoadFinalDataStruct(finalDataStruct, phoPipelineOptions)
+    fprintf('> Running PhoLoadFinalDataStruct...\n');
 
+    %% Options:
+    % Uses:
+    %   phoPipelineOptions.default_FD_file_path
+    %   phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave
+    %   phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil
+    %   phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames 
+    if ~exist('phoPipelineOptions','var') || isempty(phoPipelineOptions)
+        warning('phoPipelineOptions is missing! Using defaults specified in PhoLoadFinalDataStruct.m')
+        phoPipelineOptions.default_FD_file_path = '';
+        phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave = false;
+        phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil = true;
+        phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames = [1, 30]; 
+    end
+
+    FDPath = '';
+    
+    if ~exist('finalDataStruct','var') || isempty(finalDataStruct)
+        if isempty(phoPipelineOptions.default_FD_file_path)
+            [filename, path] = uigetfile('*.mat', 'Select a finalDataStruct .mat file');
+        else
+            [filename, path] = uigetfile(phoPipelineOptions.default_FD_file_path, 'Select a finalDataStruct .mat file');
+        end
+
+        if isequal(filename,0)
+            error('User selected Cancel');
+        else
+            FDPath = fullfile(path, filename);
+            fprintf('\t Loading %s...',FDPath);
+            load(FDPath);
+            fprintf('done.\n');
+        end
+    end
+
+    % TODO: Check if the fields exist (DFF already computed):
+    fprintf('\t Running makeSessionList_FDS on finalDataStruct...\n');
+    [sessionList, compList] = makeSessionList_FDS(finalDataStruct); %make a list of sessions and comps in FDS
+    fprintf('\t\t done.\n');
+
+    %% "FD (final data)" file output:
+    if phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave
+        fprintf('\t Running baselineDFF_fds on finalDataStruct...\n')
+        finalDataStruct = baselineDFF_fds(finalDataStruct, sessionList, phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames, phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions); % Adds the DFF baseline to the finalDataStruct
+        isValidExtantPathFile = (~isempty(FDPath) & exist(FDPath, 'file'));
+        if ~isValidExtantPathFile
+            % Prompt the user to select a file if the path isn't valid
+            [FDPath] = fnPromptForFilePathIfNotValid(phoPipelineOptions.default_FD_file_path);  
+        end
+        fprintf('\t writing final data struct with DFF back out to %s... \n', FDPath);
+        save(FDPath, 'finalDataStruct')  % Save out to the file
+    end
+
+end
+
+function [aValidPath] = fnPromptForFilePathIfNotValid(aPotentialPath)
+        isValidExtantPathFile = (~isempty(aPotentialPath) & exist(aPotentialPath, 'file'));
+        if isValidExtantPathFile
+            aValidPath = aPotentialPath;
+        else
+            isValidExtantPathFolder = (~isempty(aPotentialPath) & exist(aPotentialPath, 'dir'));
+            if ~isValidExtantPathFolder
+                [filename, path] = uigetfile('*.mat', 'Select a finalDataStruct .mat file');
+            else
+                [filename, path] = uigetfile(aPotentialPath, 'Select a finalDataStruct .mat file');
+            end
+
+            if isequal(filename, 0)
+                error('User selected Cancel');
+            else
+                % User selected a valid file path
+                aValidPath = fullfile(path, filename);
+            end
+        end
+end

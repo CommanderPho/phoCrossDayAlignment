@@ -16,6 +16,7 @@ force_session_fAll_overwrites = true; % If true, extant session_fAll files are o
 
 enable_session_TO_LOAD_INTERMEDIATES_writes = false; % If true, "TO_LOAD" intermediate files are saved for each session. These contain the ephysdata
 finalDataStruct_DFF_baselineFrames = [1, 30];
+finalDataStruct_DFF_processingOptions.use_neuropil = true;
 
 %% BEGIN BODY:
 fAllPath = fullfile(outputFolder,'plane0\Fall.mat');
@@ -171,12 +172,12 @@ end
 %format structure using this script
 
 % The final stage is adding the baselineDFF data to the finalDataStruct:
-disp('Running makeSessionList_FDS on finalDataStruct...')
+fprintf('\t Running makeSessionList_FDS on finalDataStruct...\n');
 [sessionList, compList] = makeSessionList_FDS(finalDataStruct); %make a list of sessions and comps in FDS
-disp('Running makeSessionList_FDS on finalDataStruct...')
-finalDataStruct = baselineDFF_fds(finalDataStruct, sessionList, finalDataStruct_DFF_baselineFrames); % Adds the DFF baseline to the finalDataStruct
-
+fprintf('\t\t done.\n');    
+disp('\t Running baselineDFF_fds on finalDataStruct...')
+finalDataStruct = baselineDFF_fds(finalDataStruct, sessionList, finalDataStruct_DFF_baselineFrames, finalDataStruct_DFF_processingOptions); % Adds the DFF baseline to the finalDataStruct
 %% "FD (final data)" file output:
-fprintf('writing final data struct out to %s... ', FDOutputPath);
+fprintf('\t writing final data struct with DFF back out to %s... ', FDOutputPath);
 save(FDOutputPath, 'finalDataStruct')  % Save out to the file
-disp('done.')
+fprintf('\t\t done.\n');

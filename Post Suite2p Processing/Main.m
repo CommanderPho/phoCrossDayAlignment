@@ -8,6 +8,17 @@ phoPipelineOptions.default_FD_file_path = '/Users/pho/Dropbox/Classes/Fall 2020/
 phoPipelineOptions.shouldShowPlots = true;
 phoPipelineOptions.shouldSaveFiguresToDisk = false; % Note that this has no effect if phoPipelineOptions.shouldShowPlots is false.
 
+% phoPipelineOptions.ignoredCellROIs = [];
+% phoPipelineOptions.ignoredCellROI_Indicies = [3, 50, 132, 157, 116];
+phoPipelineOptions.ignoredCellROI_CompNames = {'comp4','comp123','comp625','comp677','comp480'};
+% phoPipelineOptions.ignoredCellROI_Indicies = [phoPipelineOptions.ignoredCellROI_Indicies [70, 79, 102]];
+phoPipelineOptions.ignoredCellROI_CompNames = [phoPipelineOptions.ignoredCellROI_CompNames {'comp198','comp237','comp370'}];
+
+% find(backup.uniqueComps(strcmpi({backup.uniqueComps}, {'comp198','comp237','comp370'})))
+% find(strcmpi(backup.uniqueComps, 'comp370'))
+
+
+
 %%% PhoLoadFinalDataStruct Options:
 phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave = false;
 phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil = true;
@@ -27,13 +38,20 @@ phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.smoothValue 
     
 %%% PhoTuningMeshExplorer Options:
 phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures';
+phoPipelineOptions.PhoTuningMeshExplorer.should_show_neuropil_corrected_version = true;
+phoPipelineOptions.PhoTuningMeshExplorer.numToCompare = 0;
+
 % phoPipelineOptions.PhoTuningMeshExplorer.cellRoisToPlot = [];
 
 
 %%% PhoBuildSpatialTuning Options:
 phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures/cellROI_General';
 phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria = false; % If true, the cell region will be rendered with an opacity proporitional to the number of days it met the threshold critiera    
-    
+phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode = false; % If true, colorful borders are drawn around each cellROI to represent its preferred stimuli for each day.
+phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.edge_layering_is_outset_mode = false; % edge_layering_is_outset_mode: if true, it uses the outer borders to draw    
+phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints = false;
+phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels = false;
+
 % phoPipelineState.indentLevelString = '';
 
 %% Main
