@@ -66,7 +66,8 @@ function [finalDataStruct, sessionList, compList] = fnPhoLoadFinalDataStruct(fin
         phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames = [1, 30]; 
     end
 
-
+    FDPath = '';
+    
     if ~exist('finalDataStruct','var') || isempty(finalDataStruct)
         if isempty(phoPipelineOptions.default_FD_file_path)
             [filename, path] = uigetfile('*.mat', 'Select a finalDataStruct .mat file');
@@ -93,8 +94,34 @@ function [finalDataStruct, sessionList, compList] = fnPhoLoadFinalDataStruct(fin
     if phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave
         fprintf('\t Running baselineDFF_fds on finalDataStruct...\n')
         finalDataStruct = baselineDFF_fds(finalDataStruct, sessionList, phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames, phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions); % Adds the DFF baseline to the finalDataStruct
+        isValidExtantPathFile = (~isempty(FDPath) & exist(FDPath, 'file'));
+        if ~isValidExtantPathFile
+            % Prompt the user to select a file if the path isn't valid
+            [FDPath] = fnPromptForFilePathIfNotValid(phoPipelineOptions.default_FD_file_path);  
+        end
         fprintf('\t writing final data struct with DFF back out to %s... \n', FDPath);
         save(FDPath, 'finalDataStruct')  % Save out to the file
     end
 
+end
+
+function [aValidPath] = fnPromptForFilePathIfNotValid(aPotentialPath)
+        isValidExtantPathFile = (~isempty(aPotentialPath) & exist(aPotentialPath, 'file'));
+        if isValidExtantPathFile
+            aValidPath = aPotentialPath;
+        else
+            isValidExtantPathFolder = (~isempty(aPotentialPath) & exist(aPotentialPath, 'dir'));
+            if ~isValidExtantPathFolder
+                [filename, path] = uigetfile('*.mat', 'Select a finalDataStruct .mat file');
+            else
+                [filename, path] = uigetfile(aPotentialPath, 'Select a finalDataStruct .mat file');
+            end
+
+            if isequal(filename, 0)
+                error('User selected Cancel');
+            else
+                % User selected a valid file path
+                aValidPath = fullfile(path, filename);
+            end
+        end
 end
