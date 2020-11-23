@@ -102,7 +102,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 
 	%pre-allocate
 %     outputs.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
-    outputs.tbImg = linspace(0,numFrames/frameRate,numFrames); % make a timebase to plot as xAxis for traces
+    outputs.tbImg = linspace(0,numFrames/processingOptions.frameRate, numFrames); % make a timebase to plot as xAxis for traces
     
     % The important red lines:
     outputs.TracesForAllStimuli.meanData = zeros(outputs.numStimuli, numFrames);
