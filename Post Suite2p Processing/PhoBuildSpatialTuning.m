@@ -61,7 +61,7 @@ end
 fprintf('\t done.\n')
 
 
-
+%% Build Spatial Info:
 function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties)
 
     %% Sort based on tuning score:
