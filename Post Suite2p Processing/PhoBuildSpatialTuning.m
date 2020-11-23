@@ -32,78 +32,8 @@ if phoPipelineOptions.shouldShowPlots
    end
 end
 
+[amalgamationMasks] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties);
 
-amalgamationMasks.cellROI_LookupMask = zeros(512, 512); % Maps every pixel in the image to the cellROI index of the cell it belongs to, if one exists.
-
-amalgamationMasks.AlphaConjunctionMask = zeros(512, 512);
-amalgamationMasks.AlphaRoiTuningScoreMask = zeros(512, 512);
-amalgamationMasks.NumberOfTunedDays = zeros(512, 512);
-
-% amalgamationMasks.PreferredStimulusAmplitude = zeros(512, 512, 3);
-% init_matrix = zeros(512, 512);
-init_matrix = ones(numOfSessions, 512, 512) * -1;
-
-amalgamationMasks.PreferredStimulusAmplitude = init_matrix;
-amalgamationMasks.PreferredStimulusFreq = init_matrix;
-
-% amalgamationMasks.DidPreferredStimulusChange: keeps track of whether the preferredStimulus amplitude or frequency changed for a cellROI between sessions.
-amalgamationMasks.DidPreferredStimulusChange = zeros(num_cellROIs, (numOfSessions-1));
-
-for i = 1:num_cellROIs
-    %% Plot the grid as a test
-    temp.cellRoiIndex = cellRoiSortIndex(i); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
-    temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
-    %% cellROI Specific Score:
-    temp.currRoiTuningScore = componentAggregatePropeties.tuningScore(temp.cellRoiIndex); % currently only uses first session?
-    temp.numSessions = length(temp.currAllSessionCompIndicies);
-    
-    
-    for j = 1:temp.numSessions
-    
-        temp.currCompSessionIndex = temp.currAllSessionCompIndicies(j);
-
-        %% Results common across all sessions of this cellROI:
-        % Check if this is the first session for this cellROI as not to recompute it needlessly when it doesn't change across sessions.
-        if j == 1
-            temp.currCompSessionMask = logical(squeeze(finalOutComponentSegment.Masks(temp.currCompSessionIndex,:,:)));
-            temp.currCompSessionEdge = logical(squeeze(finalOutComponentSegment.Edge(temp.currCompSessionIndex,:,:)));
-            
-            
-            % Save the index of this cell in the reverse lookup table:
-            amalgamationMasks.cellROI_LookupMask(temp.currCompSessionMask) = temp.cellRoiIndex;
-
-            % Set cells in this cellROI region to opaque:
-            amalgamationMasks.AlphaConjunctionMask(temp.currCompSessionMask) = 1.0;
-            % Set the opacity of cell in this cellROI region based on the number of days that the cell passed the threshold:
-            amalgamationMasks.AlphaRoiTuningScoreMask(temp.currCompSessionMask) = (double(temp.currRoiTuningScore) / 3.0);
-
-            % Set the greyscale value to the ROIs tuning score, normalized by the maximum possible tuning score (indicating all three days were tuned)
-            amalgamationMasks.NumberOfTunedDays(temp.currCompSessionMask) = double(temp.currRoiTuningScore) / 3.0;
-
-        end
-        
-        % Currently just use the preferred stimulus info from the first of the three sessions:
-        temp.currCompMaximallyPreferredStimulusInfo = componentAggregatePropeties.maximallyPreferredStimulusInfo(temp.currCompSessionIndex);
-        temp.currMaximalIndexTuple = temp.currCompMaximallyPreferredStimulusInfo.AmpFreqIndexTuple; %Check this to make sure it's always (0, 0) when one of the tuple elements are zero.
-        temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
-        temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
-
-        amalgamationMasks.PreferredStimulusAmplitude(j, temp.currCompSessionMask) = double(temp.maxPrefAmpIndex);
-        amalgamationMasks.PreferredStimulusFreq(j, temp.currCompSessionMask) = double(temp.maxPrefFreqIndex);
-            
-        % If we're not on the first session, see if the preferred values changed between the sessions.
-        if j > 1
-            didPreferAmpIndexChange = (temp.prev.maxPrefAmpIndex ~= temp.maxPrefAmpIndex);
-            didPreferFreqIndexChange = (temp.prev.maxPrefFreqIndex ~= temp.maxPrefFreqIndex);
-            amalgamationMasks.DidPreferredStimulusChange(i,j-1) = didPreferAmpIndexChange | didPreferFreqIndexChange;
-        end
-        % Update the prev values:
-        temp.prev.maxPrefAmpIndex = temp.maxPrefAmpIndex;
-        temp.prev.maxPrefFreqIndex = temp.maxPrefFreqIndex;
-
-    end
-    
-end
 
 if phoPipelineOptions.shouldShowPlots
     [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, componentAggregatePropeties, amalgamationMasks, phoPipelineOptions);
@@ -126,6 +56,85 @@ end
 
 fprintf('\t done.\n')
 
+
+
+function [amalgamationMasks] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties)
+
+    %% Sort based on tuning score:
+    [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
+
+
+    amalgamationMasks.cellROI_LookupMask = zeros(512, 512); % Maps every pixel in the image to the cellROI index of the cell it belongs to, if one exists.
+
+    amalgamationMasks.AlphaConjunctionMask = zeros(512, 512);
+    amalgamationMasks.AlphaRoiTuningScoreMask = zeros(512, 512);
+    amalgamationMasks.NumberOfTunedDays = zeros(512, 512);
+
+    % amalgamationMasks.PreferredStimulusAmplitude = zeros(512, 512, 3);
+    % init_matrix = zeros(512, 512);
+    init_matrix = ones(numOfSessions, 512, 512) * -1;
+
+    amalgamationMasks.PreferredStimulusAmplitude = init_matrix;
+    amalgamationMasks.PreferredStimulusFreq = init_matrix;
+
+    % amalgamationMasks.DidPreferredStimulusChange: keeps track of whether the preferredStimulus amplitude or frequency changed for a cellROI between sessions.
+    amalgamationMasks.DidPreferredStimulusChange = zeros(num_cellROIs, (numOfSessions-1));
+
+    for i = 1:num_cellROIs
+        %% Plot the grid as a test
+        temp.cellRoiIndex = cellRoiSortIndex(i); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
+        temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
+        %% cellROI Specific Score:
+        temp.currRoiTuningScore = componentAggregatePropeties.tuningScore(temp.cellRoiIndex); % currently only uses first session?
+        temp.numSessions = length(temp.currAllSessionCompIndicies);
+
+        for j = 1:temp.numSessions
+
+            temp.currCompSessionIndex = temp.currAllSessionCompIndicies(j);
+
+            %% Results common across all sessions of this cellROI:
+            % Check if this is the first session for this cellROI as not to recompute it needlessly when it doesn't change across sessions.
+            if j == 1
+                temp.currCompSessionMask = logical(squeeze(finalOutComponentSegment.Masks(temp.currCompSessionIndex,:,:)));
+                temp.currCompSessionEdge = logical(squeeze(finalOutComponentSegment.Edge(temp.currCompSessionIndex,:,:)));
+
+
+                % Save the index of this cell in the reverse lookup table:
+                amalgamationMasks.cellROI_LookupMask(temp.currCompSessionMask) = temp.cellRoiIndex;
+
+                % Set cells in this cellROI region to opaque:
+                amalgamationMasks.AlphaConjunctionMask(temp.currCompSessionMask) = 1.0;
+                % Set the opacity of cell in this cellROI region based on the number of days that the cell passed the threshold:
+                amalgamationMasks.AlphaRoiTuningScoreMask(temp.currCompSessionMask) = (double(temp.currRoiTuningScore) / 3.0);
+
+                % Set the greyscale value to the ROIs tuning score, normalized by the maximum possible tuning score (indicating all three days were tuned)
+                amalgamationMasks.NumberOfTunedDays(temp.currCompSessionMask) = double(temp.currRoiTuningScore) / 3.0;
+
+            end
+
+            % Currently just use the preferred stimulus info from the first of the three sessions:
+            temp.currCompMaximallyPreferredStimulusInfo = componentAggregatePropeties.maximallyPreferredStimulusInfo(temp.currCompSessionIndex);
+            temp.currMaximalIndexTuple = temp.currCompMaximallyPreferredStimulusInfo.AmpFreqIndexTuple; %Check this to make sure it's always (0, 0) when one of the tuple elements are zero.
+            temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
+            temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
+
+            amalgamationMasks.PreferredStimulusAmplitude(j, temp.currCompSessionMask) = double(temp.maxPrefAmpIndex);
+            amalgamationMasks.PreferredStimulusFreq(j, temp.currCompSessionMask) = double(temp.maxPrefFreqIndex);
+
+            % If we're not on the first session, see if the preferred values changed between the sessions.
+            if j > 1
+                didPreferredAmpIndexChange = (temp.prev.maxPrefAmpIndex ~= temp.maxPrefAmpIndex);
+                didPreferredFreqIndexChange = (temp.prev.maxPrefFreqIndex ~= temp.maxPrefFreqIndex);
+                amalgamationMasks.DidPreferredStimulusChange(i,j-1) = didPreferredAmpIndexChange | didPreferredFreqIndexChange;
+            end
+            % Update the prev values:
+            temp.prev.maxPrefAmpIndex = temp.maxPrefAmpIndex;
+            temp.prev.maxPrefFreqIndex = temp.maxPrefFreqIndex;
+
+        end % end for numSessions
+
+    end % end for each cell ROI
+end
 
 %% Master Plotting Function
 function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, componentAggregatePropeties, amalgamationMasks, phoPipelineOptions)

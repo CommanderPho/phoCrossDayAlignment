@@ -28,6 +28,11 @@ if ~exist('phoPipelineOptions','var')
     
 end
 
+%% Primary Outputs:
+% multiSessionCellRoi_CompListIndicies
+% default_DFF
+% minusNeuropil
+
 %% DATA STRUCTURES:
 %%%+S- componentAggregatePropeties
     %= maxTuningPeakValueSatisfiedCriteria - 
@@ -79,7 +84,6 @@ default_DFF.finalOutPeaksGrid = zeros(numCompListEntries,6,6);
 default_DFF.componentAggregatePropeties.maxTuningPeakValue = zeros(numCompListEntries,1);
 % componentAggregatePropeties.sumTuningPeaksValue: the sum of all peaks
 default_DFF.componentAggregatePropeties.sumTuningPeaksValue = zeros(numCompListEntries,1);
-
 
 if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
      % Generate similar grids for minusNeuropil outputs
@@ -185,7 +189,6 @@ end
 
 % finalOutComponentSegment.Masks = reshape(finalOutComponentSegment.Masks,[],3); % Reshape from linear to cellRoi indexing
 % finalOutComponentSegment.Edge = reshape(finalOutComponentSegment.Edge,[],3); % Reshape from linear to cellRoi indexing
-
 
 fprintf('\t done.\n');
 

@@ -60,7 +60,7 @@ fprintf('\t done.\n');
 
 function [cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, finalOutPeaksGrid, phoPipelineOptions)
 
-    %% Sort based on tuning score:
+%     %% Sort based on tuning score:
     [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
 
     numToCompare = phoPipelineOptions.PhoTuningMeshExplorer.numToCompare;
