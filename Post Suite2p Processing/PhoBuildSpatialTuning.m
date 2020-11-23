@@ -63,6 +63,7 @@ fprintf('\t done.\n')
 
 %% Build Spatial Info:
 function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties)
+    should_enable_edge_layering_mode = true; % if true, uses the borders surrounding each cell to reflect the preferred tuning at a given day.
 
     %% Sort based on tuning score:
     [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
@@ -74,6 +75,18 @@ function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs
     amalgamationMasks.AlphaRoiTuningScoreMask = zeros(512, 512);
     amalgamationMasks.NumberOfTunedDays = zeros(512, 512);
 
+    % outputMaps.masks: one for each cellROI
+    outputMaps.masks.Fill = zeros(num_cellROIs,512,512);
+    outputMaps.masks.Edge = zeros(num_cellROIs,512,512);
+    
+    outputMaps.masks.OutsetEdge0 = zeros(num_cellROIs,512,512);
+    outputMaps.masks.OutsetEdge1 = zeros(num_cellROIs,512,512);
+
+    outputMaps.masks.InsetEdge0 = zeros(num_cellROIs,512,512);
+    outputMaps.masks.InsetEdge1 = zeros(num_cellROIs,512,512);
+    
+    
+    
     % amalgamationMasks.PreferredStimulusAmplitude = zeros(512, 512, 3);
     % init_matrix = zeros(512, 512);
     init_matrix = ones(numOfSessions, 512, 512) * -1;
@@ -88,6 +101,7 @@ function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs
     outputMaps.computedProperties.boundingBoxes = zeros(num_cellROIs, 4);
     outputMaps.computedProperties.centroids = zeros(num_cellROIs, 2);
 
+    temp.structuring_element = strel('disk', 1);
     
     for i = 1:num_cellROIs
         %% Plot the grid as a test
@@ -106,12 +120,37 @@ function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs
             if j == 1
                 temp.currCompSessionFill = logical(squeeze(finalOutComponentSegment.Masks(temp.currCompSessionIndex,:,:)));
                 temp.currCompSessionEdge = logical(squeeze(finalOutComponentSegment.Edge(temp.currCompSessionIndex,:,:)));
-
-                temp.currCompSessionMask = temp.currCompSessionEdge; % Use the edges instead of the fills
                 
-%                 [B,L,N,A] = bwboundaries(temp.currCompSessionFill);
+                outputMaps.masks.Fill(i,:,:) = temp.currCompSessionFill;
+                outputMaps.masks.Edge(i,:,:) = temp.currCompSessionEdge;
+                
+%                 [B,L] = bwboundaries(temp.currCompSessionFill,'noholes');
+                BW2_Inner = imerode(temp.currCompSessionFill, temp.structuring_element);
+                BW3_Inner = imerode(BW2_Inner, temp.structuring_element);
+%                 BW2 = bwperim(temp.currCompSessionFill);
+%                 BW3 = bwperim(BW2);
+
+%                 figure(1446)
+%                 subplot(1,2,1)
+%                 imshowpair(temp.currCompSessionFill, BW2)
+%                 subplot(1,2,2)
+%                 imshowpair(BW2, BW3)
+                
+                %% Inset Elements:
+                outputMaps.masks.InsetEdge0(i,:,:) = BW2_Inner;
+                outputMaps.masks.InsetEdge1(i,:,:) = BW3_Inner;
+                
+                %% Outside Elements:
+                BW2 = imdilate(temp.currCompSessionFill, temp.structuring_element);
+                BW3 = imdilate(BW2, temp.structuring_element);
+                outputMaps.masks.OutsetEdge0(i,:,:) = BW2;
+                outputMaps.masks.OutsetEdge1(i,:,:) = BW3;
+                
+%                 temp.currCompSessionMask = temp.currCompSessionEdge; % Use the edges instead of the fills
+                temp.currCompSessionMask = temp.currCompSessionFill; % Use the fills
+
+                
                 s = regionprops(temp.currCompSessionFill,'Centroid','Area','BoundingBox');
-%                 centroids = cat(1,s.Centroid);
                 outputMaps.computedProperties.areas(i) = s.Area;
                 outputMaps.computedProperties.boundingBoxes(i,:) = s.BoundingBox;
                 outputMaps.computedProperties.centroids(i,:) = s.Centroid;
@@ -119,11 +158,22 @@ function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs
                 % Save the index of this cell in the reverse lookup table:
                 amalgamationMasks.cellROI_LookupMask(temp.currCompSessionFill) = temp.cellRoiIndex;
                 amalgamationMasks.cellROI_LookupMask(temp.currCompSessionEdge) = temp.cellRoiIndex;
+                if should_enable_edge_layering_mode
+                    amalgamationMasks.cellROI_LookupMask(BW2) = temp.cellRoiIndex;
+                    amalgamationMasks.cellROI_LookupMask(BW3) = temp.cellRoiIndex;
+                end
 
                 % Set cells in this cellROI region to opaque:
                 amalgamationMasks.AlphaConjunctionMask(temp.currCompSessionMask) = 1.0;
                 % Set the opacity of cell in this cellROI region based on the number of days that the cell passed the threshold:
                 amalgamationMasks.AlphaRoiTuningScoreMask(temp.currCompSessionMask) = (double(temp.currRoiTuningScore) / 3.0);
+                
+                if should_enable_edge_layering_mode
+                    amalgamationMasks.AlphaConjunctionMask(BW2) = 1.0;
+                    amalgamationMasks.AlphaConjunctionMask(BW3) = 1.0;
+                end
+                
+                
 
                 % Set the greyscale value to the ROIs tuning score, normalized by the maximum possible tuning score (indicating all three days were tuned)
                 amalgamationMasks.NumberOfTunedDays(temp.currCompSessionMask) = double(temp.currRoiTuningScore) / 3.0;
@@ -136,9 +186,23 @@ function [amalgamationMasks, outputMaps] = fnBuildSpatialTuningInfo(num_cellROIs
             temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
             temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
 
-            outputMaps.PreferredStimulusAmplitude(j, temp.currCompSessionMask) = double(temp.maxPrefAmpIndex);
-            outputMaps.PreferredStimulusFreq(j, temp.currCompSessionMask) = double(temp.maxPrefFreqIndex);
+            
 
+            if should_enable_edge_layering_mode
+                if j <= 1
+                    temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.InsetEdge0(i,:,:)));
+                elseif j == 2
+                    temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.OutsetEdge0(i,:,:)));
+                else
+                    temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.OutsetEdge1(i,:,:)));
+                end
+                outputMaps.PreferredStimulusAmplitude(j, temp.currCompSessionCustomEdgeMask) = double(temp.maxPrefAmpIndex);
+                outputMaps.PreferredStimulusFreq(j, temp.currCompSessionCustomEdgeMask) = double(temp.maxPrefFreqIndex);               
+            else
+                outputMaps.PreferredStimulusAmplitude(j, temp.currCompSessionMask) = double(temp.maxPrefAmpIndex);
+                outputMaps.PreferredStimulusFreq(j, temp.currCompSessionMask) = double(temp.maxPrefFreqIndex);            
+            end
+            
             % If we're not on the first session, see if the preferred values changed between the sessions.
             if j > 1
                 didPreferredAmpIndexChange = (temp.prev.maxPrefAmpIndex ~= temp.maxPrefAmpIndex);
