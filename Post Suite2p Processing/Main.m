@@ -8,7 +8,15 @@ phoPipelineOptions.default_FD_file_path = '/Users/pho/Dropbox/Classes/Fall 2020/
 phoPipelineOptions.shouldShowPlots = true;
 phoPipelineOptions.shouldSaveFiguresToDisk = false; % Note that this has no effect if phoPipelineOptions.shouldShowPlots is false.
 
-phoPipelineOptions.ignoredCellROIs = [3, 50, 132, 157, 116];
+% phoPipelineOptions.ignoredCellROIs = [];
+% phoPipelineOptions.ignoredCellROI_Indicies = [3, 50, 132, 157, 116];
+phoPipelineOptions.ignoredCellROI_CompNames = {'comp4','comp123','comp625','comp677','comp480'};
+% phoPipelineOptions.ignoredCellROI_Indicies = [phoPipelineOptions.ignoredCellROI_Indicies [70, 79, 102]];
+phoPipelineOptions.ignoredCellROI_CompNames = [phoPipelineOptions.ignoredCellROI_CompNames {'comp198','comp237','comp370'}];
+
+% find(backup.uniqueComps(strcmpi({backup.uniqueComps}, {'comp198','comp237','comp370'})))
+% find(strcmpi(backup.uniqueComps, 'comp370'))
+
 
 
 %%% PhoLoadFinalDataStruct Options:

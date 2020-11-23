@@ -70,27 +70,51 @@ compTable = struct2table(activeAnimalCompList);
 numCompListEntries = height(compTable); % The number of rows in the compTable. Should be a integer multiple of the number of unique comps (corresponding to multiple sessions/days for each unique comp)
 
 uniqueComps = unique(compTable.compName,'stable'); % Each unique component corresponds to a cellROI
-% Make a backup before removing anything:
-backup.uniqueComps = uniqueComps;
-backup.compList = compList;
-backup.activeAnimalCompList = activeAnimalCompList;
 
 %% Filter:
-excludedCompsList = uniqueComps(phoPipelineOptions.ignoredCellROIs); % Before removing them, get the list of the component names that are being removed.
-uniqueComps(phoPipelineOptions.ignoredCellROIs) = []; % Remove the comps that are excluded
-
-backup.compTable = compTable;
-
-for i = 1:length(excludedCompsList)
-   curr_ignoredCellROI_OriginalIndex = phoPipelineOptions.ignoredCellROIs(i);
-   curr_ignoredCellROI_ComponentName = excludedCompsList{i};
-   
-   rowsToRemove = strcmpi(compTable.compName, curr_ignoredCellROI_ComponentName);
-   compTable(rowsToRemove,:) = []; % Remove these rows
+foundNewToBeExcludedComps = {};
+if exist('excludedCompsList','var')
+%     potentiallyNewExcludedCompsList = uniqueComps(phoPipelineOptions.ignoredCellROI_Indicies); % Before removing them, get the list of the component names that are being removed.
+    potentiallyNewExcludedCompsList = phoPipelineOptions.ignoredCellROI_CompNames;
+%     lia = ismember(potentiallyNewExcludedCompsList, excludedCompsList);
+    for i = 1:length(potentiallyNewExcludedCompsList)
+       if ~ismember(potentiallyNewExcludedCompsList{i}, excludedCompsList)
+           % Found one that hasn't been filtered for
+           foundNewToBeExcludedComps{end+1} = potentiallyNewExcludedCompsList{i};
+       end        
+    end
     
-   compList(rowsToRemove) = [];
-   activeAnimalCompList(rowsToRemove) = [];
-   
+    
+else
+     % Make a backup before removing anything:
+    backup.uniqueComps = uniqueComps;
+    backup.compList = compList;
+    backup.activeAnimalCompList = activeAnimalCompList;
+    backup.compTable = compTable;
+    
+    excludedCompsList = {};
+    foundNewToBeExcludedComps = phoPipelineOptions.ignoredCellROI_CompNames;
+%     excludedCompsList = uniqueComps(phoPipelineOptions.ignoredCellROI_Indicies); % Before removing them, get the list of the component names that are being removed.
+end
+
+
+numNew = length(foundNewToBeExcludedComps);
+if numNew > 0
+    
+    for i = 1:length(foundNewToBeExcludedComps)
+%        curr_ignoredCellROI_OriginalIndex = phoPipelineOptions.ignoredCellROI_Indicies(i);
+       curr_ignoredCellROI_ComponentName = foundNewToBeExcludedComps{i};
+
+       uniqueComps(strcmpi(uniqueComps, curr_ignoredCellROI_ComponentName)) = []; % Remove the comps that are excluded
+       
+       rowsToRemove = strcmpi(compTable.compName, curr_ignoredCellROI_ComponentName);
+       compTable(rowsToRemove, :) = []; % Remove these rows
+       compList(rowsToRemove) = [];
+       activeAnimalCompList(rowsToRemove) = [];
+       
+       excludedCompsList{end+1} = curr_ignoredCellROI_ComponentName;
+    end
+
 end
 
 num_cellROIs = length(uniqueComps); 
@@ -102,6 +126,12 @@ compTable = [compTable indexColumn];
 % update numCompListEntries after removing the irrelevant ones
 numCompListEntries = height(compTable); 
 
+temp.excludedCompsStatusString = join(excludedCompsList,', ');
+temp.excludedCompsStatusString = temp.excludedCompsStatusString{1};
+temp.numberOriginal = length(backup.uniqueComps);
+temp.numberIgnored = (temp.numberOriginal - num_cellROIs);
+
+fprintf('Using %d of %d rows (Ignoring %d): %s.\n', num_cellROIs, temp.numberOriginal, temp.numberIgnored, temp.excludedCompsStatusString);
 
 multiSessionCellRoi_CompListIndicies = zeros(num_cellROIs, numOfSessions); % a list of comp indicies for each CellRoi
 finalOutComponentSegment.Masks = zeros(numCompListEntries, 512, 512);
