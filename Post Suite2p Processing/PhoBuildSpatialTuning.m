@@ -155,8 +155,11 @@ if phoPipelineOptions.shouldShowPlots
     dcm = datacursormode;
     dcm.Enable = 'on';
     dcm.DisplayStyle = 'window';
-    dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMask_cellROI_LookupMask));
-    
+    if exist('slider_controller','var')
+        dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMask_cellROI_LookupMask, slider_controller));
+    else
+        dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMask_cellROI_LookupMask));
+    end
     %% Optional Export to disk:
     if phoPipelineOptions.shouldSaveFiguresToDisk
         %% Export plots:
@@ -180,7 +183,7 @@ fprintf('\t done.\n')
 
 
 %% Custom ToolTip callback function that displays the clicked cell ROI as well as the x,y position.
-function txt = displayCoordinates(~, info, amalgamationMask_cellROI_LookupMask)
+function txt = displayCoordinates(~, info, amalgamationMask_cellROI_LookupMask, activeSliderController)
     x = info.Position(1);
     y = info.Position(2);
     cellROI = amalgamationMask_cellROI_LookupMask(y, x);
@@ -191,4 +194,10 @@ function txt = displayCoordinates(~, info, amalgamationMask_cellROI_LookupMask)
         cellROIString = 'None';
     end
     txt = ['(' num2str(x) ', ' num2str(y) '): cellROI: ' cellROIString];
+    
+    if exist('activeSliderController','var')
+       fprintf('updating activeSliderController programmatically to value %d...\n', cellROI);
+       activeSliderController.controller.Slider.Value = cellROI;
+    end
+    
 end
