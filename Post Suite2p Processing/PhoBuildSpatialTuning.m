@@ -33,11 +33,6 @@ if phoPipelineOptions.shouldShowPlots
 end
 
 
-
-
-
-% componentAggregatePropeties.maxTuningPeakValue
-
 amalgamationMasks.cellROI_LookupMask = zeros(512, 512); % Maps every pixel in the image to the cellROI index of the cell it belongs to, if one exists.
 
 amalgamationMasks.AlphaConjunctionMask = zeros(512, 512);
@@ -71,6 +66,9 @@ for i = 1:num_cellROIs
         % Check if this is the first session for this cellROI as not to recompute it needlessly when it doesn't change across sessions.
         if j == 1
             temp.currCompSessionMask = logical(squeeze(finalOutComponentSegment.Masks(temp.currCompSessionIndex,:,:)));
+            temp.currCompSessionEdge = logical(squeeze(finalOutComponentSegment.Edge(temp.currCompSessionIndex,:,:)));
+            
+            
             % Save the index of this cell in the reverse lookup table:
             amalgamationMasks.cellROI_LookupMask(temp.currCompSessionMask) = temp.cellRoiIndex;
 
