@@ -91,9 +91,9 @@ function [finalDataStruct, sessionList, compList] = fnPhoLoadFinalDataStruct(fin
 
     %% "FD (final data)" file output:
     if phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave
-        disp('\t Running baselineDFF_fds on finalDataStruct...')
+        fprintf('\t Running baselineDFF_fds on finalDataStruct...\n')
         finalDataStruct = baselineDFF_fds(finalDataStruct, sessionList, phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames, phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions); % Adds the DFF baseline to the finalDataStruct
-        fprintf('\t writing final data struct with DFF back out to %s... ', FDPath);
+        fprintf('\t writing final data struct with DFF back out to %s... \n', FDPath);
         save(FDPath, 'finalDataStruct')  % Save out to the file
     end
 
