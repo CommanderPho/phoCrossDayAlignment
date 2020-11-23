@@ -5,35 +5,17 @@
 
 fprintf('> Running PhoTuningMeshExplorer...\n');
 
-%% Need to get the appropriate version:
-should_show_neuropil_corrected_version = true;
 
-
-if should_show_neuropil_corrected_version
-    fprintf('\t Showing Neuropil Corrected Results...\n');
-    componentAggregatePropeties = minusNeuropil.componentAggregatePropeties;
-    finalOutPeaksGrid = minusNeuropil.finalOutPeaksGrid;
-else
-    fprintf('\t Showing non-Neuropil Corrected Results...\n');
-    componentAggregatePropeties = default_DFF.componentAggregatePropeties;
-    finalOutPeaksGrid = default_DFF.finalOutPeaksGrid;
-end
-
-
-
-%% Sort based on tuning score:
-[sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
 
 
 %% Options:
-numToCompare = 1;
-cellRoisToPlot = cellRoiSortIndex(1:numToCompare);
-% cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
 
 % Uses:
 %   phoPipelineOptions.shouldSaveFiguresToDisk
 %   phoPipelineOptions.shouldShowPlots
 %   phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path
+%   phoPipelineOptions.PhoTuningMeshExplorer.should_show_neuropil_corrected_version
+%   phoPipelineOptions.PhoTuningMeshExplorer.numToCompare
 
 if ~exist('phoPipelineOptions','var')
     warning('phoPipelineOptions is missing! Using defaults specified in PhoTuningMeshExplorer.m')
@@ -41,6 +23,8 @@ if ~exist('phoPipelineOptions','var')
     phoPipelineOptions.shouldShowPlots = true;
     %%% PhoTuningMeshExplorer Options:
     phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = '';
+    phoPipelineOptions.PhoTuningMeshExplorer.should_show_neuropil_corrected_version = true;
+    phoPipelineOptions.PhoTuningMeshExplorer.numToCompare = 1;
 %     phoPipelineOptions.PhoTuningMeshExplorer.cellRoisToPlot = [];
 end
 
@@ -57,43 +41,65 @@ if phoPipelineOptions.shouldShowPlots
    end
 end
 
-for i = 1:length(cellRoisToPlot)
-    %% Plot the grid as a test
-    temp.cellRoiIndex = cellRoisToPlot(i);
-    temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
-%     temp.firstCompSessionIndex = temp.currAllSessionCompIndicies(1);
-    
-%     temp.firstCompSessionMask = squeeze(finalOutComponentSegment.Masks(temp.firstCompSessionIndex,:,:));
 
-    if phoPipelineOptions.shouldShowPlots
-        % Mask Plot:
-        [figH_Blobs, ~] = fnPlotCellROIBlobs(dateStrings, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutComponentSegment);
-        
-        % Make 2D Plots (Exploring):    
-        [figH_2d, ~] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
-
-        % Make 3D Mesh Plot:
-        [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
-%         zlim([-0.2, 1])
-
-        if phoPipelineOptions.shouldSaveFiguresToDisk
-            
-            %% Export plots:
-            fig_name = sprintf('TuningCurves_cellRoi_%d.fig', temp.cellRoiIndex);
-            fig_2d_export_path = fullfile(phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path, fig_name);
-            savefig(figH_2d, fig_2d_export_path);
-            close(figH_2d);
-
-            fig_name = sprintf('TuningMesh_cellRoi_%d.fig', temp.cellRoiIndex);
-            fig_export_path = fullfile(phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path, fig_name);
-            savefig(figH, fig_export_path);
-            close(figH);
-        end
-    
-    end
+%% Need to get the appropriate version:
+if phoPipelineOptions.PhoTuningMeshExplorer.should_show_neuropil_corrected_version
+    fprintf('\t Showing Neuropil Corrected Results...\n');
+    componentAggregatePropeties = minusNeuropil.componentAggregatePropeties;
+    finalOutPeaksGrid = minusNeuropil.finalOutPeaksGrid;
+else
+    fprintf('\t Showing non-Neuropil Corrected Results...\n');
+    componentAggregatePropeties = default_DFF.componentAggregatePropeties;
+    finalOutPeaksGrid = default_DFF.finalOutPeaksGrid;
 end
 
+%% Perform main plot:
+[cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, finalOutPeaksGrid, phoPipelineOptions);
 fprintf('\t done.\n');
 
 
+function [cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, finalOutPeaksGrid, phoPipelineOptions)
 
+    %% Sort based on tuning score:
+    [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
+
+    numToCompare = phoPipelineOptions.PhoTuningMeshExplorer.numToCompare;
+    cellRoisToPlot = cellRoiSortIndex(1:numToCompare);
+    % cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
+
+    for i = 1:length(cellRoisToPlot)
+        %% Plot the grid as a test
+        temp.cellRoiIndex = cellRoisToPlot(i);
+        temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
+    %     temp.firstCompSessionIndex = temp.currAllSessionCompIndicies(1);
+    %     temp.firstCompSessionMask = squeeze(finalOutComponentSegment.Masks(temp.firstCompSessionIndex,:,:));
+
+        if phoPipelineOptions.shouldShowPlots
+            % Mask Plot:
+            [figH_Blobs, ~] = fnPlotCellROIBlobs(dateStrings, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutComponentSegment);
+
+            % Make 2D Plots (Exploring):    
+            [figH_2d, ~] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
+
+            % Make 3D Mesh Plot:
+            [figH, ~] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
+    %         zlim([-0.2, 1])
+
+            if phoPipelineOptions.shouldSaveFiguresToDisk
+
+                %% Export plots:
+                fig_name = sprintf('TuningCurves_cellRoi_%d.fig', temp.cellRoiIndex);
+                fig_2d_export_path = fullfile(phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path, fig_name);
+                savefig(figH_2d, fig_2d_export_path);
+                close(figH_2d);
+
+                fig_name = sprintf('TuningMesh_cellRoi_%d.fig', temp.cellRoiIndex);
+                fig_export_path = fullfile(phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path, fig_name);
+                savefig(figH, fig_export_path);
+                close(figH);
+            end
+
+        end
+    end %% end for cellRoisToPlot
+    
+end
