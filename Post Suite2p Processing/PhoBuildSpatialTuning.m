@@ -48,7 +48,7 @@ end
 
 
 if phoPipelineOptions.shouldShowPlots
-    [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_explorer_obj] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, final_data_explorer_obj, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions);
+    [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_explorer_obj] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, final_data_explorer_obj, final_data_explorer_obj.componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions);
     
     %% Optional Export to disk:
     if phoPipelineOptions.shouldSaveFiguresToDisk
