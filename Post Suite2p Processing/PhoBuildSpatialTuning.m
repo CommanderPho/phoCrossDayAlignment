@@ -48,7 +48,7 @@ end
 
 
 if phoPipelineOptions.shouldShowPlots
-    [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, cellRoiSortIndex, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions);
+    [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_explorer_obj] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, final_data_explorer_obj, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions);
     
     %% Optional Export to disk:
     if phoPipelineOptions.shouldSaveFiguresToDisk
@@ -71,7 +71,7 @@ fprintf('\t done.\n')
 
 
 %% Master Plotting Function
-function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, cellRoiSortIndex, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions)
+function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_explorer_obj] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, final_data_explorer_obj, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions)
     uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),{'% Depth'});
     uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
     %specify colormaps for your figure. This is important!!
@@ -88,8 +88,8 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
     [dcm_numDaysCriteria] = fnAddCustomDataCursor(figH_numDaysCriteria);
 
     if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode
-        temp.currPreferredStimulusAmplitude = squeeze(sum(outputMaps.PreferredStimulusAmplitude, 1));
-        temp.currPreferredStimulusFrequency = squeeze(sum(outputMaps.PreferredStimulusFreq, 1));
+        temp.currPreferredStimulusAmplitude = squeeze(sum(amalgamationMasks.PreferredStimulusAmplitude, 1));
+        temp.currPreferredStimulusFrequency = squeeze(sum(amalgamationMasks.PreferredStimulusFreq, 1));
 
         %Preferred Stimulus Figure:
         [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
@@ -97,8 +97,8 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
         % Can only plot a single session, such as j=1:
 %         j = 1;
         j = 1:3;
-        temp.currPreferredStimulusAmplitude = squeeze(outputMaps.PreferredStimulusAmplitude(j,:,:));
-        temp.currPreferredStimulusFrequency = squeeze(outputMaps.PreferredStimulusFreq(j,:,:));
+        temp.currPreferredStimulusAmplitude = squeeze(amalgamationMasks.PreferredStimulusAmplitude(j,:,:));
+        temp.currPreferredStimulusFrequency = squeeze(amalgamationMasks.PreferredStimulusFreq(j,:,:));
 
         %Preferred Stimulus Figure:
         [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
@@ -178,9 +178,9 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus] = fnPlotPhoBuil
         dcm.Enable = 'on';
         dcm.DisplayStyle = 'window';
         if exist('slider_controller','var')
-            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, outputMaps, slider_controller));
+            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, outputMaps, final_data_explorer_obj, slider_controller));
         else
-            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, outputMaps));
+            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, outputMaps, final_data_explorer_obj));
         end
 
     end
@@ -247,36 +247,51 @@ function figH_numDaysCriteria = fnPlotNumberOfDaysCriteriaFigure(amalgamationMas
 end
 
 %% Custom ToolTip callback function that displays the clicked cell ROI as well as the x,y position.
-function txt = displayCoordinates(figH, info, amalgamationMasks, outputMaps, activeSliderController)
+function txt = displayCoordinates(figH, info, amalgamationMasks, outputMaps, final_data_explorer_obj, activeSliderController)
     x = info.Position(1);
     y = info.Position(2);
     cellROI = amalgamationMasks.cellROI_LookupMask(y, x);
+    
     cellROIString = '';
     if cellROI > 0
+        fprintf('selected cellROI: %d...\n', cellROI);
         cellROIString = num2str(cellROI);
-    else
-        cellROIString = 'None';
-    end
-    
-    cellROI_PreferredStimulusMatrix = squeeze(outputMaps.PreferredStimulus(cellROI,:,:));
-    disp(cellROI_PreferredStimulusMatrix);
-    % 3 sessions x [preferredAmp, preferredFreq]
-%     numSessions = size(cellROI_PreferredStimulusMatrix, 1);
-%     
-%     for i = 1:numSessions
-%         preferredAmpFreq = cellROI_PreferredStimulusMatrix(i,:);
-%         
-%         
-%     end
+        cellROI_PreferredLinearStimulusIndicies = squeeze(outputMaps.PreferredStimulus_LinearStimulusIndex(cellROI,:)); % These are the linear stimulus indicies for this all sessions of this datapoint.
+%         disp(cellROI_PreferredLinearStimulusIndicies);
+
+        cellROI_PreferredAmpsFreqsIndicies = final_data_explorer_obj.stimuli_mapper.indexMap_StimulusLinear2AmpsFreqsArray(cellROI_PreferredLinearStimulusIndicies',:);
+%         disp(cellROI_PreferredAmpsFreqsIndicies);
+
+        cellROI_PreferredAmps = final_data_explorer_obj.uniqueAmps(cellROI_PreferredAmpsFreqsIndicies(:,1));
+        cellROI_PreferredFreqs = final_data_explorer_obj.uniqueFreqs(cellROI_PreferredAmpsFreqsIndicies(:,2));
+
+%         disp(num2str(cellROI_PreferredAmps'));
         
-    
-    txt = ['(' num2str(x) ', ' num2str(y) '): cellROI: ' cellROIString];
+        cellROI_PreferredAmpsFreqsValues = [cellROI_PreferredAmps, cellROI_PreferredFreqs];
+        disp(cellROI_PreferredAmpsFreqsValues);
 
-    txt = ['(' num2str(x) ', ' num2str(y) '): cellROI: ' cellROIString];
-    
-    
-    fprintf('selected cellROI: %d...\n', cellROI);
+    %     cellROI_PreferredStimulusMatrix = squeeze(outputMaps.PreferredStimulus(cellROI,:,:));
+    %     disp(cellROI_PreferredStimulusMatrix);
+        % 3 sessions x [preferredAmp, preferredFreq]
+    %     numSessions = size(cellROI_PreferredStimulusMatrix, 1);
+    %     
+    %     for i = 1:numSessions
+    %         preferredAmpFreq = cellROI_PreferredStimulusMatrix(i,:);
+    %         
+    %         
+    %     end
 
+        txt = {['(' num2str(x) ', ' num2str(y) '): cellROI: ' cellROIString], ['prefAmps: ' num2str(cellROI_PreferredAmps')], ['prefFreqs: ' num2str(cellROI_PreferredFreqs')]};
+%         txt = [txt '\n prefAmps: ' num2str(cellROI_PreferredAmps)];
+        
+    else
+        fprintf('selected no cells.\n');
+        cellROIString = 'None';
+        txt = ['(' num2str(x) ', ' num2str(y) '): cellROI: ' cellROIString];
+    end
+
+    
+    
     if exist('activeSliderController','var')
         fprintf('updating activeSliderController programmatically to value %d...\n', cellROI);
         activeSliderController.controller.Slider.Value = cellROI;

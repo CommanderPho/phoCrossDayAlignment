@@ -127,12 +127,12 @@ classdef FinalDataExplorer
 			% init_matrix = zeros(512, 512);
 			init_matrix = ones(numOfSessions, 512, 512) * -1;
 
-			outputMaps.PreferredStimulusAmplitude = init_matrix;
-			outputMaps.PreferredStimulusFreq = init_matrix;
+			amalgamationMasks.PreferredStimulusAmplitude = init_matrix;
+			amalgamationMasks.PreferredStimulusFreq = init_matrix;
 
 
 			outputMaps.PreferredStimulus = zeros(num_cellROIs, numOfSessions, 2);
-
+			outputMaps.PreferredStimulus_LinearStimulusIndex = zeros(num_cellROIs, numOfSessions); % Instead of a tuple, it holds a value 1-26 that serves as a unique stimulus identity.
 
 			% amalgamationMasks.DidPreferredStimulusChange: keeps track of whether the preferredStimulus amplitude or frequency changed for a cellROI between sessions.
 			outputMaps.DidPreferredStimulusChange = zeros(num_cellROIs, (numOfSessions-1));
@@ -218,6 +218,7 @@ classdef FinalDataExplorer
 					temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
 					temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
 					
+					outputMaps.PreferredStimulus_LinearStimulusIndex(i,j) = temp.currCompMaximallyPreferredStimulusInfo.LinearIndex;
 					outputMaps.PreferredStimulus(i,j,:) =  temp.currMaximalIndexTuple;
 					
 					if should_enable_edge_layering_mode
@@ -240,16 +241,16 @@ classdef FinalDataExplorer
 								temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.InsetEdge0(i,:,:)));
 							end
 						end
-						outputMaps.PreferredStimulusAmplitude(j, temp.currCompSessionCustomEdgeMask) = double(temp.maxPrefAmpIndex);
-						outputMaps.PreferredStimulusFreq(j, temp.currCompSessionCustomEdgeMask) = double(temp.maxPrefFreqIndex);
+						amalgamationMasks.PreferredStimulusAmplitude(j, temp.currCompSessionCustomEdgeMask) = double(temp.maxPrefAmpIndex);
+						amalgamationMasks.PreferredStimulusFreq(j, temp.currCompSessionCustomEdgeMask) = double(temp.maxPrefFreqIndex);
 						if edge_layering_is_outset_mode
 							% Fill in the main fill with nothing
-							outputMaps.PreferredStimulusAmplitude(j, temp.currCompSessionFill) = -1.0;
-							outputMaps.PreferredStimulusFreq(j, temp.currCompSessionFill) = -1.0;
+							amalgamationMasks.PreferredStimulusAmplitude(j, temp.currCompSessionFill) = -1.0;
+							amalgamationMasks.PreferredStimulusFreq(j, temp.currCompSessionFill) = -1.0;
 						end
 					else
-						outputMaps.PreferredStimulusAmplitude(j, temp.currCompSessionMask) = double(temp.maxPrefAmpIndex);
-						outputMaps.PreferredStimulusFreq(j, temp.currCompSessionMask) = double(temp.maxPrefFreqIndex);
+						amalgamationMasks.PreferredStimulusAmplitude(j, temp.currCompSessionMask) = double(temp.maxPrefAmpIndex);
+						amalgamationMasks.PreferredStimulusFreq(j, temp.currCompSessionMask) = double(temp.maxPrefFreqIndex);
 					end
 					
 					% If we're not on the first session, see if the preferred values changed between the sessions.

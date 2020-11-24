@@ -9,7 +9,7 @@ classdef StimuliIndexMapper
         uniqueStimuli
         numStimuli
         indexMap_AmpsFreqs2StimulusArray
-        indexMap_StimulusLinear2AmpsFreqsArray
+        indexMap_StimulusLinear2AmpsFreqsArray % This is a 26 x 2 array, where the two columns are the [ampIndex, frequencyIndex] corresponding to the linear stimulus index for that row.
 
     end
     
