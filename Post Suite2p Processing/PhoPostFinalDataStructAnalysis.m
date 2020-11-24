@@ -170,7 +170,7 @@ end
 %     clear final_data_explorer_obj;
 % end
 
-
+%% Process Each Cell ROI:
 for i = 1:num_cellROIs
    curr_cellROI = uniqueComps{i}; % Get the name of the current cellROI. It has a name like 'comp14'
    curr_cellROI_compListIndicies = find(strcmp(compTable.compName, curr_cellROI)); % Should be a list of 3 relevant indicies, one corresponding to each day.
@@ -279,15 +279,9 @@ end
 %% Need to get the appropriate version:
 if phoPipelineOptions.PhoPostFinalDataStructAnalysis.should_use_neuropil_corrected_version
     fprintf('\t Using Neuropil Corrected Results...\n');
-%     componentAggregatePropeties = minusNeuropil.componentAggregatePropeties;
-%     finalOutPeaksGrid = minusNeuropil.finalOutPeaksGrid;
-%     redTraceLinesForAllStimuli = minusNeuropil.redTraceLinesForAllStimuli;
     final_data_explorer_obj.active_DFF = minusNeuropil;
 else
     fprintf('\t Using non-Neuropil Corrected Results...\n');
-%     componentAggregatePropeties = default_DFF.componentAggregatePropeties;
-%     finalOutPeaksGrid = default_DFF.finalOutPeaksGrid;
-%     redTraceLinesForAllStimuli = default_DFF.redTraceLinesForAllStimuli;
     final_data_explorer_obj.active_DFF = default_DFF;
 end
 
