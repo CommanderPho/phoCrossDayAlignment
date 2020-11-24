@@ -30,9 +30,9 @@ end
 extantFigH_plot_2d = createFigureWithNameIfNeeded('Slider Controlled 2D Plot');
 extantFigH_plot_3d = createFigureWithNameIfNeeded('Slider Controlled 3D Mesh Plot');
 
-main_plot_callback = @(curr_i) (pho_plot_interactive_all(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH_plot_2d, extantFigH_plot_3d, curr_i));
+main_plot_callback = @(curr_i) (pho_plot_interactive_all(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, final_data_explorer_obj.finalOutPeaksGrid, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, extantFigH_plot_2d, extantFigH_plot_3d, curr_i));
 if should_show_masking_plot
-    secondary_plot_callback = @(curr_i) (pho_plot_interactive_masking_all(dateStrings, finalOutComponentSegment, multiSessionCellRoi_CompListIndicies, extantFigH_plot_masking, curr_i));
+    secondary_plot_callback = @(curr_i) (pho_plot_interactive_masking_all(final_data_explorer_obj.dateStrings, final_data_explorer_obj.finalOutComponentSegment, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, extantFigH_plot_masking, curr_i));
     plot_callbacks = {main_plot_callback, secondary_plot_callback};
 else
     plot_callbacks = {main_plot_callback};
