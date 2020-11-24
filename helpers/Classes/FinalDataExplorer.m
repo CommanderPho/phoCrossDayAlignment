@@ -159,33 +159,33 @@ classdef FinalDataExplorer
 						temp.currCompSessionFill = logical(squeeze(obj.finalOutComponentSegment.Masks(temp.currCompSessionIndex,:,:)));
 						temp.currCompSessionEdge = logical(squeeze(obj.finalOutComponentSegment.Edge(temp.currCompSessionIndex,:,:)));
 						
-						outputMaps.masks.Fill(i,:,:) = temp.currCompSessionFill;
-						outputMaps.masks.Edge(i,:,:) = temp.currCompSessionEdge;
+						outputMaps.masks.Fill(temp.cellRoiIndex,:,:) = temp.currCompSessionFill;
+						outputMaps.masks.Edge(temp.cellRoiIndex,:,:) = temp.currCompSessionEdge;
 						
 						BW2_Inner = imerode(temp.currCompSessionFill, temp.structuring_element);
 						BW3_Inner = imerode(BW2_Inner, temp.structuring_element);
 						BW4_Inner = imerode(BW3_Inner, temp.structuring_element);
 					
 						%% Inset Elements:
-						outputMaps.masks.InsetEdge0(i,:,:) = BW2_Inner;
-						outputMaps.masks.InsetEdge1(i,:,:) = BW3_Inner;
-						outputMaps.masks.InsetEdge2(i,:,:) = BW4_Inner;
+						outputMaps.masks.InsetEdge0(temp.cellRoiIndex,:,:) = BW2_Inner;
+						outputMaps.masks.InsetEdge1(temp.cellRoiIndex,:,:) = BW3_Inner;
+						outputMaps.masks.InsetEdge2(temp.cellRoiIndex,:,:) = BW4_Inner;
 									
 						%% Outside Elements:
 						BW2_Outer = imdilate(temp.currCompSessionFill, temp.structuring_element);
 						BW3_Outer = imdilate(BW2_Outer, temp.structuring_element);
 						BW4_Outer = imdilate(BW3_Outer, temp.structuring_element);
-						outputMaps.masks.OutsetEdge0(i,:,:) = BW2_Outer;
-						outputMaps.masks.OutsetEdge1(i,:,:) = BW3_Outer;
-						outputMaps.masks.OutsetEdge2(i,:,:) = BW4_Outer;
+						outputMaps.masks.OutsetEdge0(temp.cellRoiIndex,:,:) = BW2_Outer;
+						outputMaps.masks.OutsetEdge1(temp.cellRoiIndex,:,:) = BW3_Outer;
+						outputMaps.masks.OutsetEdge2(temp.cellRoiIndex,:,:) = BW4_Outer;
 						%                 temp.currCompSessionMask = temp.currCompSessionEdge; % Use the edges instead of the fills
 						temp.currCompSessionMask = temp.currCompSessionFill; % Use the fills
 						
 						
 						s = regionprops(temp.currCompSessionFill,'Centroid','Area','BoundingBox');
-						outputMaps.computedProperties.areas(i) = s.Area;
-						outputMaps.computedProperties.boundingBoxes(i,:) = s.BoundingBox;
-						outputMaps.computedProperties.centroids(i,:) = s.Centroid;
+						outputMaps.computedProperties.areas(temp.cellRoiIndex) = s.Area;
+						outputMaps.computedProperties.boundingBoxes(temp.cellRoiIndex,:) = s.BoundingBox;
+						outputMaps.computedProperties.centroids(temp.cellRoiIndex,:) = s.Centroid;
 						
 						% Save the index of this cell in the reverse lookup table:
 						amalgamationMasks.cellROI_LookupMask(temp.currCompSessionFill) = temp.cellRoiIndex;
@@ -218,27 +218,27 @@ classdef FinalDataExplorer
 					temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
 					temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
 					
-					outputMaps.PreferredStimulus_LinearStimulusIndex(i,j) = temp.currCompMaximallyPreferredStimulusInfo.LinearIndex;
-					outputMaps.PreferredStimulus(i,j,:) =  temp.currMaximalIndexTuple;
+					outputMaps.PreferredStimulus_LinearStimulusIndex(temp.cellRoiIndex,j) = temp.currCompMaximallyPreferredStimulusInfo.LinearIndex;
+					outputMaps.PreferredStimulus(temp.cellRoiIndex,j,:) =  temp.currMaximalIndexTuple;
 					
 					if should_enable_edge_layering_mode
 						if j <= 1
 							if edge_layering_is_outset_mode
-								temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.OutsetEdge0(i,:,:)));
+								temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.OutsetEdge0(temp.cellRoiIndex,:,:)));
 							else
-								temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.InsetEdge2(i,:,:)));
+								temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.InsetEdge2(temp.cellRoiIndex,:,:)));
 							end
 						elseif j == 2
 							if edge_layering_is_outset_mode
-								temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.OutsetEdge1(i,:,:)));
+								temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.OutsetEdge1(temp.cellRoiIndex,:,:)));
 							else
-								temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.InsetEdge1(i,:,:)));
+								temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.InsetEdge1(temp.cellRoiIndex,:,:)));
 							end
 						else
 							if edge_layering_is_outset_mode
-								temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.OutsetEdge2(i,:,:)));
+								temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.OutsetEdge2(temp.cellRoiIndex,:,:)));
 							else
-								temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.InsetEdge0(i,:,:)));
+								temp.currCompSessionCustomEdgeMask = logical(squeeze(outputMaps.masks.InsetEdge0(temp.cellRoiIndex,:,:)));
 							end
 						end
 						amalgamationMasks.PreferredStimulusAmplitude(j, temp.currCompSessionCustomEdgeMask) = double(temp.maxPrefAmpIndex);
@@ -257,7 +257,7 @@ classdef FinalDataExplorer
 					if j > 1
 						didPreferredAmpIndexChange = (temp.prev.maxPrefAmpIndex ~= temp.maxPrefAmpIndex);
 						didPreferredFreqIndexChange = (temp.prev.maxPrefFreqIndex ~= temp.maxPrefFreqIndex);
-						outputMaps.DidPreferredStimulusChange(i,j-1) = didPreferredAmpIndexChange | didPreferredFreqIndexChange;
+						outputMaps.DidPreferredStimulusChange(temp.cellRoiIndex,j-1) = didPreferredAmpIndexChange | didPreferredFreqIndexChange;
 					end
 					% Update the prev values:
 					temp.prev.maxPrefAmpIndex = temp.maxPrefAmpIndex;
