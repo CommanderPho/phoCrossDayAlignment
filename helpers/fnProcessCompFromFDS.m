@@ -55,7 +55,6 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
             if processingOptions.compute_neuropil_corrected_versions
                 imagingDataMinusNeuropilDFF(i,:) = smooth(imagingDataMinusNeuropilDFF(i,:), processingOptions.smoothValue);
             end
-    
         end
     end
     
@@ -105,8 +104,6 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     outputs.tbImg = linspace(0,numFrames/processingOptions.frameRate, numFrames); % make a timebase to plot as xAxis for traces
     
     % The important red lines:
-%     outputs.TracesForAllStimuli.meanData = zeros(outputs.numStimuli, numFrames);
-    
     outputs.default_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, numFrames); % The important red lines:
     outputs.default_DFF.AMConditions.peakSignal = zeros(outputs.numStimuli, 1);
     
@@ -126,7 +123,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         
         %% plotAMConditions_FDS Style
         outputs.default_DFF.AMConditions.imgDataToPlot(b,:) = mean(imgDataDFF(tracesToPlot,:));
-        [~,maxInd] = max(outputs.default_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
+        [~, maxInd] = max(outputs.default_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
         maxInd = maxInd+processingOptions.startSound-1;
         outputs.default_DFF.AMConditions.peakSignal(b) = mean(outputs.default_DFF.AMConditions.imgDataToPlot(b, maxInd-processingOptions.sampPeak:maxInd+processingOptions.sampPeak));
         
@@ -146,43 +143,6 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     end
 
     % 2D projections of the plots:
-%     outputs.TracesForAllStimuli.finalSeriesAmps = {};
-%  % uniqueAmps: the [0%, 20%, 40%, 60%, 80%, 100%] data series
-%     for c = 1:numUniqueAmps
-%         activeUniqueAmp = outputs.uniqueAmps(c);
-%         currentAmpIdx = find(outputs.uniqueStimuli(:,2)==activeUniqueAmp); % this varies in size. for the 0 element it's 1x1, but for index 2 for example it's 5x1
-%         theseFreqs = outputs.uniqueStimuli(currentAmpIdx,1); % AM Depth (%)
-%         thesePeaks = outputs.default_DFF.AMConditions.peakSignal(currentAmpIdx); % 'Peak DF/F'
-%         
-%         tempCurrOutput = struct;
-%         tempCurrOutput.ampIdx = currentAmpIdx;
-%         tempCurrOutput.ampValue = activeUniqueAmp;
-%         tempCurrOutput.freqs = theseFreqs;
-%         tempCurrOutput.peaks = thesePeaks;
-% 
-%         outputs.TracesForAllStimuli.finalSeriesAmps{end+1} = tempCurrOutput;
-%     end
-     
-%     outputs.TracesForAllStimuli.finalSeriesFreqs = {};
-%     % uniqueFreqs: the [0, 10, 20, 50, 100, 200 Hz] data series
-%     for d=1:numUniqueFreqs
-%         activeUniqueFreq = outputs.uniqueFreqs(d);
-%         currentFreqIdx = find(outputs.uniqueStimuli(:,1)==activeUniqueFreq);
-%         theseAmps = outputs.uniqueStimuli(currentFreqIdx,2);
-%         thesePeaks = outputs.default_DFF.AMConditions.peakSignal(currentFreqIdx); % 'Peak DF/F'
-%         
-%         tempCurrOutput = struct;
-%         tempCurrOutput.freqIdx = currentFreqIdx;
-%         tempCurrOutput.freqValue = activeUniqueFreq;
-%         tempCurrOutput.amps = theseAmps;
-%         tempCurrOutput.peaks = thesePeaks;
-% 
-%         outputs.TracesForAllStimuli.finalSeriesFreqs{end+1} = tempCurrOutput;
-%         
-%     end
-    
-    
-    
     %% Loop through all amplitudes and frequencies:
     % Build 2D Mesh for each component
     outputs.default_DFF.finalOutGrid = zeros(numUniqueAmps, numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
