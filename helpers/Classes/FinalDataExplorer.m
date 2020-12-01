@@ -10,6 +10,8 @@ classdef FinalDataExplorer
 
         dateStrings
  
+        cellROIIndex_mapper % a CellROIIndexMapper object
+        
         stimuli_mapper
         
         %% Outputs:
@@ -67,19 +69,36 @@ classdef FinalDataExplorer
     end
     
     methods
-        function obj = FinalDataExplorer(uniqueComps, multiSessionCellRoi_CompListIndicies, dateStrings, stimuli_mapper)
+        function obj = FinalDataExplorer(cellROIIndex_mapper, stimuli_mapper)
             %FINALDATAEXPLORER Construct an instance of this class
             %   Detailed explanation goes here
-            obj.uniqueComps = uniqueComps;
+   
+            obj.cellROIIndex_mapper = cellROIIndex_mapper;
+            
+            obj.uniqueComps = obj.cellROIIndex_mapper.uniqueComps;
 %             obj.num_cellROIs = length(uniqueComps);
             
-            obj.dateStrings = dateStrings;
+            obj.dateStrings = obj.cellROIIndex_mapper.dateStrings;
 %             obj.numOfSessions = length(dateStrings);
             
-            obj.multiSessionCellRoi_CompListIndicies = multiSessionCellRoi_CompListIndicies;
+            obj.multiSessionCellRoi_CompListIndicies = obj.cellROIIndex_mapper.multiSessionCellRoi_CompListIndicies;
             obj.stimuli_mapper = stimuli_mapper;
 
         end
+        
+%         function obj = FinalDataExplorer(uniqueComps, multiSessionCellRoi_CompListIndicies, dateStrings, stimuli_mapper)
+%             %FINALDATAEXPLORER Construct an instance of this class
+%             %   Detailed explanation goes here
+%             obj.uniqueComps = uniqueComps;
+% %             obj.num_cellROIs = length(uniqueComps);
+%             
+%             obj.dateStrings = dateStrings;
+% %             obj.numOfSessions = length(dateStrings);
+%             
+%             obj.multiSessionCellRoi_CompListIndicies = multiSessionCellRoi_CompListIndicies;
+%             obj.stimuli_mapper = stimuli_mapper;
+% 
+%         end
 
 %         function obj = setActiveDFF(obj, active_DFF)
 %             %METHOD1 Summary of this method goes here
