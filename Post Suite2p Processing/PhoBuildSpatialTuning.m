@@ -250,13 +250,17 @@ end
 function txt = displayCoordinates(figH, info, amalgamationMasks, outputMaps, final_data_explorer_obj, activeSliderController)
     x = info.Position(1);
     y = info.Position(2);
-    cellROI = amalgamationMasks.cellROI_LookupMask(y, x); % Figure out explicitly what index type is assigned here.
-    
+    uniqueCompIndex = amalgamationMasks.cellROI_LookupMask(y, x); % Figure out explicitly what index type is assigned here.
     cellROIString = '';
-    if cellROI > 0
-        fprintf('selected cellROI: %d...\n', cellROI);
-        cellROIString = num2str(cellROI);
-        cellROI_PreferredLinearStimulusIndicies = squeeze(outputMaps.PreferredStimulus_LinearStimulusIndex(cellROI,:)); % These are the linear stimulus indicies for this all sessions of this datapoint.
+    if uniqueCompIndex > 0
+        fprintf('selected cellROI: %d...\n', uniqueCompIndex);
+        cellROI_CompName = final_data_explorer_obj.uniqueComps{uniqueCompIndex};
+        cellROIString = ['[' num2str(uniqueCompIndex) ']' cellROI_CompName];
+        
+%         cellROIString = num2str(uniqueCompIndex);  
+        
+        
+        cellROI_PreferredLinearStimulusIndicies = squeeze(outputMaps.PreferredStimulus_LinearStimulusIndex(uniqueCompIndex,:)); % These are the linear stimulus indicies for this all sessions of this datapoint.
 %         disp(cellROI_PreferredLinearStimulusIndicies);
 
         cellROI_PreferredAmpsFreqsIndicies = final_data_explorer_obj.stimuli_mapper.indexMap_StimulusLinear2AmpsFreqsArray(cellROI_PreferredLinearStimulusIndicies',:);
@@ -293,8 +297,8 @@ function txt = displayCoordinates(figH, info, amalgamationMasks, outputMaps, fin
     
     
     if exist('activeSliderController','var')
-        fprintf('updating activeSliderController programmatically to value %d...\n', cellROI);
-        activeSliderController.controller.Slider.Value = cellROI;
+        fprintf('updating activeSliderController programmatically to value %d...\n', uniqueCompIndex);
+        activeSliderController.controller.Slider.Value = uniqueCompIndex;
     end
 end
     
