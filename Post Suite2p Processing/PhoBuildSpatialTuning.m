@@ -250,7 +250,7 @@ end
 function txt = displayCoordinates(figH, info, amalgamationMasks, outputMaps, final_data_explorer_obj, activeSliderController)
     x = info.Position(1);
     y = info.Position(2);
-    cellROI = amalgamationMasks.cellROI_LookupMask(y, x);
+    cellROI = amalgamationMasks.cellROI_LookupMask(y, x); % Figure out explicitly what index type is assigned here.
     
     cellROIString = '';
     if cellROI > 0

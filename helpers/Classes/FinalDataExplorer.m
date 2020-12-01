@@ -158,17 +158,25 @@ classdef FinalDataExplorer
 			outputMaps.computedProperties.boundingBoxes = zeros(num_cellROIs, 4);
 			outputMaps.computedProperties.centroids = zeros(num_cellROIs, 2);
 
+            % Iterate through each cellROI:
 			for i = 1:num_cellROIs
 				%% Plot the grid as a test
 % 				temp.cellRoiIndex = cellRoiSortIndex(i); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
                 temp.cellRoiIndex = i;
-				temp.currAllSessionCompIndicies = obj.multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
+                
+                temp.currAllSessionCompIndicies = obj.cellROIIndex_mapper.getCompListIndicies(temp.cellRoiIndex); % Gets all sessions for the current ROI
+                
+                
+% 				temp.currAllSessionCompIndicies = obj.multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
+                
+                
+                
 				%% cellROI Specific Score:
 				temp.currRoiTuningScore = obj.componentAggregatePropeties.tuningScore(temp.cellRoiIndex); % currently only uses first session?
 				temp.numSessions = length(temp.currAllSessionCompIndicies);
 				
 				for j = 1:temp.numSessions
-					
+					% Returns the linearCompIndex
 					temp.currCompSessionIndex = temp.currAllSessionCompIndicies(j);
 					
 					%% Results common across all sessions of this cellROI:
@@ -263,10 +271,11 @@ classdef FinalDataExplorer
 						amalgamationMasks.PreferredStimulusFreq(j, temp.currCompSessionCustomEdgeMask) = double(temp.maxPrefFreqIndex);
 						if edge_layering_is_outset_mode
 							% Fill in the main fill with nothing
-							amalgamationMasks.PreferredStimulusAmplitude(j, temp.currCompSessionFill) = -1.0;
+							amalgamationMasks.PreferredStimulusAmplitude(j, temp.currCompSessionFill) = -1.0; % amalgamationMasks.PreferredStimulusAmplitude: a numSessions x
 							amalgamationMasks.PreferredStimulusFreq(j, temp.currCompSessionFill) = -1.0;
-						end
-					else
+                        end
+                        
+                    else % else (NOT should_enable_edge_layering_mode)
 						amalgamationMasks.PreferredStimulusAmplitude(j, temp.currCompSessionMask) = double(temp.maxPrefAmpIndex);
 						amalgamationMasks.PreferredStimulusFreq(j, temp.currCompSessionMask) = double(temp.maxPrefFreqIndex);
 					end

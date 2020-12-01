@@ -27,8 +27,6 @@ classdef CellROIIndexMapper
             obj.dateStrings = {activeAnimalSessionList.date};  % Strings representing each date.
             obj.numOfSessions = length(obj.dateStrings); % The number of sessions (days) for this animal.
 
-
-            
             obj.compTable = struct2table(activeAnimalCompList);
             obj.numCompListEntries = height(obj.compTable); % The number of rows in the compTable. Should be a integer multiple of the number of unique comps (corresponding to multiple sessions/days for each unique comp)
 
@@ -44,10 +42,10 @@ classdef CellROIIndexMapper
             
             %% Process Each Cell ROI:
             for i = 1:obj.num_cellROIs
-               curr_cellROI = obj.uniqueComps{i}; % Get the name of the current cellROI. It has a name like 'comp14'
-               curr_cellROI_compListIndicies = find(strcmp(obj.compTable.compName, curr_cellROI)); % Should be a list of 3 relevant indicies, one corresponding to each day.
+               curr_cellROI_name = obj.uniqueComps{i}; % Get the name of the current cellROI. It has a name like 'comp14'
+               curr_cellROI_compListIndicies = find(strcmp(obj.compTable.compName, curr_cellROI_name)); % Should be a list of 3 relevant indicies, one corresponding to each day.
 
-               fprintf('\t \t uniqueComp[%d]: %s', i, curr_cellROI);
+               fprintf('\t \t uniqueComp[%d]: %s', i, curr_cellROI_name);
                disp(curr_cellROI_compListIndicies');
                obj.multiSessionCellRoi_CompListIndicies(i,:) = curr_cellROI_compListIndicies';
             end
