@@ -44,7 +44,7 @@ if phoPipelineOptions.shouldShowPlots
 end
 
 % [amalgamationMasks, outputMaps, cellRoiSortIndex] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions);
-[amalgamationMasks, outputMaps, cellRoiSortIndex] = final_data_explorer_obj.buildSpatialTuningInfo(phoPipelineOptions);
+[amalgamationMasks, outputMaps] = final_data_explorer_obj.buildSpatialTuningInfo(phoPipelineOptions);
 
 
 if phoPipelineOptions.shouldShowPlots

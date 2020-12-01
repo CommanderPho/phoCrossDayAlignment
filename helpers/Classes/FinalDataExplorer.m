@@ -105,7 +105,7 @@ classdef FinalDataExplorer
 %         end
 
                 
-        function [amalgamationMasks, outputMaps, cellRoiSortIndex] = buildSpatialTuningInfo(obj, phoPipelineOptions)
+        function [amalgamationMasks, outputMaps] = buildSpatialTuningInfo(obj, phoPipelineOptions)
             %buildSpatialTuningInfo Builds the spatial tuning objects
             %   Detailed explanation goes here
             % should_enable_edge_layering_mode: if true, uses the borders surrounding each cell to reflect the preferred tuning at a given day.
@@ -120,7 +120,7 @@ classdef FinalDataExplorer
 
 
 			%% Sort based on tuning score:
-			[sortedTuningScores, cellRoiSortIndex] = sort(obj.componentAggregatePropeties.tuningScore, 'descend');
+% 			[sortedTuningScores, cellRoiSortIndex] = sort(obj.componentAggregatePropeties.tuningScore, 'descend');
 
 			amalgamationMasks.cellROI_LookupMask = zeros(512, 512); % Maps every pixel in the image to the cellROI index of the cell it belongs to, if one exists.
 
@@ -160,7 +160,8 @@ classdef FinalDataExplorer
 
 			for i = 1:num_cellROIs
 				%% Plot the grid as a test
-				temp.cellRoiIndex = cellRoiSortIndex(i); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
+% 				temp.cellRoiIndex = cellRoiSortIndex(i); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
+                temp.cellRoiIndex = i;
 				temp.currAllSessionCompIndicies = obj.multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
 				%% cellROI Specific Score:
 				temp.currRoiTuningScore = obj.componentAggregatePropeties.tuningScore(temp.cellRoiIndex); % currently only uses first session?
