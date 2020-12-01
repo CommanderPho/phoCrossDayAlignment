@@ -2,10 +2,10 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     %TODO: Figure out how the 26 different stimuli (numStimuli) map to the uniqueAmps/uniqueFreqs points.
     
     if ~exist('processingOptions','var')
-        processingOptions.startSound=31;
-        processingOptions.endSound=90;
+        processingOptions.startSound = 31;
+        processingOptions.endSound = 90;
         processingOptions.sampPeak = 2;
-        processingOptions.frameRate=30;
+        processingOptions.frameRate = 30;
         processingOptions.smoothValue = 5;
         processingOptions.compute_neuropil_corrected_versions = true;
     end
@@ -70,6 +70,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     
     [outputs.uniqueStimuli, ~, ib] = unique(outputs.stimList, 'rows');
     
+    % What is this doing?
     outputs.tracesForEachStimulus = accumarray(ib, find(ib), [], @(rows){rows});
     
     [outputs.numStimuli, ~] = size(outputs.uniqueStimuli);
