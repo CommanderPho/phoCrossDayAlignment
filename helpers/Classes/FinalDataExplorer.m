@@ -3,12 +3,10 @@ classdef FinalDataExplorer
     %   Detailed explanation goes here
     
     properties
-        uniqueComps
-        
-        multiSessionCellRoi_CompListIndicies
+
 %         finalOutComponentSegment
 
-        dateStrings
+        
  
         cellROIIndex_mapper % a CellROIIndexMapper object
         
@@ -32,6 +30,10 @@ classdef FinalDataExplorer
     
     %% Computed Properties:
     properties (Dependent)
+        dateStrings
+        uniqueComps       
+        multiSessionCellRoi_CompListIndicies
+        
         num_cellROIs
         numOfSessions
         componentAggregatePropeties
@@ -42,6 +44,15 @@ classdef FinalDataExplorer
         uniqueStimuli
     end
     methods
+       function dateStrings = get.dateStrings(obj)
+          dateStrings = obj.cellROIIndex_mapper.dateStrings;
+       end
+       function uniqueComps = get.uniqueComps(obj)
+          uniqueComps = obj.cellROIIndex_mapper.uniqueComps;
+       end
+       function multiSessionCellRoi_CompListIndicies = get.multiSessionCellRoi_CompListIndicies(obj)
+          multiSessionCellRoi_CompListIndicies = obj.cellROIIndex_mapper.multiSessionCellRoi_CompListIndicies;
+       end
        function num_cellROIs = get.num_cellROIs(obj)
           num_cellROIs = length(obj.uniqueComps);
        end
@@ -74,14 +85,7 @@ classdef FinalDataExplorer
             %   Detailed explanation goes here
    
             obj.cellROIIndex_mapper = cellROIIndex_mapper;
-            
-            obj.uniqueComps = obj.cellROIIndex_mapper.uniqueComps;
-%             obj.num_cellROIs = length(uniqueComps);
-            
-            obj.dateStrings = obj.cellROIIndex_mapper.dateStrings;
-%             obj.numOfSessions = length(dateStrings);
-            
-            obj.multiSessionCellRoi_CompListIndicies = obj.cellROIIndex_mapper.multiSessionCellRoi_CompListIndicies;
+
             obj.stimuli_mapper = stimuli_mapper;
 
         end
@@ -100,13 +104,7 @@ classdef FinalDataExplorer
 % 
 %         end
 
-%         function obj = setActiveDFF(obj, active_DFF)
-%             %METHOD1 Summary of this method goes here
-%             %   Detailed explanation goes here
-%             obj.active_DFF = active_DFF;
-%         end
-        
-        
+                
         function [amalgamationMasks, outputMaps, cellRoiSortIndex] = buildSpatialTuningInfo(obj, phoPipelineOptions)
             %buildSpatialTuningInfo Builds the spatial tuning objects
             %   Detailed explanation goes here
