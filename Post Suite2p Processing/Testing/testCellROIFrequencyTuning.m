@@ -10,6 +10,6 @@ temp.currPreferredStimulusFrequency = squeeze(outputMaps.PreferredStimulusFreq(j
 
 % function [figH] = fnTestStimulusTracesPlot(index)
     temp.cellRoiIndex = 5;
-    temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
-    [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, outputs.tbImg, outputs.uniqueStimuli, outputs.indexMap_StimulusLinear2AmpsFreqsArray, redTraceLinesForAllStimuli);
+    temp.currAllSessionCompIndicies = final_data_explorer_obj.multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
+    [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, outputs.tbImg, final_data_explorer_obj.uniqueStimuli, final_data_explorer_obj.stimuli_mapper.indexMap_StimulusLinear2AmpsFreqsArray, final_data_explorer_obj.redTraceLinesForAllStimuli);
 % end

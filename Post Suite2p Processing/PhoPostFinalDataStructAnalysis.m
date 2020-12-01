@@ -18,7 +18,7 @@ if ~exist('phoPipelineOptions','var')
     %%% PhoPostFinalDataStructAnalysis Options:
     phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal = 'anm265';
     % tuning_max_threshold_criteria: the threshold value for peakDFF
-    phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria = 0.1;
+    phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria = 0.2;
 
     phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions = true;
     phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.startSound = 31;
