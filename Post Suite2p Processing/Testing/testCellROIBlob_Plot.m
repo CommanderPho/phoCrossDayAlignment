@@ -60,10 +60,10 @@ set(gca,'xlim',[1 512],'ylim',[1 512])
 
 %% Build Interaction Helper Object:
 if ~exist('active_selections_backingFile_path','var')
-    interaction_helper_obj = InteractionHelper(final_data_explorer_obj, 'Pho');
-else
-    interaction_helper_obj = InteractionHelper(final_data_explorer_obj, 'Pho', active_selections_backingFile_path);
+   active_selections_backingFile_path = phoPipelineOptions.default_interactionManager_backingStorePath;
 end
+
+interaction_helper_obj = InteractionHelper(final_data_explorer_obj, 'Pho', active_selections_backingFile_path);
 active_selections_backingFile_path = interaction_helper_obj.BackingFile.fullPath;
 
 

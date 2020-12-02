@@ -8,6 +8,8 @@ phoPipelineOptions.default_FD_file_path = '/Users/pho/Dropbox/Classes/Fall 2020/
 phoPipelineOptions.shouldShowPlots = true;
 phoPipelineOptions.shouldSaveFiguresToDisk = false; % Note that this has no effect if phoPipelineOptions.shouldShowPlots is false.
 
+phoPipelineOptions.default_interactionManager_backingStorePath = '/Users/pho/repo/phoCrossDayAlignment/Post Suite2p Processing/Testing/UAnnotations-CellROI-0.mat';
+
 phoPipelineOptions.imageDimensions = [512 512];
 % phoPipelineOptions.ignoredCellROIs = [];
 % phoPipelineOptions.ignoredCellROI_Indicies = [3, 50, 132, 157, 116];

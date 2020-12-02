@@ -134,27 +134,32 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 			% see if the file exists at the provided path
 			if ~exist(obj.BackingFile.fullPath,'file')
                 % if it doesn't exist, create it
-				disp(['Creating new backing file at ' obj.BackingFile.fullPath])
+				fprintf('Backing file at %s does not exist. Creating new backing file.\n', obj.BackingFile.fullPath)
+				obj.createBackingFile();
 			else
-				disp(['Opening existing backing file at ' obj.BackingFile.fullPath])
+				fprintf('Opening existing backing file at %s...', obj.BackingFile.fullPath)
 				% TODO: load from backing file:
 				obj = InteractionHelper.loadFromExistingBackingFile(obj.BackingFile.fullPath); % will this work?
-				warning('Does this work?')
-                
+				% warning('Does this work?')
+                fprintf('done.\n')
 			end
 			
-			obj.BackingFile.matFile = matfile(obj.BackingFile.fullPath,'Writable',true);
-			obj.createBackingFile();
+			% obj.BackingFile.matFile = matfile(obj.BackingFile.fullPath,'Writable', true);
+			% obj.createBackingFile();
 			obj.BackingFile.hasBackingFile = true;
 
 		end
 		
 		function createBackingFile(obj)
+			fprintf('Creating new backing file at %s ...', obj.BackingFile.fullPath)
 			save(obj.BackingFile.fullPath,'obj','-v7.3');
+			fprintf('done.\n')
 		end
 
 		function saveToBackingFile(obj)
+			fprintf('Saving changes to backing file at %s...', obj.BackingFile.fullPath)
 			save(obj.BackingFile.fullPath,'obj','-v7.3');
+			fprintf('done.\n')
 		end
 		
 		function saveToUserSelectableCopyMat(obj)
@@ -166,12 +171,9 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
     
     methods (Static)
       % Creates an explictly typed annotation from a regular one.
-      function obj = loadFromExistingBackingFile(backingFilePath)
-		if ~exist('backingFilePath','var')
-			backingFilePath = 'UserAnnotationsBackingFile.mat';
-		end  
-		 L = load(backingFilePath,'obj');
-		 obj = L.obj;
+      function loaded_interaction_helper_obj = loadFromExistingBackingFile(backingFilePath)
+		 L = load(backingFilePath, 'obj');
+		 loaded_interaction_helper_obj = L.obj;
 	  end
 	
 	end % end methods static
