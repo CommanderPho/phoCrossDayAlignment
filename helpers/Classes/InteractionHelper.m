@@ -105,10 +105,10 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 
             %% Save User Annotations File
             btn_SaveUserAnnotations = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_SaveUserAnnotations');
-            btn_SaveUserAnnotations.CData = iconRead('file_save.png');
+            btn_SaveUserAnnotations.CData = uint8(iconRead('file_save.png'));
             btn_SaveUserAnnotations.Tooltip = 'Save current user annotations out to the pre-specified .MAT file';
 %             btn_SaveUserAnnotations.ClickedCallback = @selection_toolbar_btn_SaveUserAnnotations_callback;
-            btn_SaveUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_SaveUserAnnotations_callback(obj, src, event));
+            btn_SaveUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_SaveUserAnnotations_callback(src, event));
 
         end
         
@@ -123,7 +123,6 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
             disp('Saving out to file...')
             obj.saveToBackingFile();
             disp('Done')
-            %svp.userAnnotations.uaMan.saveToUserSelectableCopyMat()
         end
         
     end
@@ -131,7 +130,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
     %% Backing File Methods Block:
     methods
       
-		function tryOpenBackingFile(obj)
+		function [obj] = tryOpenBackingFile(obj)
 			% see if the file exists at the provided path
 			if ~exist(obj.BackingFile.fullPath,'file')
                 % if it doesn't exist, create it
@@ -139,8 +138,9 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 			else
 				disp(['Opening existing backing file at ' obj.BackingFile.fullPath])
 				% TODO: load from backing file:
-				obj = UserAnnotationsManager.loadFromExistingBackingFile(obj.BackingFile.fullPath); % will this work?
-				error('Not yet finished!')
+				obj = InteractionHelper.loadFromExistingBackingFile(obj.BackingFile.fullPath); % will this work?
+				warning('Does this work?')
+                
 			end
 			
 			obj.BackingFile.matFile = matfile(obj.BackingFile.fullPath,'Writable',true);

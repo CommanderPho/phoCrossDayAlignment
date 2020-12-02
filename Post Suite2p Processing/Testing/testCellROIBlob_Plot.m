@@ -59,7 +59,14 @@ set(gca,'xtick',[],'YTick',[])
 set(gca,'xlim',[1 512],'ylim',[1 512])
 
 %% Build Interaction Helper Object:
-interaction_helper_obj = InteractionHelper(final_data_explorer_obj, 'Pho');
+if ~exist('active_selections_backingFile_path','var')
+    interaction_helper_obj = InteractionHelper(final_data_explorer_obj, 'Pho');
+else
+    interaction_helper_obj = InteractionHelper(final_data_explorer_obj, 'Pho', active_selections_backingFile_path);
+end
+active_selections_backingFile_path = interaction_helper_obj.BackingFile.fullPath;
+
+
 interaction_helper_obj.setupGraphicalSelectionFigure(testCellROIBlob_Plot_figH, imagePlotHandles);
 
 dcm = datacursormode(testCellROIBlob_Plot_figH);
