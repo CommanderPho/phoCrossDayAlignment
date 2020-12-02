@@ -37,7 +37,7 @@ classdef FinalDataExplorer
         
         %% Outputs:
         finalOutComponentSegment
-        compMasks
+        compMasks % struct containing sessionRoiMask fields. sessionRoiMask: *one for each ROI in each session*: matricies the size of the original images (512x512 for example) that specify specific pixels related to the ROIs.
         
         
         active_DFF
@@ -162,9 +162,10 @@ classdef FinalDataExplorer
 					% Returns the linearCompIndex
 					temp.currCompSessionIndex = temp.currAllSessionCompIndicies(j);
 					
+                    isFirstSession = (j == 1);
 					%% Results common across all sessions of this cellROI:
 					% Check if this is the first session for this cellROI as not to recompute it needlessly when it doesn't change across sessions.
-					if j == 1
+					if isFirstSession
 						temp.currCompSessionFill = logical(squeeze(obj.compMasks.Masks(temp.currCompSessionIndex,:,:)));
 						temp.currCompSessionEdge = logical(squeeze(obj.compMasks.Edge(temp.currCompSessionIndex,:,:)));
 						
