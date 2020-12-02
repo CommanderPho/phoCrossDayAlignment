@@ -137,6 +137,11 @@ classdef CellROIIndexMapper
             compListIndicies = obj.multiSessionCellRoi_CompListIndicies(uniqueCompListIndex,:);
         end
         
+        function roiName = getRoiNameFromUniqueCompIndex(obj, uniqueCompListIndex)
+            % returns the roiName for the single linear uniqueCompListIndex provided.
+           roiName = obj.uniqueComps{uniqueCompListIndex};
+        end
+        
         
         function uniqueCompListIndex = getUniqueCompIndexFromName(obj, roiName)
             % returns the single linear uniqueCompListIndex from the roiName provided.

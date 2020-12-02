@@ -125,8 +125,39 @@ classdef FinalDataExplorer
     
         end
         
+        function [mask] = getFillRoiMask(obj, roiIndex)
+           %% getFillRoiMask: convenience method for accessing the fill mask for a given roiIndex.
+           mask = squeeze(obj.roiMasks.Fill(roiIndex,:,:));
+        end
         
-
+        
+        function [mask] = getEdgeOffsetRoiMasks(obj, offsetIndex, roiIndex)
+           %% getEdgeOffsetRoiMasks: convenience method for accessing the inset/offset masks by an offset index.
+           switch offsetIndex
+               case -3
+                    mask = obj.roiMasks.InsetEdge2;
+               case -2
+                    mask = obj.roiMasks.InsetEdge1;
+               case -1
+                    mask = obj.roiMasks.InsetEdge0;
+               case 0
+                    mask = obj.roiMasks.Edge;
+               case 1
+                    mask = obj.roiMasks.OutsetEdge0;
+               case 2
+                   mask = obj.roiMasks.OutsetEdge1;
+               case 3
+                   mask = obj.roiMasks.OutsetEdge2;
+               otherwise
+                    error(['Invalid offset index: ' num2str(offsetIndex) '! Index must correspond to one of the inset [-3, -1] edge [0] or outset [1, 3] masks.']);
+           end % end switch
+           
+           % If we have an roiIndex that we want to access directly, return the squeezed matrix for that component, otherwise, return all masks
+           if exist('roiIndex','var')
+               mask = squeeze(mask(roiIndex,:,:));             
+           end
+           
+        end
 
     
               
@@ -177,9 +208,9 @@ classdef FinalDataExplorer
 						BW4_Inner = imerode(BW3_Inner, temp.structuring_element);
 					
 						%% Inset Elements:
-						obj.roiMasks.InsetEdge0(temp.cellRoiIndex,:,:) = BW2_Inner;
-						obj.roiMasks.InsetEdge1(temp.cellRoiIndex,:,:) = BW3_Inner;
-						obj.roiMasks.InsetEdge2(temp.cellRoiIndex,:,:) = BW4_Inner;
+						obj.roiMasks.InsetEdge0(temp.cellRoiIndex,:,:) = temp.currCompSessionFill - BW2_Inner;
+						obj.roiMasks.InsetEdge1(temp.cellRoiIndex,:,:) = BW2_Inner - BW3_Inner;
+						obj.roiMasks.InsetEdge2(temp.cellRoiIndex,:,:) = BW3_Inner - BW4_Inner;
 									
 						%% Outside Elements:
 						BW2_Outer = imdilate(temp.currCompSessionFill, temp.structuring_element);
