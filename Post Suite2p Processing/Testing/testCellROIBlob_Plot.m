@@ -60,9 +60,7 @@ set(gca,'xlim',[1 512],'ylim',[1 512])
 
 %% Build Interaction Helper Object:
 interaction_helper_obj = InteractionHelper(final_data_explorer_obj, 'Pho');
-interaction_helper_obj.imagePlotHandles = imagePlotHandles;
-interaction_helper_obj.activeFigure = testCellROIBlob_Plot_figH;
-
+interaction_helper_obj.setupGraphicalSelectionFigure(testCellROIBlob_Plot_figH, imagePlotHandles);
 
 dcm = datacursormode(testCellROIBlob_Plot_figH);
 dcm.Enable = 'on';
@@ -113,7 +111,7 @@ function txt = testCellROIBlob_Plot_Callback(figH, info, interaction_helper_obj,
         %% Update Selections graphically:
         
         % Get the fill handle
-        curr_sel_fill_im_h = interaction_helper_obj.imagePlotHandles(uniqueCompIndex, 1);
+        curr_sel_fill_im_h = interaction_helper_obj.GraphicalSelection.imagePlotHandles(uniqueCompIndex, 1);
 %         updated_alpha_data = interaction_helper_obj.final_data_explorer_obj.getFillRoiMask(uniqueCompIndex);
         if curr_cellROI_IsSelected
 %             updated_alpha_data = updated_alpha_data .* 0.9;

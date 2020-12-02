@@ -13,8 +13,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
         BackingFile
         
         %% Graphical (TODO: potentially refactor)
-        activeFigure
-        imagePlotHandles
+        GraphicalSelection
         
     end
     
@@ -91,7 +90,43 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
             %   newIsSelected: new selection status
             obj.isCellRoiSelected(uniqueCompListIndex) = newIsSelected;
         end
+        
+        
+        %% Graphical Methods (TODO: potentially refactor):
+        function obj = setupGraphicalSelectionFigure(obj, activeFigure, imagePlotHandles)
+            %setupGraphicalSelectionFigure 
+            %   activeFigure: 
+            %   imagePlotHandles: 
+            obj.GraphicalSelection.activeFigure = activeFigure;
+            obj.GraphicalSelection.imagePlotHandles = imagePlotHandles;
+            
+            %% Add a Custom Toolbar to allow marking selections
+            obj.GraphicalSelection.selectionCustomToolbar = uitoolbar(obj.GraphicalSelection.activeFigure,'Tag','uimgr.uitoolbar_PhoCustom_Selection');
+
+            %% Save User Annotations File
+            btn_SaveUserAnnotations = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_SaveUserAnnotations');
+            btn_SaveUserAnnotations.CData = iconRead('file_save.png');
+            btn_SaveUserAnnotations.Tooltip = 'Save current user annotations out to the pre-specified .MAT file';
+%             btn_SaveUserAnnotations.ClickedCallback = @selection_toolbar_btn_SaveUserAnnotations_callback;
+            btn_SaveUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_SaveUserAnnotations_callback(obj, src, event));
+
+        end
+        
+                
+        
     end %% end methods
+    
+    %% Graphical Callback Methods:
+    methods
+        % SaveUserAnnotations
+        function selection_toolbar_btn_SaveUserAnnotations_callback(obj, src, event)
+            disp('Saving out to file...')
+            obj.saveToBackingFile();
+            disp('Done')
+            %svp.userAnnotations.uaMan.saveToUserSelectableCopyMat()
+        end
+        
+    end
     
     %% Backing File Methods Block:
     methods
