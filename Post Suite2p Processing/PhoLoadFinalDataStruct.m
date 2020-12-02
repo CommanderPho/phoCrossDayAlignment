@@ -69,20 +69,28 @@ function [finalDataStruct, sessionList, compList] = fnPhoLoadFinalDataStruct(fin
     FDPath = '';
     
     if ~exist('finalDataStruct','var') || isempty(finalDataStruct)
-        if isempty(phoPipelineOptions.default_FD_file_path)
-            [filename, path] = uigetfile('*.mat', 'Select a finalDataStruct .mat file');
-        else
-            [filename, path] = uigetfile(phoPipelineOptions.default_FD_file_path, 'Select a finalDataStruct .mat file');
-        end
+        
+		if ~isempty(phoPipelineOptions.default_FD_file_path) && exist(phoPipelineOptions.default_FD_file_path,'file')
+			% If the default isn't empty AND exists on disk, just load it without any prompt.
+			FDPath = phoPipelineOptions.default_FD_file_path;
+		else
+			if isempty(phoPipelineOptions.default_FD_file_path)
+				[filename, parentPath] = uigetfile('*.mat', 'Select a finalDataStruct .mat file');
+			else
+				% If the default_FD_file_path isn't empty, but doesn't exist on disk, use it as the starting dir for the getfile prompt
+				[filename, parentPath] = uigetfile(phoPipelineOptions.default_FD_file_path, 'Select a finalDataStruct .mat file');
+			end
+			% Check if the user selected a valid path or chose cancel
+			if isequal(filename,0)
+				error('User selected Cancel');
+			else
+				FDPath = fullfile(parentPath, filename);
+			end
+		end
 
-        if isequal(filename,0)
-            error('User selected Cancel');
-        else
-            FDPath = fullfile(path, filename);
-            fprintf('\t Loading %s...',FDPath);
-            load(FDPath);
-            fprintf('done.\n');
-        end
+		fprintf('\t Loading %s...',FDPath);
+        load(FDPath);
+        fprintf('done.\n');
     end
 
     % TODO: Check if the fields exist (DFF already computed):

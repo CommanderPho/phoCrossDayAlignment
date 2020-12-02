@@ -120,9 +120,9 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
     methods
         % SaveUserAnnotations
         function selection_toolbar_btn_SaveUserAnnotations_callback(obj, src, event)
-            disp('Saving out to file...')
+            fprintf('Saving out to file %s...', obj.BackingFile.fullPath)
             obj.saveToBackingFile();
-            disp('Done')
+            fprintf('Done.\n')
         end
         
     end
@@ -139,7 +139,8 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 			else
 				fprintf('Opening existing backing file at %s...', obj.BackingFile.fullPath)
 				% TODO: load from backing file:
-				obj = InteractionHelper.loadFromExistingBackingFile(obj.BackingFile.fullPath); % will this work?
+				% obj = InteractionHelper.loadFromExistingBackingFile(obj.BackingFile.fullPath); % will this work?
+				obj = obj.loadFromExistingBackingFile(); % will this work?
 				% warning('Does this work?')
                 fprintf('done.\n')
 			end
@@ -152,13 +153,30 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 		
 		function createBackingFile(obj)
 			fprintf('Creating new backing file at %s ...', obj.BackingFile.fullPath)
-			save(obj.BackingFile.fullPath,'obj','-v7.3');
+            isCellRoiSelected = obj.isCellRoiSelected;
+			save(obj.BackingFile.fullPath,'isCellRoiSelected','-v7.3');
 			fprintf('done.\n')
 		end
 
+		function [obj] = loadFromExistingBackingFile(obj)
+			fprintf('Loading from existing backing file at %s...', obj.BackingFile.fullPath)
+			L = load(obj.BackingFile.fullPath, 'isCellRoiSelected');
+			% obj.isCellRoiSelected = L.isCellRoiSelected;
+			% Use "deal" to distribute them to the variables.
+			[obj.isCellRoiSelected, curr_bbvaCurrFrameSegment] = deal(L.isCellRoiSelected, L.bbvaCurrFrameSegment);
+
+			fprintf('done.\n')
+	  	end
+
+
 		function saveToBackingFile(obj)
 			fprintf('Saving changes to backing file at %s...', obj.BackingFile.fullPath)
-			save(obj.BackingFile.fullPath,'obj','-v7.3');
+            save_struct.isCellRoiSelected = obj.isCellRoiSelected;
+			save_struct.selected_cellROI_uniqueCompListIndicies = obj.selected_cellROI_uniqueCompListIndicies;
+			save_struct.selected_cellROI_roiNames = obj.selected_cellROI_roiNames;
+
+			% save(obj.BackingFile.fullPath,'isCellRoiSelected','-v7.3');
+			save(obj.BackingFile.fullPath,'-struct','save_struct','-v7.3');
 			fprintf('done.\n')
 		end
 		
@@ -170,11 +188,10 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
     end %% end backing file methods block
     
     methods (Static)
-      % Creates an explictly typed annotation from a regular one.
-      function loaded_interaction_helper_obj = loadFromExistingBackingFile(backingFilePath)
-		 L = load(backingFilePath, 'obj');
-		 loaded_interaction_helper_obj = L.obj;
-	  end
+    %   function loaded_interaction_helper_obj = loadFromExistingBackingFile(backingFilePath)
+	% 	 L = load(backingFilePath, 'obj');
+	% 	 loaded_interaction_helper_obj = L.obj;
+	%   end
 	
 	end % end methods static
     
