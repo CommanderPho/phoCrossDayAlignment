@@ -23,7 +23,7 @@ end
 iscInfo.curr_i = temp.cellRoiIndex;
 iscInfo.NumberOfSeries = length(uniqueComps);
 
-
+% Build or get the figures that will be controlled by the slider.
 if should_show_masking_plot
     extantFigH_plot_masking = createFigureWithNameIfNeeded('Slider Controlled Masking Plot');
 end
