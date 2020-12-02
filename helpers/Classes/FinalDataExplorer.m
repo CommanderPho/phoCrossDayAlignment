@@ -185,9 +185,11 @@ classdef FinalDataExplorer
 						BW2_Outer = imdilate(temp.currCompSessionFill, temp.structuring_element);
 						BW3_Outer = imdilate(BW2_Outer, temp.structuring_element);
 						BW4_Outer = imdilate(BW3_Outer, temp.structuring_element);
-						obj.roiMasks.OutsetEdge0(temp.cellRoiIndex,:,:) = BW2_Outer;
-						obj.roiMasks.OutsetEdge1(temp.cellRoiIndex,:,:) = BW3_Outer;
-						obj.roiMasks.OutsetEdge2(temp.cellRoiIndex,:,:) = BW4_Outer;
+                        
+						obj.roiMasks.OutsetEdge0(temp.cellRoiIndex,:,:) = BW2_Outer - temp.currCompSessionFill; % OutsetEdge0: accidentally includes inside (fill) as well.
+						obj.roiMasks.OutsetEdge1(temp.cellRoiIndex,:,:) = BW3_Outer - BW2_Outer;
+						obj.roiMasks.OutsetEdge2(temp.cellRoiIndex,:,:) = BW4_Outer - BW3_Outer;
+                        
 						%                 temp.currCompSessionMask = temp.currCompSessionEdge; % Use the edges instead of the fills
 						temp.currCompSessionMask = temp.currCompSessionFill; % Use the fills
 						
