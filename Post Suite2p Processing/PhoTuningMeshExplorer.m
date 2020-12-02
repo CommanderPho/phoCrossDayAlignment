@@ -45,16 +45,16 @@ end
 
 
 %% Perform main plot:
-% [cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, finalOutPeaksGrid, redTraceLinesForAllStimuli, phoPipelineOptions);
+% [cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, compMasks, componentAggregatePropeties, finalOutPeaksGrid, redTraceLinesForAllStimuli, phoPipelineOptions);
 [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFiguresUsingObject(final_data_explorer_obj, phoPipelineOptions);
 
 fprintf('\t done.\n');
 
 function [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFiguresUsingObject(final_data_explorer_obj, phoPipelineOptions)
-    [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFigures(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, final_data_explorer_obj.finalOutComponentSegment, final_data_explorer_obj.componentAggregatePropeties, final_data_explorer_obj.finalOutPeaksGrid, final_data_explorer_obj.redTraceLinesForAllStimuli, phoPipelineOptions);
+    [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFigures(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, final_data_explorer_obj.compMasks, final_data_explorer_obj.componentAggregatePropeties, final_data_explorer_obj.finalOutPeaksGrid, final_data_explorer_obj.redTraceLinesForAllStimuli, phoPipelineOptions);
 end
 
-function [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, finalOutPeaksGrid, redTraceLinesForAllStimuli, phoPipelineOptions)
+function [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, compMasks, componentAggregatePropeties, finalOutPeaksGrid, redTraceLinesForAllStimuli, phoPipelineOptions)
 
 %     %% Sort based on tuning score:
     [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
@@ -68,11 +68,11 @@ function [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniq
         temp.cellRoiIndex = cellRoisToPlot(i);
         temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
     %     temp.firstCompSessionIndex = temp.currAllSessionCompIndicies(1);
-    %     temp.firstCompSessionMask = squeeze(finalOutComponentSegment.Masks(temp.firstCompSessionIndex,:,:));
+    %     temp.firstCompSessionMask = squeeze(compMasks.Masks(temp.firstCompSessionIndex,:,:));
 
         if phoPipelineOptions.shouldShowPlots
             % Mask Plot:
-            [figH_Blobs, ~] = fnPlotCellROIBlobs(dateStrings, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutComponentSegment);
+            [figH_Blobs, ~] = fnPlotCellROIBlobs(dateStrings, temp.currAllSessionCompIndicies, temp.cellRoiIndex, compMasks);
 
             % Make 2D Plots (Exploring):    
             [figH_2d, ~] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);

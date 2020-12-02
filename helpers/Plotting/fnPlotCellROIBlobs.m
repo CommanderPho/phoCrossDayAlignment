@@ -1,4 +1,4 @@
-function [figH, curr_ax] = fnPlotCellROIBlobs(dateStrings, currAllSessionCompIndicies, cellRoiIndex, finalOutComponentSegment, extantFigH)
+function [figH, curr_ax] = fnPlotCellROIBlobs(dateStrings, currAllSessionCompIndicies, cellRoiIndex, compMasks, extantFigH)
 % fnPlotCellROIBlobs: Plots the blob mask and outlines for the given cell ROIs
     % currAllSessionCompIndicies: all sessions for the current ROI
     %% Options:
@@ -19,8 +19,8 @@ function [figH, curr_ax] = fnPlotCellROIBlobs(dateStrings, currAllSessionCompInd
         % Get the index for this session of this cell ROI
         temp.compIndex = currAllSessionCompIndicies(i); 
         % Gets the grid for this session of this cell ROI
-        temp.currMask = squeeze(finalOutComponentSegment.Masks(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension
-        temp.currEdge = squeeze(finalOutComponentSegment.Edge(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension
+        temp.currMask = squeeze(compMasks.Masks(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension
+        temp.currEdge = squeeze(compMasks.Edge(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension
         temp.currDateString = dateStrings{i};
         
         %% Plot Blobs (areas)

@@ -78,7 +78,7 @@
     %= Value - The actual Peak DF/F value
 %
 
-%%%+S- finalOutComponentSegment
+%%%+S- compMasks
     %= Masks - the binary mask for each component. zeros(numCompListEntries, 512, 512)
     %= Edge - the binary edge corresponding to each component in Masks
 %

@@ -37,7 +37,11 @@ classdef FinalDataExplorer
         
         %% Outputs:
         finalOutComponentSegment
+        compMasks
+        
+        
         active_DFF
+        
         
         %% Processed Outputs: Computed by running obj.buildSpatialTuningInfo(...)
         amalgamationMasks  % struct containing amalgamationMask fields. amalgamationMask: *only one that includes all ROIs*: matiricies the size of the original images (512x512 for example) that include all pixels related to ANY ROI.
@@ -52,8 +56,8 @@ classdef FinalDataExplorer
        function obj = set.active_DFF(obj, value)
            obj.active_DFF = value;
        end  
-       function obj = set.finalOutComponentSegment(obj, value)
-           obj.finalOutComponentSegment = value;
+       function obj = set.compMasks(obj, value)
+           obj.compMasks = value;
        end  
        
     end
@@ -161,8 +165,8 @@ classdef FinalDataExplorer
 					%% Results common across all sessions of this cellROI:
 					% Check if this is the first session for this cellROI as not to recompute it needlessly when it doesn't change across sessions.
 					if j == 1
-						temp.currCompSessionFill = logical(squeeze(obj.finalOutComponentSegment.Masks(temp.currCompSessionIndex,:,:)));
-						temp.currCompSessionEdge = logical(squeeze(obj.finalOutComponentSegment.Edge(temp.currCompSessionIndex,:,:)));
+						temp.currCompSessionFill = logical(squeeze(obj.compMasks.Masks(temp.currCompSessionIndex,:,:)));
+						temp.currCompSessionEdge = logical(squeeze(obj.compMasks.Edge(temp.currCompSessionIndex,:,:)));
 						
 						obj.roiMasks.Fill(temp.cellRoiIndex,:,:) = temp.currCompSessionFill;
 						obj.roiMasks.Edge(temp.cellRoiIndex,:,:) = temp.currCompSessionEdge;

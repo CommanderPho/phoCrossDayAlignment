@@ -55,7 +55,7 @@ end
     %= Value - The actual Peak DF/F value
 %
 
-%%%+S- finalOutComponentSegment
+%%%+S- compMasks
     %= Masks - the binary mask for each component. zeros(numCompListEntries, 512, 512)
     %= Edge - the binary edge corresponding to each component in Masks
 %
@@ -171,8 +171,8 @@ num_cellROIs = cellROIIndexMapper.num_cellROIs;
 % fprintf('Using %d of %d rows (Ignoring %d): %s.\n', num_cellROIs, temp.numberOriginal, temp.numberIgnored, temp.excludedCompsStatusString);
 
 % multiSessionCellRoi_CompListIndicies = zeros(cellROIIndexMapper.num_cellROIs, cellROIIndexMapper.numOfSessions); % a list of comp indicies for each CellRoi
-finalOutComponentSegment.Masks = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
-finalOutComponentSegment.Edge = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
+compMasks.Masks = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
+compMasks.Edge = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
 
 default_DFF.cellROI_FirstDayTuningMaxPeak = zeros(cellROIIndexMapper.num_cellROIs, 1); % Just the first day
 default_DFF.cellROI_SatisfiesFirstDayTuning = zeros(cellROIIndexMapper.num_cellROIs, 1); % Just the first day
@@ -223,8 +223,8 @@ for i = 1:num_cellROIs
         [outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp, phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions);
         uniqueAmps = outputs.uniqueAmps;
         uniqueFreqs = outputs.uniqueFreqs; %
-        finalOutComponentSegment.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMask;
-        finalOutComponentSegment.Edge(curr_day_linear_comp_index,:,:) = edge(outputs.referenceMask); %sobel by default;
+        compMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMask;
+        compMasks.Edge(curr_day_linear_comp_index,:,:) = edge(outputs.referenceMask); %sobel by default;
         
         if ~exist('stimuli_mapper','var')
             % Only allow initialization once, if it doesn't exist.
@@ -286,7 +286,7 @@ end %% endfor each cellROI
 % final_data_explorer_obj = FinalDataExplorer(uniqueComps, multiSessionCellRoi_CompListIndicies, dateStrings, stimuli_mapper);
 final_data_explorer_obj = FinalDataExplorer(cellROIIndexMapper, stimuli_mapper);
 
-final_data_explorer_obj.finalOutComponentSegment = finalOutComponentSegment; % Set the finalOutComponentSegment, which contains the masks.
+final_data_explorer_obj.compMasks = compMasks; % Set the compMasks, which contains the masks.
 
 default_DFF.cellROI_SatisfiesFirstDayTuning = (default_DFF.cellROI_FirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 

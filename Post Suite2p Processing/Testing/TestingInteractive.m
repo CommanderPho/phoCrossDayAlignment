@@ -32,7 +32,7 @@ extantFigH_plot_3d = createFigureWithNameIfNeeded('Slider Controlled 3D Mesh Plo
 
 main_plot_callback = @(curr_i) (pho_plot_interactive_all(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, final_data_explorer_obj.finalOutPeaksGrid, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, extantFigH_plot_2d, extantFigH_plot_3d, curr_i));
 if should_show_masking_plot
-    secondary_plot_callback = @(curr_i) (pho_plot_interactive_masking_all(final_data_explorer_obj.dateStrings, final_data_explorer_obj.finalOutComponentSegment, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, extantFigH_plot_masking, curr_i));
+    secondary_plot_callback = @(curr_i) (pho_plot_interactive_masking_all(final_data_explorer_obj.dateStrings, final_data_explorer_obj.compMasks, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, extantFigH_plot_masking, curr_i));
     plot_callbacks = {main_plot_callback, secondary_plot_callback};
 else
     plot_callbacks = {main_plot_callback};
@@ -48,16 +48,16 @@ function pho_plot_interactive_all(dateStrings, uniqueAmps, uniqueFreqs, finalOut
 end
 
 
-function pho_plot_interactive_masking_all(dateStrings, finalOutComponentSegment, multiSessionCellRoi_CompListIndicies, extantFigH_masking, curr_cellRoiIndex)
-    pho_plot_cell_mask(dateStrings, finalOutComponentSegment, multiSessionCellRoi_CompListIndicies, extantFigH_masking, curr_cellRoiIndex);
+function pho_plot_interactive_masking_all(dateStrings, compMasks, multiSessionCellRoi_CompListIndicies, extantFigH_masking, curr_cellRoiIndex)
+    pho_plot_cell_mask(dateStrings, compMasks, multiSessionCellRoi_CompListIndicies, extantFigH_masking, curr_cellRoiIndex);
 end
 
-function plotted_figH = pho_plot_cell_mask(dateStrings, finalOutComponentSegment, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
+function plotted_figH = pho_plot_cell_mask(dateStrings, compMasks, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
     % COMPUTED
     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
 
     % Cell Mask Plots:
-    [plotted_figH, ~] = fnPlotCellROIBlobs(dateStrings, temp.currAllSessionCompIndicies, curr_cellRoiIndex, finalOutComponentSegment, extantFigH);
+    [plotted_figH, ~] = fnPlotCellROIBlobs(dateStrings, temp.currAllSessionCompIndicies, curr_cellRoiIndex, compMasks, extantFigH);
     set(plotted_figH, 'Name', sprintf('Slider Controlled Blobs/ROIs Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted 
 end
 
