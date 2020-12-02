@@ -44,11 +44,11 @@ if phoPipelineOptions.shouldShowPlots
 end
 
 % [amalgamationMasks, outputMaps, cellRoiSortIndex] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions);
-[amalgamationMasks, outputMaps] = final_data_explorer_obj.buildSpatialTuningInfo(phoPipelineOptions);
+final_data_explorer_obj.buildSpatialTuningInfo(phoPipelineOptions);
 
 
 if phoPipelineOptions.shouldShowPlots
-    [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_explorer_obj] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, final_data_explorer_obj, final_data_explorer_obj.componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions);
+    [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_explorer_obj] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, final_data_explorer_obj, componentAggregatePropeties, phoPipelineOptions);
     
     %% Optional Export to disk:
     if phoPipelineOptions.shouldSaveFiguresToDisk
@@ -71,37 +71,37 @@ fprintf('\t done.\n')
 
 
 %% Master Plotting Function
-function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_explorer_obj] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, final_data_explorer_obj, componentAggregatePropeties, amalgamationMasks, outputMaps, phoPipelineOptions)
-    uniqueAmpLabels = strcat(num2str(uniqueAmps .* 100),{'% Depth'});
-    uniqueFreqLabels = strcat(num2str(uniqueFreqs), {' '},'Hz');
+function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_explorer_obj] = fnPlotPhoBuildSpatialTuningFigures(final_data_explorer_obj, componentAggregatePropeties, phoPipelineOptions)
+    uniqueAmpLabels = strcat(num2str(final_data_explorer_obj.uniqueAmps .* 100),{'% Depth'});
+    uniqueFreqLabels = strcat(num2str(final_data_explorer_obj.uniqueFreqs), {' '},'Hz');
     %specify colormaps for your figure. This is important!!
-    amplitudeColorMap = winter(numel(uniqueAmps));
-    frequencyColorMap = spring(numel(uniqueFreqs));
+    amplitudeColorMap = winter(numel(final_data_explorer_obj.uniqueAmps));
+    frequencyColorMap = spring(numel(final_data_explorer_obj.uniqueFreqs));
     % Override with solid black for the (0,0) elements.
     amplitudeColorMap(1,:) = [0, 0, 0];
     frequencyColorMap(1,:) = [0, 0, 0];
 
 
     % Number of Days Meeting Criteria Figure:
-    figH_numDaysCriteria = fnPlotNumberOfDaysCriteriaFigure(amalgamationMasks, componentAggregatePropeties);
+    figH_numDaysCriteria = fnPlotNumberOfDaysCriteriaFigure(final_data_explorer_obj.amalgamationMasks, componentAggregatePropeties);
     % Custom Tooltips:
     [dcm_numDaysCriteria] = fnAddCustomDataCursor(figH_numDaysCriteria);
 
     if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode
-        temp.currPreferredStimulusAmplitude = squeeze(sum(amalgamationMasks.PreferredStimulusAmplitude, 1));
-        temp.currPreferredStimulusFrequency = squeeze(sum(amalgamationMasks.PreferredStimulusFreq, 1));
+        temp.currPreferredStimulusAmplitude = squeeze(sum(final_data_explorer_obj.amalgamationMasks.PreferredStimulusAmplitude, 1));
+        temp.currPreferredStimulusFrequency = squeeze(sum(final_data_explorer_obj.amalgamationMasks.PreferredStimulusFreq, 1));
 
         %Preferred Stimulus Figure:
-        [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
+        [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(final_data_explorer_obj.amalgamationMasks, final_data_explorer_obj.outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
     else
         % Can only plot a single session, such as j=1:
 %         j = 1;
         j = 1:3;
-        temp.currPreferredStimulusAmplitude = squeeze(amalgamationMasks.PreferredStimulusAmplitude(j,:,:));
-        temp.currPreferredStimulusFrequency = squeeze(amalgamationMasks.PreferredStimulusFreq(j,:,:));
+        temp.currPreferredStimulusAmplitude = squeeze(final_data_explorer_obj.amalgamationMasks.PreferredStimulusAmplitude(j,:,:));
+        temp.currPreferredStimulusFrequency = squeeze(final_data_explorer_obj.amalgamationMasks.PreferredStimulusFreq(j,:,:));
 
         %Preferred Stimulus Figure:
-        [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
+        [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(final_data_explorer_obj.amalgamationMasks, final_data_explorer_obj.outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
 
     end
 
