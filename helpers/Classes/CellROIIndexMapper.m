@@ -139,7 +139,12 @@ classdef CellROIIndexMapper
         
         function roiName = getRoiNameFromUniqueCompIndex(obj, uniqueCompListIndex)
             % returns the roiName for the single linear uniqueCompListIndex provided.
-           roiName = obj.uniqueComps{uniqueCompListIndex};
+            if length(uniqueCompListIndex) > 1
+                roiName = obj.uniqueComps(uniqueCompListIndex); % return the soft-bracket cell array
+            else
+                roiName = obj.uniqueComps{uniqueCompListIndex}; % return the char string (as opposed to a single-element cell array containing the char string)
+            end
+           
         end
         
         

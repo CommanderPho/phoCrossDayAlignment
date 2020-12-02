@@ -32,6 +32,8 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
     properties (Dependent)
         num_cellROIs
         num_selectedCellROIs
+        selected_cellROI_uniqueCompListIndicies
+        selected_cellROI_roiNames
     end
     
     methods
@@ -40,6 +42,12 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
        end
        function num_selectedCellROIs = get.num_selectedCellROIs(obj)
           num_selectedCellROIs = sum(obj.isCellRoiSelected, 'all');
+       end
+       function selected_cellROI_uniqueCompListIndicies = get.selected_cellROI_uniqueCompListIndicies(obj)
+          selected_cellROI_uniqueCompListIndicies = find(obj.isCellRoiSelected);
+       end
+       function selected_cellROI_roiNames = get.selected_cellROI_roiNames(obj)
+          selected_cellROI_roiNames = obj.final_data_explorer_obj.cellROIIndex_mapper.getRoiNameFromUniqueCompIndex(obj.selected_cellROI_uniqueCompListIndicies);
        end
     end
     
