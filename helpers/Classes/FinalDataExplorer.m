@@ -1,4 +1,4 @@
-classdef FinalDataExplorer < handle
+classdef FinalDataExplorer
     %FINALDATAEXPLORER Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -139,9 +139,8 @@ classdef FinalDataExplorer < handle
 			%% Sort based on tuning score:
 % 			[sortedTuningScores, cellRoiSortIndex] = sort(obj.componentAggregatePropeties.tuningScore, 'descend');
 
-        
             % Perform allocations:
-            obj.allocateOutputObjects(phoPipelineOptions);
+            obj = obj.allocateOutputObjects(phoPipelineOptions);
 
             % Iterate through each cellROI:
 			for i = 1:obj.num_cellROIs
@@ -224,8 +223,8 @@ classdef FinalDataExplorer < handle
 					temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
 					temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
 					
-					preferredStimulusInfo.PreferredStimulus_LinearStimulusIndex(temp.cellRoiIndex,j) = temp.currCompMaximallyPreferredStimulusInfo.LinearIndex;
-					preferredStimulusInfo.PreferredStimulus(temp.cellRoiIndex,j,:) =  temp.currMaximalIndexTuple;
+					obj.preferredStimulusInfo.PreferredStimulus_LinearStimulusIndex(temp.cellRoiIndex,j) = temp.currCompMaximallyPreferredStimulusInfo.LinearIndex;
+					obj.preferredStimulusInfo.PreferredStimulus(temp.cellRoiIndex,j,:) =  temp.currMaximalIndexTuple;
 					
 					if should_enable_edge_layering_mode
 						if j <= 1
@@ -264,7 +263,7 @@ classdef FinalDataExplorer < handle
 					if j > 1
 						didPreferredAmpIndexChange = (temp.prev.maxPrefAmpIndex ~= temp.maxPrefAmpIndex);
 						didPreferredFreqIndexChange = (temp.prev.maxPrefFreqIndex ~= temp.maxPrefFreqIndex);
-						preferredStimulusInfo.DidPreferredStimulusChange(temp.cellRoiIndex,j-1) = didPreferredAmpIndexChange | didPreferredFreqIndexChange;
+						obj.preferredStimulusInfo.DidPreferredStimulusChange(temp.cellRoiIndex,j-1) = didPreferredAmpIndexChange | didPreferredFreqIndexChange;
 					end
 					% Update the prev values:
 					temp.prev.maxPrefAmpIndex = temp.maxPrefAmpIndex;

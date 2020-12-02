@@ -44,11 +44,12 @@ if phoPipelineOptions.shouldShowPlots
 end
 
 % [amalgamationMasks, outputMaps, cellRoiSortIndex] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions);
-final_data_explorer_obj.buildSpatialTuningInfo(phoPipelineOptions);
+final_data_explorer_obj = final_data_explorer_obj.buildSpatialTuningInfo(phoPipelineOptions);
+
 
 
 if phoPipelineOptions.shouldShowPlots
-    [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_explorer_obj] = fnPlotPhoBuildSpatialTuningFigures(uniqueAmps, uniqueFreqs, final_data_explorer_obj, componentAggregatePropeties, phoPipelineOptions);
+    [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_explorer_obj] = fnPlotPhoBuildSpatialTuningFigures(final_data_explorer_obj, phoPipelineOptions);
     
     %% Optional Export to disk:
     if phoPipelineOptions.shouldSaveFiguresToDisk
@@ -71,7 +72,7 @@ fprintf('\t done.\n')
 
 
 %% Master Plotting Function
-function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_explorer_obj] = fnPlotPhoBuildSpatialTuningFigures(final_data_explorer_obj, componentAggregatePropeties, phoPipelineOptions)
+function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_explorer_obj] = fnPlotPhoBuildSpatialTuningFigures(final_data_explorer_obj, phoPipelineOptions)
     uniqueAmpLabels = strcat(num2str(final_data_explorer_obj.uniqueAmps .* 100),{'% Depth'});
     uniqueFreqLabels = strcat(num2str(final_data_explorer_obj.uniqueFreqs), {' '},'Hz');
     %specify colormaps for your figure. This is important!!
@@ -83,7 +84,7 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_expl
 
 
     % Number of Days Meeting Criteria Figure:
-    figH_numDaysCriteria = fnPlotNumberOfDaysCriteriaFigure(final_data_explorer_obj.amalgamationMasks, componentAggregatePropeties);
+    figH_numDaysCriteria = fnPlotNumberOfDaysCriteriaFigure(final_data_explorer_obj.amalgamationMasks, final_data_explorer_obj.componentAggregatePropeties);
     % Custom Tooltips:
     [dcm_numDaysCriteria] = fnAddCustomDataCursor(figH_numDaysCriteria);
 
@@ -92,16 +93,16 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_expl
         temp.currPreferredStimulusFrequency = squeeze(sum(final_data_explorer_obj.amalgamationMasks.PreferredStimulusFreq, 1));
 
         %Preferred Stimulus Figure:
-        [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(final_data_explorer_obj.amalgamationMasks, final_data_explorer_obj.outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
+        [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(final_data_explorer_obj.amalgamationMasks, final_data_explorer_obj.roiComputedProperties, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
     else
         % Can only plot a single session, such as j=1:
 %         j = 1;
         j = 1:3;
-        temp.currPreferredStimulusAmplitude = squeeze(final_data_explorer_obj.amalgamationMasks.PreferredStimulusAmplitude(j,:,:));
-        temp.currPreferredStimulusFrequency = squeeze(final_data_explorer_obj.amalgamationMasks.PreferredStimulusFreq(j,:,:));
+        temp.currPreferredStimulusAmplitude = squeeze(final_data_explorer_obj.amalgamationMasks.PreferredStimulusAmplitudes(j,:,:));
+        temp.currPreferredStimulusFrequency = squeeze(final_data_explorer_obj.amalgamationMasks.PreferredStimulusFreqs(j,:,:));
 
         %Preferred Stimulus Figure:
-        [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(final_data_explorer_obj.amalgamationMasks, final_data_explorer_obj.outputMaps, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
+        [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(final_data_explorer_obj.amalgamationMasks, final_data_explorer_obj.roiComputedProperties, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
 
     end
 
@@ -110,7 +111,7 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_expl
 
 
     % fnPlotROITuningPreferredStimulusFigure
-    function [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, outputMaps, currPreferredStimulusAmplitude, currPreferredStimulusFrequency)
+    function [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(amalgamationMasks, roiComputedProperties, currPreferredStimulusAmplitude, currPreferredStimulusFrequency)
         
         figH_roiTuningPreferredStimulus = createFigureWithNameIfNeeded('CellROI Aggregate: Preferred Stimulus Tuning');
         clf(figH_roiTuningPreferredStimulus);
@@ -150,7 +151,7 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_expl
             end
             title(amplitudeHandles.axes(i), 'Amplitude Tuning')
             fnAddSimpleLegend(uniqueAmpLabels, amplitudeColorMap);
-            [amplitudeHandles.axH_centroidPoints, amplitudeHandles.axH_centroidTextObjects] = fnPlotAddCentroids(outputMaps, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
+            [amplitudeHandles.axH_centroidPoints, amplitudeHandles.axH_centroidTextObjects] = fnPlotAddCentroids(roiComputedProperties, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
             
             axes(freqHandles.axes(i));
             freqHandles.tempImH = imshow(temp.currPreferredStimulusFrequency, frequencyColorMap, 'Parent', freqHandles.axes(i));
@@ -161,7 +162,7 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_expl
             end
             title(freqHandles.axes(i), 'Frequency Tuning')
             fnAddSimpleLegend(uniqueFreqLabels, frequencyColorMap);
-            [freqHandles.axH_centroidPoints, freqHandles.axH_centroidTextObjects] = fnPlotAddCentroids(outputMaps, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
+            [freqHandles.axH_centroidPoints, freqHandles.axH_centroidTextObjects] = fnPlotAddCentroids(roiComputedProperties, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCentroidPoints, phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels);
             
             ylabel(amplitudeHandles.axes(i), sprintf('Session[%d]', i),...
                 'FontSize', 18,...
@@ -178,30 +179,30 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_expl
         dcm.Enable = 'on';
         dcm.DisplayStyle = 'window';
         if exist('slider_controller','var')
-            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, outputMaps, final_data_explorer_obj, slider_controller));
+            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, final_data_explorer_obj, slider_controller));
         else
-            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, amalgamationMasks, outputMaps, final_data_explorer_obj));
+            dcm.UpdateFcn = @(figH, info) (displayCoordinates(figH, info, final_data_explorer_obj));
         end
 
     end
 
 
     %% Draws the centroid (center) points and text label
-    function [axH_centroidPoints, axH_centroidTextObjects] = fnPlotAddCentroids(outputMaps, shouldDrawCentroidPoints, shouldDrawCellROILabels)
+    function [axH_centroidPoints, axH_centroidTextObjects] = fnPlotAddCentroids(roiComputedProperties, shouldDrawCentroidPoints, shouldDrawCellROILabels)
         % Requirements: amalgamationMasks
         if shouldDrawCentroidPoints
             hold on
-            axH_centroidPoints = plot(outputMaps.computedProperties.centroids(:,1), outputMaps.computedProperties.centroids(:,2),'.r',...
+            axH_centroidPoints = plot(roiComputedProperties.centroids(:,1), roiComputedProperties.centroids(:,2),'.r',...
                 'PickableParts','none',...
                 'Tag','centroidPoints'); % Hides from the legend
             axH_centroidPoints.Annotation.LegendInformation.IconDisplayStyle = 'off';
             
             if shouldDrawCellROILabels
-                numCentroids = size(outputMaps.computedProperties.centroids,1);
+                numCentroids = size(roiComputedProperties.centroids,1);
                 %                axH_centroidTextObjects = zeros([numCentroids, 1],typename
                 for i = 1:numCentroids
-                    x = outputMaps.computedProperties.centroids(i,1);
-                    y = outputMaps.computedProperties.centroids(i,2);
+                    x = roiComputedProperties.centroids(i,1);
+                    y = roiComputedProperties.centroids(i,2);
                     cellROI = amalgamationMasks.cellROI_LookupMask(round(y), round(x));
                     textLabel = sprintf('%d', cellROI);
                     axH_centroidTextObjects(i) = text(x, y, textLabel, 'Color', 'r',...
@@ -247,10 +248,10 @@ function figH_numDaysCriteria = fnPlotNumberOfDaysCriteriaFigure(amalgamationMas
 end
 
 %% Custom ToolTip callback function that displays the clicked cell ROI as well as the x,y position.
-function txt = displayCoordinates(figH, info, amalgamationMasks, outputMaps, final_data_explorer_obj, activeSliderController)
+function txt = displayCoordinates(figH, info, final_data_explorer_obj, activeSliderController)
     x = info.Position(1);
     y = info.Position(2);
-    uniqueCompIndex = amalgamationMasks.cellROI_LookupMask(y, x); % Figure out explicitly what index type is assigned here.
+    uniqueCompIndex = final_data_explorer_obj.amalgamationMasks.cellROI_LookupMask(y, x); % Figure out explicitly what index type is assigned here.
     cellROIString = '';
     if uniqueCompIndex > 0
         fprintf('selected cellROI: %d...\n', uniqueCompIndex);
@@ -260,7 +261,7 @@ function txt = displayCoordinates(figH, info, amalgamationMasks, outputMaps, fin
 %         cellROIString = num2str(uniqueCompIndex);  
         
         
-        cellROI_PreferredLinearStimulusIndicies = squeeze(outputMaps.PreferredStimulus_LinearStimulusIndex(uniqueCompIndex,:)); % These are the linear stimulus indicies for this all sessions of this datapoint.
+        cellROI_PreferredLinearStimulusIndicies = squeeze(final_data_explorer_obj.preferredStimulusInfo.PreferredStimulus_LinearStimulusIndex(uniqueCompIndex,:)); % These are the linear stimulus indicies for this all sessions of this datapoint.
 %         disp(cellROI_PreferredLinearStimulusIndicies);
 
         cellROI_PreferredAmpsFreqsIndicies = final_data_explorer_obj.stimuli_mapper.indexMap_StimulusLinear2AmpsFreqsArray(cellROI_PreferredLinearStimulusIndicies',:);
