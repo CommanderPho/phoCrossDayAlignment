@@ -82,3 +82,33 @@
     %= Masks - the binary mask for each component. zeros(numCompListEntries, 512, 512)
     %= Edge - the binary edge corresponding to each component in Masks
 %
+
+
+    %% Used in FinalDataExplorer:
+    %%%+S- preferredStimulusInfo
+        %- DidPreferredStimulusChange - keeps track of whether the preferredStimulus amplitude or frequency changed for a cellROI between sessions.
+        %- PreferredStimulus - 
+        %- PreferredStimulus_LinearStimulusIndex - 
+        %- PreferredStimulusAmplitude - 
+        %- PreferredStimulusFreq - 
+
+    %
+
+    %%%+S- roiComputedProperties
+        %- areas - 
+        %- boundingBoxes - 
+        %- centroids - 
+    %
+
+    %%%+S- roiMasks
+        %- Fill - 
+        %- Edge - 
+        %- OutsetEdge0 - 
+        %- OutsetEdge1 - 
+        %- OutsetEdge2 - 
+        %- InsetEdge0 - 
+        %- InsetEdge1 - 
+        %- InsetEdge2 - 
+    %
+    
+    
