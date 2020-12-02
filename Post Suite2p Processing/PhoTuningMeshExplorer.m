@@ -46,15 +46,15 @@ end
 
 %% Perform main plot:
 % [cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, finalOutPeaksGrid, redTraceLinesForAllStimuli, phoPipelineOptions);
-[cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFiguresUsingObject(final_data_explorer_obj, phoPipelineOptions);
+[cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFiguresUsingObject(final_data_explorer_obj, phoPipelineOptions);
 
 fprintf('\t done.\n');
 
-function [cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFiguresUsingObject(final_data_explorer_obj, phoPipelineOptions)
-    [cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFigures(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, final_data_explorer_obj.finalOutComponentSegment, final_data_explorer_obj.componentAggregatePropeties, final_data_explorer_obj.finalOutPeaksGrid, final_data_explorer_obj.redTraceLinesForAllStimuli, phoPipelineOptions);
+function [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFiguresUsingObject(final_data_explorer_obj, phoPipelineOptions)
+    [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFigures(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, final_data_explorer_obj.finalOutComponentSegment, final_data_explorer_obj.componentAggregatePropeties, final_data_explorer_obj.finalOutPeaksGrid, final_data_explorer_obj.redTraceLinesForAllStimuli, phoPipelineOptions);
 end
 
-function [cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, finalOutPeaksGrid, redTraceLinesForAllStimuli, phoPipelineOptions)
+function [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, finalOutPeaksGrid, redTraceLinesForAllStimuli, phoPipelineOptions)
 
 %     %% Sort based on tuning score:
     [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
