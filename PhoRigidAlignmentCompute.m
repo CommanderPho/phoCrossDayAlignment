@@ -4,6 +4,13 @@
 % Produces a series of offsets, which are saved into an output file 'output.mat'.
 addpath(genpath('helpers'));
 
+% TODO: Generalize to work with non-standardized hierarchies: For example:
+% 'Z:\ICPassiveStim\anm093_registered\20190506_FoV1_AM\suite2p\plane0';
+% 'Z:\ICPassiveStim\anm093_registered\20190510_AM\suite2p\plane0';
+% These are missing the stimulus info folders, the animal path is
+% different, etc.
+
+
 dateStrings = {'20200117','20200120','20200124'}; % Strings representing each date.
 [rawOutpaths, registeredOutpaths] = fnBuildPaths(dateStrings);
 
