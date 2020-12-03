@@ -8,10 +8,11 @@ classdef CellRoiPlotManager < PlotManager
         
         %% Graphical (TODO: potentially refactor)
         Colors
+		GraphicalSelection
         
         testCellROIBlob_Plot_figH
-		activeOffsetInsetIndicies = [];
-		acitveColorsArray = {};
+		activeOffsetInsetIndicies = []; % activeOffsetInsetIndicies: the insets to display
+		acitveColorsArray = {}; % acitveColorsArray: the colors corresponding to the edge Offset/Insets in activeOffsetInsetIndicies
 
     end
     
@@ -73,13 +74,58 @@ classdef CellRoiPlotManager < PlotManager
     %% Graphical Methods Block:
     methods 
 
+        function obj = setupGraphicalSelectionFigure(obj, activeFigure, imagePlotHandles)
+            %setupGraphicalSelectionFigure 
+            %   activeFigure: 
+            %   imagePlotHandles: 
+			obj.interaction_helper_obj.selectionOptions.shouldHideSelectedRois = false;
+
+            obj.GraphicalSelection.activeFigure = activeFigure;
+            obj.GraphicalSelection.imagePlotHandles = imagePlotHandles;
+
+			% Add the toolbar for selection operations:
+			obj.interaction_helper_obj.setupGraphicalSelectionToolbar(activeFigure, @() (obj.updateGraphicalAppearances()) );
+		end	
+
+		%% Update Selections graphically:
+		function obj = updateGraphicalAppearance(obj, uniqueCompIndex)
+            %updateGraphicalSelection: updates a single cellROI 
+			curr_cellROI_IsSelected = obj.interaction_helper_obj.isCellRoiSelected(uniqueCompIndex);
+			% Get the fill handle
+			curr_sel_fill_im_h = obj.GraphicalSelection.imagePlotHandles(uniqueCompIndex, 1);
+	%         updated_alpha_data = interaction_helper_obj.final_data_explorer_obj.getFillRoiMask(uniqueCompIndex);
+			curr_is_visible = true;
+			if curr_cellROI_IsSelected
+	%             updated_alpha_data = updated_alpha_data .* 0.9;
+				updated_color_data = obj.Colors.orange3DArray;
+				if obj.interaction_helper_obj.selectionOptions.shouldHideSelectedRois
+					curr_is_visible = false;
+				end
+			else
+	%             updated_alpha_data = updated_alpha_data .* 0.5;
+				updated_color_data = obj.Colors.lightgrey3DArray;
+			end
+	%         set(curr_sel_fill_im_h,'CData', updated_color_data, 'AlphaData', updated_alpha_data);
+			set(curr_sel_fill_im_h,'CData', updated_color_data, 'Visible', curr_is_visible);
+        end
+
+		function obj = updateGraphicalAppearances(obj)
+            %updateGraphicalAppearances 
+            disp('CellRoiPlotManager.updateGraphicalAppearances()')
+            % Loop through all cellROIs and update the graphical selection according to the isSelectedIndex
+			for i = 1:size(obj.GraphicalSelection.imagePlotHandles, 1)
+				obj = obj.updateGraphicalAppearance(i);
+			end
+			drawnow;
+        end
+
+
 
 		% Primary Plot Function
 		function [obj] = plotTestCellROIBlob(obj)
 			obj.testCellROIBlob_Plot_figH = createFigureWithNameIfNeeded('CellROI Blobs Testing'); % generate a new figure to plot the sessions.
 			clf(obj.testCellROIBlob_Plot_figH);
 
-			
 			%% Plots CellROI Mask Insets at all depths for debug purposes:
 			imagePlotHandles = gobjects(obj.final_data_explorer_obj.num_cellROIs, length(obj.activeOffsetInsetIndicies));
 
@@ -113,7 +159,8 @@ classdef CellRoiPlotManager < PlotManager
 			set(gca,'xlim',[1 512],'ylim',[1 512])
 
 			%% Build Interaction Helper Object:
-			obj.interaction_helper_obj.setupGraphicalSelectionFigure(obj.testCellROIBlob_Plot_figH, imagePlotHandles);
+			% obj.interaction_helper_obj.setupGraphicalSelectionFigure(obj.testCellROIBlob_Plot_figH, imagePlotHandles);
+			obj.setupGraphicalSelectionFigure(obj.testCellROIBlob_Plot_figH, imagePlotHandles);
 
 			dcm = datacursormode(obj.testCellROIBlob_Plot_figH);
 			dcm.Enable = 'on';
@@ -149,17 +196,16 @@ classdef CellRoiPlotManager < PlotManager
 				[interaction_helper_obj, curr_cellROI_IsSelected] = interaction_helper_obj.toggleCellRoiIsSelected(uniqueCompIndex);
 
 				%% Update Selections graphically:
-				interaction_helper_obj.updateGraphicalSelection(uniqueCompIndex);
+				% interaction_helper_obj.updateGraphicalSelection(uniqueCompIndex);
+				obj.updateGraphicalAppearance(uniqueCompIndex);
 				drawnow
 
 				cellROI_PreferredLinearStimulusIndicies = squeeze(interaction_helper_obj.final_data_explorer_obj.preferredStimulusInfo.PreferredStimulus_LinearStimulusIndex(uniqueCompIndex,:)); % These are the linear stimulus indicies for this all sessions of this datapoint.
 
 				cellROI_PreferredAmpsFreqsIndicies = interaction_helper_obj.final_data_explorer_obj.stimuli_mapper.indexMap_StimulusLinear2AmpsFreqsArray(cellROI_PreferredLinearStimulusIndicies',:);
 
-
 				cellROI_PreferredAmps = interaction_helper_obj.final_data_explorer_obj.uniqueAmps(cellROI_PreferredAmpsFreqsIndicies(:,1));
 				cellROI_PreferredFreqs = interaction_helper_obj.final_data_explorer_obj.uniqueFreqs(cellROI_PreferredAmpsFreqsIndicies(:,2));
-
 
 				cellROI_PreferredAmpsFreqsValues = [cellROI_PreferredAmps, cellROI_PreferredFreqs];
 				disp(cellROI_PreferredAmpsFreqsValues);
