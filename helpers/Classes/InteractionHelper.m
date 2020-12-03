@@ -129,7 +129,29 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
             obj.GraphicalSelection.imagePlotHandles = imagePlotHandles;
             
             %% Add a Custom Toolbar to allow marking selections
-            obj.GraphicalSelection.selectionCustomToolbar = uitoolbar(obj.GraphicalSelection.activeFigure,'Tag','uimgr.uitoolbar_PhoCustom_Selection');
+			foundExtantToolbar = findobj(obj.GraphicalSelection.activeFigure,'Tag','uimgr.uitoolbar_PhoCustom_Selection');
+			if ~isempty(foundExtantToolbar) && isgraphics(foundExtantToolbar)
+				obj.GraphicalSelection.selectionCustomToolbar = foundExtantToolbar;
+                delete(obj.GraphicalSelection.selectionCustomToolbar);
+				% Remove any extant toolbar buttons:
+% 				obj.GraphicalSelection.selectionCustomToolbar.Children = [];
+				% hToolbarChildren = allchild(foundExtantToolbar(end)); % retrieve all hidden children of the toolbar
+				% for i = 1:length(hToolbarChildren)
+				% 	hToolbarChildren
+				% end
+                
+                obj.GraphicalSelection.selectionCustomToolbar = uitoolbar(obj.GraphicalSelection.activeFigure,'Tag','uimgr.uitoolbar_PhoCustom_Selection');
+			else
+				obj.GraphicalSelection.selectionCustomToolbar = uitoolbar(obj.GraphicalSelection.activeFigure,'Tag','uimgr.uitoolbar_PhoCustom_Selection');
+			end
+
+			% if isfield(obj.GraphicalSelection, 'selectionCustomToolbar')
+			% 	if isgraphics(obj.GraphicalSelection.selectionCustomToolbar)
+
+			% 	end
+			% end
+
+
 
 			%% Load User Annotations File
             btn_LoadUserAnnotations = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_LoadUserAnnotations');
@@ -143,6 +165,43 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
             btn_SaveUserAnnotations.Tooltip = 'Save current user annotations out to the pre-specified .MAT file';
             btn_SaveUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_SaveUserSelections_callback(src, event));
 
+			%% Toggle Eye Area overlay:
+			btn_ToggleEyePolyOverlay_imagePaths = {'HideEyePoly.png', 'ShowEyePoly.png'};
+			btn_ToggleEyePolyOverlay = uitoggletool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_ToggleEyePolyOverlay');
+			btn_ToggleEyePolyOverlay.CData = iconRead(btn_ToggleEyePolyOverlay_imagePaths{1});
+			btn_ToggleEyePolyOverlay.Tooltip = 'Toggle the eye polygon area on or off';
+			btn_ToggleEyePolyOverlay.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_ToggleEyePolyOverlay_callback(src, event));
+
+
+			%% Toggle MarkBad
+			btnMarkBad = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_MarkBad');
+			btnMarkBad_imagePaths = {'MarkBad.png', 'MarkGood.png'};
+			btnMarkBad.CData = iconRead(btnMarkBad_imagePaths{(1)});
+			btnMarkBad.Tooltip = 'Mark current frame bad';
+			btnMarkBad.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_MarkBad_callback(src, event));
+			
+			%% Toggle MarkUnusual
+			btnMarkUnusual = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_MarkUnusual');
+			btnMarkUnusual_imagePaths = {'MarkUnusual.png', 'ClearUnusual.png'};
+			btnMarkUnusual.CData = iconRead(btnMarkUnusual_imagePaths{(1)});
+			btnMarkUnusual.Tooltip = 'Mark current frame unusual';
+			btnMarkUnusual.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_MarkUnusual_callback(src, event));
+			
+			%% Toggle Needs Review
+			btnMarkNeedsReview = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_MarkNeedsReview');
+			btnMarkNeedsReview_imagePaths = {'MarkNeedsReview.png', 'ClearNeedsReview.png'};
+			btnMarkNeedsReview.CData = iconRead(btnMarkNeedsReview_imagePaths{(1)});
+			btnMarkNeedsReview.Tooltip = 'Mark current frame NeedsReview';
+			btnMarkNeedsReview.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_MarkNeedsReview_callback(src, event));
+
+			%% Toggle MarkList
+			btnMarkList = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_MarkList');
+			btnMarkList_imagePaths = {'ListAdd.png', 'ListRemove.png'};
+			btnMarkList.CData = iconRead(btnMarkList_imagePaths{(1)});
+			btnMarkList.Tooltip = 'Mark current frame list member';
+			btnMarkList.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_MarkList_callback(src, event));
+
+			obj.selection_toolbar_update_custom_toolbar_buttons_appearance()
         end
 
 		%% Update Selections graphically:
@@ -172,6 +231,34 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 			drawnow;
         end
 
+		%% Updates the state of the toolbar buttons:
+		function selection_toolbar_update_custom_toolbar_buttons_appearance(obj)
+			
+			% User Marked Bad:
+	%         final_is_marked_bad = svp.userAnnotations.isMarkedBad(curr_video_frame);
+			
+	% 		[~, doesAnnotationExist] = svp.userAnnotations.uaMan.tryGetAnnotation('BadUnspecified', curr_video_frame);
+	% 		final_is_marked_bad = doesAnnotationExist;
+			
+	% 		final_is_marked_bad_index = 0;
+	% 		if final_is_marked_bad
+	% 		final_is_marked_bad_index = 2;
+	% 		else
+	% 		final_is_marked_bad_index = 1;
+	% 		end
+	% 		btnMarkBad.CData = iconRead(btnMarkBad_imagePaths{final_is_marked_bad_index});
+	% % 		btn_LogFrame.CData = iconRead(btn_LogFrame_imagePaths{(svp.userAnnotations.uaMan.DoesAnnotationExist('Log', curr_video_frame) + 1)});        
+			
+	% 		btnMarkUnusual.CData = iconRead(btnMarkUnusual_imagePaths{(svp.userAnnotations.uaMan.DoesAnnotationExist('UnusualFrame', curr_video_frame) + 1)});
+	% 		btnMarkNeedsReview.CData = iconRead(btnMarkNeedsReview_imagePaths{(svp.userAnnotations.uaMan.DoesAnnotationExist('NeedsReview', curr_video_frame) + 1)});
+	% 		btnMarkTransition.CData = iconRead(btnMarkTransition_imagePaths{(svp.userAnnotations.uaMan.DoesAnnotationExist('EventChange', curr_video_frame) + 1)});
+	% 		btnMarkList.CData = iconRead(btnMarkList_imagePaths{(svp.userAnnotations.uaMan.DoesAnnotationExist('AccumulatedListA', curr_video_frame) + 1)});
+
+	% 		btn_TogglePupilCircleOverlay.CData = iconRead(btn_TogglePupilCircleOverlay_imagePaths{(svpSettings.shouldShowPupilOverlay + 1)});
+			
+	% 		btn_ToggleEyePolyOverlay.CData = iconRead(btn_ToggleEyePolyOverlay_imagePaths{(svpSettings.shouldShowEyePolygonOverlay + 1)});
+			
+		end
 
     end % end graphical methods block
 
@@ -192,7 +279,42 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
             obj.saveToBackingFile();
             fprintf('Done.\n')
         end
+
+        function selection_toolbar_btn_MarkBad_callback(obj, src, event)
+			obj.selection_toolbar_update_custom_toolbar_buttons_appearance();
+        end
         
+		function selection_toolbar_btn_MarkUnusual_callback(obj, src, event)
+			obj.selection_toolbar_update_custom_toolbar_buttons_appearance();
+		end
+
+		function selection_toolbar_btn_MarkNeedsReview_callback(obj, src, event)
+			obj.selection_toolbar_update_custom_toolbar_buttons_appearance();
+		end
+
+		function selection_toolbar_btn_MarkList_callback(obj, src, event)
+			obj.selection_toolbar_update_custom_toolbar_buttons_appearance();
+		end
+
+
+		function selection_toolbar_btn_ToggleEyePolyOverlay_callback(obj, src, event)
+			disp('btnToggleEyePolyOverlay callback hit!');
+			% if svpSettings.shouldShowEyePolygonOverlay
+			%    svpSettings.shouldShowEyePolygonOverlay = false;
+			%    disp('    toggled off');
+			%    currAxes = svp.vidPlayer.Visual.Axes;
+			%    hExistingPlot = findobj(currAxes, 'Tag','eyePolyPlotHandle');
+			%    delete(hExistingPlot) % Remove existing plot
+			
+			% else
+			%    svpSettings.shouldShowEyePolygonOverlay = true;
+			%    disp('    toggled on');
+			%    % TODO: update button icon, refresh displayed plot
+			% end
+			obj.selection_toolbar_update_custom_toolbar_buttons_appearance();
+		end
+    
+
     end
     
     %% Backing File Methods Block:
