@@ -125,6 +125,8 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
             %setupGraphicalSelectionFigure 
             %   activeFigure: 
             %   imagePlotHandles: 
+			obj.GraphicalSelection.selectionOptions.shouldHideSelectedRois = false;
+
             obj.GraphicalSelection.activeFigure = activeFigure;
             obj.GraphicalSelection.imagePlotHandles = imagePlotHandles;
             
@@ -145,61 +147,54 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 				obj.GraphicalSelection.selectionCustomToolbar = uitoolbar(obj.GraphicalSelection.activeFigure,'Tag','uimgr.uitoolbar_PhoCustom_Selection');
 			end
 
-			% if isfield(obj.GraphicalSelection, 'selectionCustomToolbar')
-			% 	if isgraphics(obj.GraphicalSelection.selectionCustomToolbar)
-
-			% 	end
-			% end
-
-
-
+			
 			%% Load User Annotations File
-            btn_LoadUserAnnotations = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_LoadUserAnnotations');
-            btn_LoadUserAnnotations.CData = iconRead('file_open.png');
-            btn_LoadUserAnnotations.Tooltip = 'Load current user annotations out to the pre-specified .MAT file';
-            btn_LoadUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_LoadUserSelections_callback(src, event));
+            obj.GraphicalSelection.selectionControls.btn_LoadUserAnnotations = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_LoadUserAnnotations');
+            obj.GraphicalSelection.selectionControls.btn_LoadUserAnnotations.CData = iconRead('file_open.png');
+            obj.GraphicalSelection.selectionControls.btn_LoadUserAnnotations.Tooltip = 'Load current user annotations out to the pre-specified .MAT file';
+            obj.GraphicalSelection.selectionControls.btn_LoadUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_LoadUserSelections_callback(src, event));
 
             %% Save User Annotations File
-            btn_SaveUserAnnotations = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_SaveUserAnnotations');
-            btn_SaveUserAnnotations.CData = iconRead('file_save.png');
-            btn_SaveUserAnnotations.Tooltip = 'Save current user annotations out to the pre-specified .MAT file';
-            btn_SaveUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_SaveUserSelections_callback(src, event));
+            obj.GraphicalSelection.selectionControls.btn_SaveUserAnnotations = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_SaveUserAnnotations');
+            obj.GraphicalSelection.selectionControls.btn_SaveUserAnnotations.CData = iconRead('file_save.png');
+            obj.GraphicalSelection.selectionControls.btn_SaveUserAnnotations.Tooltip = 'Save current user annotations out to the pre-specified .MAT file';
+            obj.GraphicalSelection.selectionControls.btn_SaveUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_SaveUserSelections_callback(src, event));
 
 			%% Toggle Eye Area overlay:
-			btn_ToggleEyePolyOverlay_imagePaths = {'HideEyePoly.png', 'ShowEyePoly.png'};
-			btn_ToggleEyePolyOverlay = uitoggletool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_ToggleEyePolyOverlay');
-			btn_ToggleEyePolyOverlay.CData = iconRead(btn_ToggleEyePolyOverlay_imagePaths{1});
-			btn_ToggleEyePolyOverlay.Tooltip = 'Toggle the eye polygon area on or off';
-			btn_ToggleEyePolyOverlay.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_ToggleEyePolyOverlay_callback(src, event));
+			obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay_imagePaths = {'HideEyePoly.png', 'ShowEyePoly.png'};
+			obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay = uitoggletool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_ToggleEyePolyOverlay');
+			obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay.CData = iconRead(obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay_imagePaths{1});
+			obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay.Tooltip = 'Toggle the eye polygon area on or off';
+			obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_ToggleEyePolyOverlay_callback(src, event));
 
 
 			%% Toggle MarkBad
-			btnMarkBad = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_MarkBad');
-			btnMarkBad_imagePaths = {'MarkBad.png', 'MarkGood.png'};
-			btnMarkBad.CData = iconRead(btnMarkBad_imagePaths{(1)});
-			btnMarkBad.Tooltip = 'Mark current frame bad';
-			btnMarkBad.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_MarkBad_callback(src, event));
+			obj.GraphicalSelection.selectionControls.btnMarkBad = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_MarkBad');
+			obj.GraphicalSelection.selectionControls.btnMarkBad_imagePaths = {'MarkBad.png', 'MarkGood.png'};
+			obj.GraphicalSelection.selectionControls.btnMarkBad.CData = iconRead(obj.GraphicalSelection.selectionControls.btnMarkBad_imagePaths{(1)});
+			obj.GraphicalSelection.selectionControls.btnMarkBad.Tooltip = 'Mark current frame bad';
+			obj.GraphicalSelection.selectionControls.btnMarkBad.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_MarkBad_callback(src, event));
 			
 			%% Toggle MarkUnusual
-			btnMarkUnusual = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_MarkUnusual');
-			btnMarkUnusual_imagePaths = {'MarkUnusual.png', 'ClearUnusual.png'};
-			btnMarkUnusual.CData = iconRead(btnMarkUnusual_imagePaths{(1)});
-			btnMarkUnusual.Tooltip = 'Mark current frame unusual';
-			btnMarkUnusual.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_MarkUnusual_callback(src, event));
+			obj.GraphicalSelection.selectionControls.btnMarkUnusual = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_MarkUnusual');
+			obj.GraphicalSelection.selectionControls.btnMarkUnusual_imagePaths = {'MarkUnusual.png', 'ClearUnusual.png'};
+			obj.GraphicalSelection.selectionControls.btnMarkUnusual.CData = iconRead(obj.GraphicalSelection.selectionControls.btnMarkUnusual_imagePaths{(1)});
+			obj.GraphicalSelection.selectionControls.btnMarkUnusual.Tooltip = 'Mark current frame unusual';
+			obj.GraphicalSelection.selectionControls.btnMarkUnusual.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_MarkUnusual_callback(src, event));
 			
 			%% Toggle Needs Review
-			btnMarkNeedsReview = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_MarkNeedsReview');
-			btnMarkNeedsReview_imagePaths = {'MarkNeedsReview.png', 'ClearNeedsReview.png'};
-			btnMarkNeedsReview.CData = iconRead(btnMarkNeedsReview_imagePaths{(1)});
-			btnMarkNeedsReview.Tooltip = 'Mark current frame NeedsReview';
-			btnMarkNeedsReview.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_MarkNeedsReview_callback(src, event));
+			obj.GraphicalSelection.selectionControls.btnMarkNeedsReview = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_MarkNeedsReview');
+			obj.GraphicalSelection.selectionControls.btnMarkNeedsReview_imagePaths = {'MarkNeedsReview.png', 'ClearNeedsReview.png'};
+			obj.GraphicalSelection.selectionControls.btnMarkNeedsReview.CData = iconRead(obj.GraphicalSelection.selectionControls.btnMarkNeedsReview_imagePaths{(1)});
+			obj.GraphicalSelection.selectionControls.btnMarkNeedsReview.Tooltip = 'Mark current frame NeedsReview';
+			obj.GraphicalSelection.selectionControls.btnMarkNeedsReview.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_MarkNeedsReview_callback(src, event));
 
 			%% Toggle MarkList
-			btnMarkList = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_MarkList');
-			btnMarkList_imagePaths = {'ListAdd.png', 'ListRemove.png'};
-			btnMarkList.CData = iconRead(btnMarkList_imagePaths{(1)});
-			btnMarkList.Tooltip = 'Mark current frame list member';
-			btnMarkList.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_MarkList_callback(src, event));
+			obj.GraphicalSelection.selectionControls.btnMarkList = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_MarkList');
+			obj.GraphicalSelection.selectionControls.btnMarkList_imagePaths = {'ListAdd.png', 'ListRemove.png'};
+			obj.GraphicalSelection.selectionControls.btnMarkList.CData = iconRead(obj.GraphicalSelection.selectionControls.btnMarkList_imagePaths{(1)});
+			obj.GraphicalSelection.selectionControls.btnMarkList.Tooltip = 'Mark current frame list member';
+			obj.GraphicalSelection.selectionControls.btnMarkList.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_MarkList_callback(src, event));
 
 			obj.selection_toolbar_update_custom_toolbar_buttons_appearance()
         end
@@ -211,15 +206,26 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 			% Get the fill handle
 			curr_sel_fill_im_h = obj.GraphicalSelection.imagePlotHandles(uniqueCompIndex, 1);
 	%         updated_alpha_data = interaction_helper_obj.final_data_explorer_obj.getFillRoiMask(uniqueCompIndex);
+
+			curr_is_visible = true;
 			if curr_cellROI_IsSelected
 	%             updated_alpha_data = updated_alpha_data .* 0.9;
 				updated_color_data = obj.Colors.orange3DArray;
+				if obj.GraphicalSelection.selectionOptions.shouldHideSelectedRois
+					curr_is_visible = false;
+				end
+				
 			else
 	%             updated_alpha_data = updated_alpha_data .* 0.5;
 				updated_color_data = obj.Colors.lightgrey3DArray;
+				
+
 			end
 	%         set(curr_sel_fill_im_h,'CData', updated_color_data, 'AlphaData', updated_alpha_data);
-			set(curr_sel_fill_im_h,'CData', updated_color_data);
+			set(curr_sel_fill_im_h,'CData', updated_color_data, 'Visible', curr_is_visible);
+
+			
+
         end
 
 		function obj = updateGraphicalSelections(obj)
@@ -246,7 +252,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 	% 		else
 	% 		final_is_marked_bad_index = 1;
 	% 		end
-	% 		btnMarkBad.CData = iconRead(btnMarkBad_imagePaths{final_is_marked_bad_index});
+			% obj.GraphicalSelection.selectionControls.btnMarkBad.CData = iconRead(obj.GraphicalSelection.selectionControls.btnMarkBad_imagePaths{final_is_marked_bad_index});
 	% % 		btn_LogFrame.CData = iconRead(btn_LogFrame_imagePaths{(svp.userAnnotations.uaMan.DoesAnnotationExist('Log', curr_video_frame) + 1)});        
 			
 	% 		btnMarkUnusual.CData = iconRead(btnMarkUnusual_imagePaths{(svp.userAnnotations.uaMan.DoesAnnotationExist('UnusualFrame', curr_video_frame) + 1)});
@@ -254,9 +260,9 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 	% 		btnMarkTransition.CData = iconRead(btnMarkTransition_imagePaths{(svp.userAnnotations.uaMan.DoesAnnotationExist('EventChange', curr_video_frame) + 1)});
 	% 		btnMarkList.CData = iconRead(btnMarkList_imagePaths{(svp.userAnnotations.uaMan.DoesAnnotationExist('AccumulatedListA', curr_video_frame) + 1)});
 
-	% 		btn_TogglePupilCircleOverlay.CData = iconRead(btn_TogglePupilCircleOverlay_imagePaths{(svpSettings.shouldShowPupilOverlay + 1)});
+			% obj.GraphicalSelection.selectionControls.btn_TogglePupilCircleOverlay.CData = iconRead(obj.GraphicalSelection.selectionControls.btn_TogglePupilCircleOverlay_imagePaths{(svpSettings.shouldShowPupilOverlay + 1)});
 			
-	% 		btn_ToggleEyePolyOverlay.CData = iconRead(btn_ToggleEyePolyOverlay_imagePaths{(svpSettings.shouldShowEyePolygonOverlay + 1)});
+			obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay.CData = iconRead(obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay_imagePaths{(obj.GraphicalSelection.selectionOptions.shouldHideSelectedRois + 1)});
 			
 		end
 
@@ -311,7 +317,10 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 			%    disp('    toggled on');
 			%    % TODO: update button icon, refresh displayed plot
 			% end
+			obj.GraphicalSelection.selectionOptions.shouldHideSelectedRois = ~obj.GraphicalSelection.selectionOptions.shouldHideSelectedRois;
+			disp(obj.GraphicalSelection.selectionOptions.shouldHideSelectedRois);
 			obj.selection_toolbar_update_custom_toolbar_buttons_appearance();
+			obj.updateGraphicalSelections();
 		end
     
 
