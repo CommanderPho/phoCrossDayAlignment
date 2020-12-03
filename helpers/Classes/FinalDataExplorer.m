@@ -131,6 +131,11 @@ classdef FinalDataExplorer
            mask = squeeze(obj.roiMasks.Fill(roiIndex,:,:));
         end
         
+		function [mask] = getNeuropilRoiMask(obj, roiIndex)
+           %% getNeuropilRoiMask: convenience method for accessing the fill mask of the neuropil mask for a given roiIndex.
+           mask = squeeze(obj.roiMasks.NeuropilFill(roiIndex,:,:));
+        end
+
         
         function [mask] = getEdgeOffsetRoiMasks(obj, offsetIndex, roiIndex)
            %% getEdgeOffsetRoiMasks: convenience method for accessing the inset/offset masks by an offset index.
@@ -234,9 +239,13 @@ classdef FinalDataExplorer
 					if isFirstSession
 						temp.currCompSessionFill = logical(squeeze(obj.compMasks.Masks(temp.currCompSessionIndex,:,:)));
 						temp.currCompSessionEdge = logical(squeeze(obj.compMasks.Edge(temp.currCompSessionIndex,:,:)));
+                        temp.currCompSessionNeuropilMaskFill = logical(squeeze(obj.compNeuropilMasks.Masks(temp.currCompSessionIndex,:,:)));
+                        
 						
 						obj.roiMasks.Fill(temp.cellRoiIndex,:,:) = temp.currCompSessionFill;
 						obj.roiMasks.Edge(temp.cellRoiIndex,:,:) = temp.currCompSessionEdge;
+                        
+                        obj.roiMasks.NeuropilFill(temp.cellRoiIndex,:,:) = temp.currCompSessionNeuropilMaskFill;
 						
 						BW2_Inner = imerode(temp.currCompSessionFill, temp.structuring_element);
 						BW3_Inner = imerode(BW2_Inner, temp.structuring_element);
@@ -360,7 +369,9 @@ classdef FinalDataExplorer
             % obj.roiMasks: one for each cellROI
             obj.roiMasks.Fill = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
             obj.roiMasks.Edge = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
-
+            
+            obj.roiMasks.NeuropilFill = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
+            
             obj.roiMasks.OutsetEdge0 = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
             obj.roiMasks.OutsetEdge1 = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
             obj.roiMasks.OutsetEdge2 = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));

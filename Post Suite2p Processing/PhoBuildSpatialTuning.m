@@ -45,7 +45,7 @@ end
 
 % [amalgamationMasks, outputMaps, cellRoiSortIndex] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions);
 final_data_explorer_obj = final_data_explorer_obj.buildSpatialTuningInfo(phoPipelineOptions);
-prefStimChangeScores = sum(final_data_explorer_obj.preferredStimulusInfo.DidPreferredStimulusChange,2);
+% prefStimChangeScores = sum(final_data_explorer_obj.preferredStimulusInfo.DidPreferredStimulusChange,2);
 
 
 

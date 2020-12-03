@@ -9,6 +9,7 @@ classdef CellRoiPlotManager < PlotManager
         %% Graphical:
         Colors
 		GraphicalSelection
+		plottingSettings
         
         testCellROIBlob_Plot_figH
 		activeOffsetInsetIndicies = []; % activeOffsetInsetIndicies: the insets to display
@@ -19,11 +20,19 @@ classdef CellRoiPlotManager < PlotManager
     %% Computed Properties:
     properties (Dependent)
         final_data_explorer_obj % FinalDataExplorer
+		number_of_cellROI_plotSubGraphics % The number of graphics objects belonging to each cellROI. For example, these might be the fill, the edge, and several inset/outset edge objects
     end
     methods
        function final_data_explorer_obj = get.final_data_explorer_obj(obj)
           final_data_explorer_obj = obj.interaction_helper_obj.final_data_explorer_obj;
        end
+       function number_of_cellROI_plotSubGraphics = get.number_of_cellROI_plotSubGraphics(obj)
+          number_of_cellROI_plotSubGraphics = length(obj.activeOffsetInsetIndicies);
+		  if obj.plottingSettings.should_plot_neuropil_masks
+			number_of_cellROI_plotSubGraphics = number_of_cellROI_plotSubGraphics + 1;
+		  end
+       end
+	   
     end
     
     
@@ -39,6 +48,8 @@ classdef CellRoiPlotManager < PlotManager
             %% Build Interaction Helper Object:
             obj.interaction_helper_obj = InteractionHelper(final_data_explorer_obj, 'Pho', active_selections_backingFile_path);
 %             active_selections_backingFile_path = obj.interaction_helper_obj.BackingFile.fullPath;
+
+			obj.plottingSettings.should_plot_neuropil_masks = true;
 
             % Build Colors Arrays:
 			obj = obj.SetupColors();
@@ -136,35 +147,46 @@ classdef CellRoiPlotManager < PlotManager
 			%	is_visible
 			% 	CData: optional
 			%	AlphaData: optional
-			edgeOffsetIndex = obj.activeOffsetInsetIndicies(plotImageIndex);
-			is_fill_layer = isnan(edgeOffsetIndex);
-
-			curr_cellROI_IsSelected = obj.interaction_helper_obj.isCellRoiSelected(uniqueCompIndex);
-	        % updated_alpha_data = obj.interaction_helper_obj.final_data_explorer_obj.getFillRoiMask(uniqueCompIndex);
 
 			graphicalAppearance.is_visible = true;
-			
-			if is_fill_layer
-				% If it's a fill layer:
-				if curr_cellROI_IsSelected
-		%             updated_alpha_data = updated_alpha_data .* 0.9;
-					updated_color_data = obj.Colors.orange3DArray;
-					if obj.interaction_helper_obj.selectionOptions.shouldHideSelectedRois
-						graphicalAppearance.is_visible = false;
+
+			is_neuropil_layer = (obj.plottingSettings.should_plot_neuropil_masks && (obj.number_of_cellROI_plotSubGraphics == plotImageIndex));
+			if is_neuropil_layer
+				
+				updated_color_data = obj.Colors.darkgrey3DArray;
+
+			else
+
+				edgeOffsetIndex = obj.activeOffsetInsetIndicies(plotImageIndex);
+				is_fill_layer = isnan(edgeOffsetIndex);
+
+				curr_cellROI_IsSelected = obj.interaction_helper_obj.isCellRoiSelected(uniqueCompIndex);
+				% updated_alpha_data = obj.interaction_helper_obj.final_data_explorer_obj.getFillRoiMask(uniqueCompIndex);
+
+				if is_fill_layer
+					% If it's a fill layer:
+					if curr_cellROI_IsSelected
+			%             updated_alpha_data = updated_alpha_data .* 0.9;
+						updated_color_data = obj.Colors.orange3DArray;
+						if obj.interaction_helper_obj.selectionOptions.shouldHideSelectedRois
+							graphicalAppearance.is_visible = false;
+						end
+					else
+			%             updated_alpha_data = updated_alpha_data .* 0.5;
+						updated_color_data = obj.Colors.lightgrey3DArray;
 					end
 				else
-		%             updated_alpha_data = updated_alpha_data .* 0.5;
-					updated_color_data = obj.Colors.lightgrey3DArray;
-				end
-			else
-				% If it's an edge, use its edge color
-				updated_color_data = obj.acitveColorsArray{plotImageIndex};
-				if curr_cellROI_IsSelected
-					if obj.interaction_helper_obj.selectionOptions.shouldHideSelectedRois
-						graphicalAppearance.is_visible = false;
+					% If it's an edge, use its edge color
+					updated_color_data = obj.acitveColorsArray{plotImageIndex};
+					if curr_cellROI_IsSelected
+						if obj.interaction_helper_obj.selectionOptions.shouldHideSelectedRois
+							graphicalAppearance.is_visible = false;
+						end
 					end
+					
 				end
-				
+
+
 			end
 
 			graphicalAppearance.CData = updated_color_data;
@@ -176,34 +198,48 @@ classdef CellRoiPlotManager < PlotManager
 			obj.testCellROIBlob_Plot_figH = createFigureWithNameIfNeeded('CellROI Blobs Testing'); % generate a new figure to plot the sessions.
 			clf(obj.testCellROIBlob_Plot_figH);
 
-			%% Plots CellROI Mask Insets at all depths for debug purposes:
-			imagePlotHandles = gobjects(obj.final_data_explorer_obj.num_cellROIs, length(obj.activeOffsetInsetIndicies));
+			imagePlotHandles = gobjects(obj.final_data_explorer_obj.num_cellROIs, obj.number_of_cellROI_plotSubGraphics);
 
 			for i = 1:obj.final_data_explorer_obj.num_cellROIs
 				cellROIIdentifier.uniqueRoiIndex = i;
 				cellROIIdentifier.roiName = obj.final_data_explorer_obj.cellROIIndex_mapper.getRoiNameFromUniqueCompIndex(i);
 
-				for plotImageIndex = 1:length(obj.activeOffsetInsetIndicies)
-					currEdgePlotImageIdentifier.cellROIIdentifier = cellROIIdentifier;
-					currEdgePlotImageIdentifier.edgeOffsetIndex = obj.activeOffsetInsetIndicies(plotImageIndex);
+				for plotImageIndex = 1:obj.number_of_cellROI_plotSubGraphics
+					currPlotSubGraphicsIdentifier.cellROIIdentifier = cellROIIdentifier;
+					
+					is_neuropil_index = (obj.plottingSettings.should_plot_neuropil_masks && (obj.number_of_cellROI_plotSubGraphics == plotImageIndex));
+					if is_neuropil_index
+						% Neuropil Mask Plotting (optional):
+						currPlotSubGraphicsIdentifier.edgeOffsetIndex = nan;
+						currPlotSubGraphicsIdentifier.type = 'NeuropilMask';
+						imagePlotHandles(i, plotImageIndex) = image('CData', obj.Colors.darkgrey3DArray, 'AlphaData', (0.9 * obj.final_data_explorer_obj.getNeuropilRoiMask(i)));
+						curr_tag_string = fnBuildCellRoiPlotTagString(cellROIIdentifier, nan, 'NeuropilMask');
 
-					if isnan(currEdgePlotImageIdentifier.edgeOffsetIndex)
-						% For the fill layer, the edgeOffsetIndex is nan
-						imagePlotHandles(i, plotImageIndex) = image('CData', obj.acitveColorsArray{plotImageIndex}, 'AlphaData', (0.5 * obj.final_data_explorer_obj.getFillRoiMask(i)));
 					else
-						imagePlotHandles(i, plotImageIndex) = image('CData', obj.acitveColorsArray{plotImageIndex}, 'AlphaData', obj.final_data_explorer_obj.getEdgeOffsetRoiMasks(currEdgePlotImageIdentifier.edgeOffsetIndex, i));
-					end
+						% Non-neuropil layer:
+						currPlotSubGraphicsIdentifier.edgeOffsetIndex = obj.activeOffsetInsetIndicies(plotImageIndex);
 
-			%         imagePlotHandles(i, plotImageIndex).ButtonDownFcn = @(hObject, eventData) (fnTestCellROIBlob_Plot_OnClicked_Callback(hObject, eventData, final_data_explorer_obj));
+						if isnan(currPlotSubGraphicsIdentifier.edgeOffsetIndex)
+							% For the fill layer, the edgeOffsetIndex is nan
+							currPlotSubGraphicsIdentifier.type = 'Fill';
+							imagePlotHandles(i, plotImageIndex) = image('CData', obj.acitveColorsArray{plotImageIndex}, 'AlphaData', (0.5 * obj.final_data_explorer_obj.getFillRoiMask(i)));
+						else
+							currPlotSubGraphicsIdentifier.type = 'Edge';
+							imagePlotHandles(i, plotImageIndex) = image('CData', obj.acitveColorsArray{plotImageIndex}, 'AlphaData', obj.final_data_explorer_obj.getEdgeOffsetRoiMasks(currPlotSubGraphicsIdentifier.edgeOffsetIndex, i));
+						end
 
-					curr_tag_string = fnBuildCellRoiPlotTagString(obj.activeOffsetInsetIndicies(plotImageIndex), cellROIIdentifier);
+						curr_tag_string = fnBuildCellRoiPlotTagString(cellROIIdentifier, obj.activeOffsetInsetIndicies(plotImageIndex));
 
-					set(imagePlotHandles(i, plotImageIndex), 'UserData', currEdgePlotImageIdentifier);
+					end % end if is_neuropil_index
+
+					set(imagePlotHandles(i, plotImageIndex), 'UserData', currPlotSubGraphicsIdentifier);
 					set(imagePlotHandles(i, plotImageIndex), 'Tag', curr_tag_string);
 
-				end
+				end % end for number_of_cellROI_plotSubGraphics
 
-			end
+
+			end % end for cellROIs
+			
 			title('Combined Insets and Outsets')
 			set(gca,'xtick',[],'YTick',[])
 			set(gca,'xlim',[1 512],'ylim',[1 512])
