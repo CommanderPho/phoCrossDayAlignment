@@ -45,6 +45,8 @@ end
 
 % [amalgamationMasks, outputMaps, cellRoiSortIndex] = fnBuildSpatialTuningInfo(num_cellROIs, numOfSessions, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment, componentAggregatePropeties, phoPipelineOptions);
 final_data_explorer_obj = final_data_explorer_obj.buildSpatialTuningInfo(phoPipelineOptions);
+prefStimChangeScores = sum(final_data_explorer_obj.preferredStimulusInfo.DidPreferredStimulusChange,2);
+
 
 
 
@@ -82,6 +84,8 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_expl
     amplitudeColorMap(1,:) = [0, 0, 0];
     frequencyColorMap(1,:) = [0, 0, 0];
 
+    
+    
 
     % Number of Days Meeting Criteria Figure:
     figH_numDaysCriteria = fnPlotNumberOfDaysCriteriaFigure(final_data_explorer_obj.amalgamationMasks, final_data_explorer_obj.componentAggregatePropeties);
