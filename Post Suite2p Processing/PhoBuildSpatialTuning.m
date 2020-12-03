@@ -53,6 +53,8 @@ final_data_explorer_obj = final_data_explorer_obj.buildSpatialTuningInfo(phoPipe
 if phoPipelineOptions.shouldShowPlots
     [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_explorer_obj] = fnPlotPhoBuildSpatialTuningFigures(final_data_explorer_obj, phoPipelineOptions);
     
+    align_figure([figH_numDaysCriteria,figH_roiTuningPreferredStimulus]);
+    
     %% Optional Export to disk:
     if phoPipelineOptions.shouldSaveFiguresToDisk
         %% Export plots:
@@ -269,36 +271,17 @@ function txt = displayCoordinates(figH, info, final_data_explorer_obj, activeSli
         cellROI_CompName = final_data_explorer_obj.uniqueComps{uniqueCompIndex};
         cellROIString = ['[' num2str(uniqueCompIndex) ']' cellROI_CompName];
         
-%         cellROIString = num2str(uniqueCompIndex);  
-        
-        
         cellROI_PreferredLinearStimulusIndicies = squeeze(final_data_explorer_obj.preferredStimulusInfo.PreferredStimulus_LinearStimulusIndex(uniqueCompIndex,:)); % These are the linear stimulus indicies for this all sessions of this datapoint.
-%         disp(cellROI_PreferredLinearStimulusIndicies);
 
         cellROI_PreferredAmpsFreqsIndicies = final_data_explorer_obj.stimuli_mapper.indexMap_StimulusLinear2AmpsFreqsArray(cellROI_PreferredLinearStimulusIndicies',:);
-%         disp(cellROI_PreferredAmpsFreqsIndicies);
 
         cellROI_PreferredAmps = final_data_explorer_obj.uniqueAmps(cellROI_PreferredAmpsFreqsIndicies(:,1));
         cellROI_PreferredFreqs = final_data_explorer_obj.uniqueFreqs(cellROI_PreferredAmpsFreqsIndicies(:,2));
-
-%         disp(num2str(cellROI_PreferredAmps'));
         
         cellROI_PreferredAmpsFreqsValues = [cellROI_PreferredAmps, cellROI_PreferredFreqs];
         disp(cellROI_PreferredAmpsFreqsValues);
 
-    %     cellROI_PreferredStimulusMatrix = squeeze(outputMaps.PreferredStimulus(cellROI,:,:));
-    %     disp(cellROI_PreferredStimulusMatrix);
-        % 3 sessions x [preferredAmp, preferredFreq]
-    %     numSessions = size(cellROI_PreferredStimulusMatrix, 1);
-    %     
-    %     for i = 1:numSessions
-    %         preferredAmpFreq = cellROI_PreferredStimulusMatrix(i,:);
-    %         
-    %         
-    %     end
-
         txt = {['(' num2str(x) ', ' num2str(y) '): cellROI: ' cellROIString], ['prefAmps: ' num2str(cellROI_PreferredAmps')], ['prefFreqs: ' num2str(cellROI_PreferredFreqs')]};
-%         txt = [txt '\n prefAmps: ' num2str(cellROI_PreferredAmps)];
         
     else
         fprintf('selected no cells.\n');
@@ -306,8 +289,6 @@ function txt = displayCoordinates(figH, info, final_data_explorer_obj, activeSli
         txt = ['(' num2str(x) ', ' num2str(y) '): cellROI: ' cellROIString];
     end
 
-    
-    
     if exist('activeSliderController','var')
         fprintf('updating activeSliderController programmatically to value %d...\n', uniqueCompIndex);
         activeSliderController.controller.Slider.Value = uniqueCompIndex;

@@ -1,4 +1,4 @@
-% Testing Interactive
+% ShowSliderControlledLinkedInteractiveFigures.m :Testing Interactive
 % Pho Hale
 % 11-20-2020
 %%% Generates an interactive slider that allows one to scroll through the available cellROI values and it displays the correct graph.
@@ -12,7 +12,7 @@ addpath(genpath('../../helpers'));
 should_show_masking_plot = false;
 should_show_stimulus_traces_plot = true;
 
-temp.cellRoiIndex = 5;
+temp.cellRoiIndex = 1;
 
 
 %% Build a Slider Controller
@@ -25,21 +25,25 @@ iscInfo.curr_i = temp.cellRoiIndex;
 iscInfo.NumberOfSeries = length(final_data_explorer_obj.uniqueComps);
 
 % Build or get the figures that will be controlled by the slider.
+extantFigH_plot_2d = createFigureWithNameIfNeeded('Slider Controlled 2D Plot');
+extantFigH_plot_3d = createFigureWithNameIfNeeded('Slider Controlled 3D Mesh Plot');
+
+linkedFigureHandles = [extantFigH_plot_2d extantFigH_plot_3d];
+
 if should_show_masking_plot
     extantFigH_plot_masking = createFigureWithNameIfNeeded('Slider Controlled Masking Plot');
+    linkedFigureHandles(end+1) = extantFigH_plot_masking;
 end
 if should_show_stimulus_traces_plot
     extantFigH_plot_stimulus_traces = createFigureWithNameIfNeeded('Slider Controlled Stimulus Traces Plot');
+    linkedFigureHandles(end+1) = extantFigH_plot_stimulus_traces;
 end
-extantFigH_plot_2d = createFigureWithNameIfNeeded('Slider Controlled 2D Plot');
-extantFigH_plot_3d = createFigureWithNameIfNeeded('Slider Controlled 3D Mesh Plot');
 
 main_plot_callback = @(curr_i) (pho_plot_interactive_all(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, final_data_explorer_obj.finalOutPeaksGrid, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, extantFigH_plot_2d, extantFigH_plot_3d, curr_i));
 plot_callbacks = {main_plot_callback};
 
 if should_show_masking_plot
     secondary_plot_callback = @(curr_i) (pho_plot_interactive_masking_all(final_data_explorer_obj.dateStrings, final_data_explorer_obj.compMasks, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, extantFigH_plot_masking, curr_i));
-%     plot_callbacks = {main_plot_callback, secondary_plot_callback};
     plot_callbacks{end+1} = secondary_plot_callback;
 end
 
@@ -49,8 +53,45 @@ if should_show_stimulus_traces_plot
 end
 
 slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, plot_callbacks);
+% PhoBuildSpatialTuning;
+
+% Align the figures:
+% align_figure(linkedFigureHandles);
+figureLayoutManager.figuresSize.width = 880;
+figureLayoutManager.figuresSize.height = 600;
+figureLayoutManager.verticalSpacing = 30;
+figureLayoutManager.horizontalSpacing = 5;
+
+align_figure(linkedFigureHandles, 1, figureLayoutManager.figuresSize.width, figureLayoutManager.figuresSize.height,...
+    100, figureLayoutManager.verticalSpacing, figureLayoutManager.horizontalSpacing, 100);
+
+relative_figure_info.handle = linkedFigureHandles(end);
+relative_figure_info.relative_figure_postion = get(relative_figure_info.handle, 'Position');
 
 
+relative_figure_info.width = relative_figure_info.relative_figure_postion(3);
+relative_figure_info.height = relative_figure_info.relative_figure_postion(4);
+
+target_figure_info.handle = slider_controller.controller.figH;
+target_figure_info.original_postion = get(target_figure_info.handle, 'Position');
+target_figure_info.width = target_figure_info.original_postion(3);
+target_figure_info.height = target_figure_info.original_postion(4);
+
+target_figure_info.desired_postion = target_figure_info.original_postion;
+% Bind Same width:
+target_figure_info.desired_postion(3) = relative_figure_info.width;
+% Bind Same Left Edge alignment:
+target_figure_info.desired_postion(1) = relative_figure_info.relative_figure_postion(1);
+% Bind top target edge to bottom reference edge:
+% target_figure_info.desired_postion(2) = relative_figure_info.relative_figure_postion(2) + relative_figure_info.height;
+target_figure_info.desired_postion(2) = relative_figure_info.relative_figure_postion(2) - (figureLayoutManager.verticalSpacing + target_figure_info.height);
+
+set(target_figure_info.handle, 'Position', target_figure_info.desired_postion);
+
+
+
+
+%% Plot Helper Functions:
 %% Plot function called as a callback on update
 function pho_plot_interactive_all(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH_2d, extantFigH_3d, curr_cellRoiIndex)
     pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH_2d, curr_cellRoiIndex);
@@ -72,8 +113,6 @@ function plotted_figH = pho_plot_cell_mask(dateStrings, compMasks, multiSessionC
 end
 
 
-
-
 function plotted_figH = pho_plot_stimulus_traces(dateStrings, uniqueAmps, uniqueFreqs, uniqueStimuli, traceXIndicies, redTraceLinesForAllStimuli, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
     % COMPUTED
     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
@@ -85,8 +124,6 @@ function plotted_figH = pho_plot_stimulus_traces(dateStrings, uniqueAmps, unique
     
     set(plotted_figH, 'Name', sprintf('Slider Controlled Stimuli Traces Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted 
 end
-
-
 
 function plotted_figH = pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
     % COMPUTED

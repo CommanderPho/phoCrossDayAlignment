@@ -18,7 +18,6 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
     
     clf(figH);
     
-    
     %specify colormaps for your figure. This is important!!
     amplitudeColorMap = winter(numel(uniqueAmps));
     frequencyColorMap = spring(numel(uniqueFreqs));
