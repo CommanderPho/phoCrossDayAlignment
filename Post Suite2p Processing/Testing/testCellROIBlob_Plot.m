@@ -116,48 +116,21 @@ function txt = testCellROIBlob_Plot_Callback(figH, info, interaction_helper_obj,
         [interaction_helper_obj, curr_cellROI_IsSelected] = interaction_helper_obj.toggleCellRoiIsSelected(uniqueCompIndex);
         
         %% Update Selections graphically:
-        
-        % Get the fill handle
-        curr_sel_fill_im_h = interaction_helper_obj.GraphicalSelection.imagePlotHandles(uniqueCompIndex, 1);
-%         updated_alpha_data = interaction_helper_obj.final_data_explorer_obj.getFillRoiMask(uniqueCompIndex);
-        if curr_cellROI_IsSelected
-%             updated_alpha_data = updated_alpha_data .* 0.9;
-            
-            updated_color_data = orange3DArray;
-        else
-%             updated_alpha_data = updated_alpha_data .* 0.5;
-            
-            updated_color_data = lightgrey3DArray;
-        end
-%         set(curr_sel_fill_im_h,'CData', updated_color_data, 'AlphaData', updated_alpha_data);
-        
-        set(curr_sel_fill_im_h,'CData', updated_color_data);
+        interaction_helper_obj.updateGraphicalSelection(uniqueCompIndex);
         drawnow
-%         for i = 1:size(interaction_helper_obj.imagePlotHandles, 1)
-%             for j = size(interaction_helper_obj.imagePlotHandles, 2)
-%         %         imagePlotHandles(i, j).ButtonDownFcn = {@testCellROIBlob_Plot_OnClicked_Callback, final_data_explorer_obj};
-%                 interaction_helper_obj.imagePlotHandles(uniqueCompIndex, j).ButtonDownFcn = @(hObject, eventData) (fnTestCellROIBlob_Plot_OnClicked_Callback(hObject, eventData, final_data_explorer_obj));
-%             end
-%         end        
-        
-%         cellROIString = num2str(uniqueCompIndex);  
-        
-        
+
         cellROI_PreferredLinearStimulusIndicies = squeeze(interaction_helper_obj.final_data_explorer_obj.preferredStimulusInfo.PreferredStimulus_LinearStimulusIndex(uniqueCompIndex,:)); % These are the linear stimulus indicies for this all sessions of this datapoint.
-%         disp(cellROI_PreferredLinearStimulusIndicies);
 
         cellROI_PreferredAmpsFreqsIndicies = interaction_helper_obj.final_data_explorer_obj.stimuli_mapper.indexMap_StimulusLinear2AmpsFreqsArray(cellROI_PreferredLinearStimulusIndicies',:);
-%         disp(cellROI_PreferredAmpsFreqsIndicies);
+
 
         cellROI_PreferredAmps = interaction_helper_obj.final_data_explorer_obj.uniqueAmps(cellROI_PreferredAmpsFreqsIndicies(:,1));
         cellROI_PreferredFreqs = interaction_helper_obj.final_data_explorer_obj.uniqueFreqs(cellROI_PreferredAmpsFreqsIndicies(:,2));
 
-%         disp(num2str(cellROI_PreferredAmps'));
         
         cellROI_PreferredAmpsFreqsValues = [cellROI_PreferredAmps, cellROI_PreferredFreqs];
         disp(cellROI_PreferredAmpsFreqsValues);
         txt = {['(' num2str(x) ', ' num2str(y) '): cellROI: ' cellROIString], ['prefAmps: ' num2str(cellROI_PreferredAmps')], ['prefFreqs: ' num2str(cellROI_PreferredFreqs')]};
-%         txt = [txt '\n prefAmps: ' num2str(cellROI_PreferredAmps)];
         
     else
         fprintf('selected no cells.\n');

@@ -14,6 +14,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
         
         %% Graphical (TODO: potentially refactor)
         GraphicalSelection
+		Colors
         
     end
     
@@ -73,8 +74,31 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 			obj.BackingFile.hasBackingFile = false;
             obj.BackingFile.shouldAutosaveToBackingFile = true;
             obj.tryOpenBackingFile();
-            
+
+			% Build Colors Arrays:
+			obj = obj.SetupColors();
+			
         end
+
+
+		function obj = SetupColors(obj)
+			% SetupColors: Build Color Matricies
+			desiredSize = [512 512];
+			obj.Colors.black3DArray = fnBuildCDataFromConstantColor([0.0 0.0 0.0], desiredSize);
+			obj.Colors.darkgrey3DArray = fnBuildCDataFromConstantColor([0.3 0.3 0.3], desiredSize);
+			obj.Colors.lightgrey3DArray = fnBuildCDataFromConstantColor([0.6 0.6 0.6], desiredSize);
+
+			obj.Colors.orange3DArray = fnBuildCDataFromConstantColor([0.9 0.3 0.1], desiredSize);
+
+			obj.Colors.red3DArray = fnBuildCDataFromConstantColor([1.0 0.0 0.0], desiredSize);
+			obj.Colors.green3DArray = fnBuildCDataFromConstantColor([0.0 1.0 0.0], desiredSize);
+			obj.Colors.blue3DArray = fnBuildCDataFromConstantColor([0.0 0.0 1.0], desiredSize);
+
+			obj.Colors.darkRed3DArray = fnBuildCDataFromConstantColor([0.6 0.0 0.0], desiredSize);
+			obj.Colors.darkGreen3DArray = fnBuildCDataFromConstantColor([0.0 0.6 0.0], desiredSize);
+			obj.Colors.darkBlue3DArray = fnBuildCDataFromConstantColor([0.0 0.0 0.6], desiredSize);
+
+		end
         
         %% Selection Methods:
         function [obj, newIsSelected] = toggleCellRoiIsSelected(obj, uniqueCompListIndex)
@@ -90,8 +114,12 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
             %   newIsSelected: new selection status
             obj.isCellRoiSelected(uniqueCompListIndex) = newIsSelected;
         end
-        
-        
+ 
+    end %% end methods
+    
+
+    %% Graphical Methods Block:
+    methods 
         %% Graphical Methods (TODO: potentially refactor):
         function obj = setupGraphicalSelectionFigure(obj, activeFigure, imagePlotHandles)
             %setupGraphicalSelectionFigure 
@@ -116,18 +144,46 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
             btn_SaveUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_SaveUserSelections_callback(src, event));
 
         end
-        
-                
-        
-    end %% end methods
-    
-    %% Graphical Callback Methods:
+
+		%% Update Selections graphically:
+		function obj = updateGraphicalSelection(obj, uniqueCompIndex)
+            %updateGraphicalSelection: updates a single cellROI 
+			curr_cellROI_IsSelected = obj.isCellRoiSelected(uniqueCompIndex);
+			% Get the fill handle
+			curr_sel_fill_im_h = obj.GraphicalSelection.imagePlotHandles(uniqueCompIndex, 1);
+	%         updated_alpha_data = interaction_helper_obj.final_data_explorer_obj.getFillRoiMask(uniqueCompIndex);
+			if curr_cellROI_IsSelected
+	%             updated_alpha_data = updated_alpha_data .* 0.9;
+				updated_color_data = obj.Colors.orange3DArray;
+			else
+	%             updated_alpha_data = updated_alpha_data .* 0.5;
+				updated_color_data = obj.Colors.lightgrey3DArray;
+			end
+	%         set(curr_sel_fill_im_h,'CData', updated_color_data, 'AlphaData', updated_alpha_data);
+			set(curr_sel_fill_im_h,'CData', updated_color_data);
+        end
+
+		function obj = updateGraphicalSelections(obj)
+            %setupGraphicalSelectionFigure 
+            % Loop through all cellROIs and update the graphical selection according to the isSelectedIndex
+			for i = 1:size(obj.GraphicalSelection.imagePlotHandles, 1)
+				obj = obj.updateGraphicalSelection(i);
+			end
+			drawnow;
+        end
+
+
+    end % end graphical methods block
+
+
+    %% Graphical Callback Methods Block:
     methods
 	        % SaveUserAnnotations
         function selection_toolbar_btn_LoadUserSelections_callback(obj, src, event)
             fprintf('Loading from file %s...', obj.BackingFile.fullPath)
             obj.loadFromExistingBackingFile(); % will this work?
             fprintf('Done.\n')
+			obj.updateGraphicalSelections();
         end
 
         % SaveUserAnnotations
@@ -171,7 +227,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 
 		function [obj] = loadFromExistingBackingFile(obj)
 			fprintf('Loading from existing backing file at %s...', obj.BackingFile.fullPath)
-			L = load(obj.BackingFile.fullPath, 'isCellRoiSelected');
+			L = load(obj.BackingFile.fullPath);
 			% obj.isCellRoiSelected = L.isCellRoiSelected;
 			% Use "deal" to distribute them to the variables.
 			[obj.isCellRoiSelected, obj.AnnotatingUser] = deal(L.isCellRoiSelected, L.AnnotatingUser);
