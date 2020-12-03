@@ -38,13 +38,11 @@ for i = 1:final_data_explorer_obj.num_cellROIs
         if isnan(currEdgePlotImageIdentifier.edgeOffsetIndex)
             % For the fill layer, the edgeOffsetIndex is nan
             imagePlotHandles(i, plotImageIndex) = image('CData', colorsArray{plotImageIndex}, 'AlphaData', (0.5 * final_data_explorer_obj.getFillRoiMask(i)));
-%             imagePlotHandles(i, plotImageIndex).ButtonDownFcn = {@testCellROIBlob_Plot_OnClicked_Callback, final_data_explorer_obj};
         else
             imagePlotHandles(i, plotImageIndex) = image('CData', colorsArray{plotImageIndex}, 'AlphaData', final_data_explorer_obj.getEdgeOffsetRoiMasks(currEdgePlotImageIdentifier.edgeOffsetIndex, i));
         end
         
-%         imagePlotHandles(i, plotImageIndex).ButtonDownFcn = {@testCellROIBlob_Plot_OnClicked_Callback, final_data_explorer_obj};
-        imagePlotHandles(i, plotImageIndex).ButtonDownFcn = @(hObject, eventData) (fnTestCellROIBlob_Plot_OnClicked_Callback(hObject, eventData, final_data_explorer_obj));
+%         imagePlotHandles(i, plotImageIndex).ButtonDownFcn = @(hObject, eventData) (fnTestCellROIBlob_Plot_OnClicked_Callback(hObject, eventData, final_data_explorer_obj));
         
         curr_tag_string = fnBuildCellRoiPlotTagString(combinedOffsetInsetIndicies(plotImageIndex), cellROIIdentifier);
         
