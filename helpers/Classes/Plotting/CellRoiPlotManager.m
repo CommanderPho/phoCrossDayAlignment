@@ -43,8 +43,6 @@ classdef CellRoiPlotManager < PlotManager
             % Build Colors Arrays:
 			obj = obj.SetupColors();
             
-            obj.testCellROIBlob_Plot_figH
-            
         end
         
         function obj = SetupColors(obj)
@@ -75,6 +73,8 @@ classdef CellRoiPlotManager < PlotManager
     %% Graphical Methods Block:
     methods 
 
+
+		% Primary Plot Function
 		function [obj] = plotTestCellROIBlob(obj)
 			obj.testCellROIBlob_Plot_figH = createFigureWithNameIfNeeded('CellROI Blobs Testing'); % generate a new figure to plot the sessions.
 			clf(obj.testCellROIBlob_Plot_figH);
@@ -179,6 +179,6 @@ classdef CellRoiPlotManager < PlotManager
 
 
 	end % end graphical callbacks methods block
-	
+
 end
 

@@ -134,14 +134,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 			foundExtantToolbar = findobj(obj.GraphicalSelection.activeFigure,'Tag','uimgr.uitoolbar_PhoCustom_Selection');
 			if ~isempty(foundExtantToolbar) && isgraphics(foundExtantToolbar)
 				obj.GraphicalSelection.selectionCustomToolbar = foundExtantToolbar;
-                delete(obj.GraphicalSelection.selectionCustomToolbar);
-				% Remove any extant toolbar buttons:
-
-				% hToolbarChildren = allchild(foundExtantToolbar(end)); % retrieve all hidden children of the toolbar
-				% for i = 1:length(hToolbarChildren)
-				% 	hToolbarChildren
-				% end
-                
+                delete(obj.GraphicalSelection.selectionCustomToolbar);                
                 obj.GraphicalSelection.selectionCustomToolbar = uitoolbar(obj.GraphicalSelection.activeFigure,'Tag','uimgr.uitoolbar_PhoCustom_Selection');
 			else
 				obj.GraphicalSelection.selectionCustomToolbar = uitoolbar(obj.GraphicalSelection.activeFigure,'Tag','uimgr.uitoolbar_PhoCustom_Selection');
