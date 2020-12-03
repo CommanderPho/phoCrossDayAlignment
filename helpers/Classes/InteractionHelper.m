@@ -51,7 +51,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
        end
     end
     
-    
+    %% Main Methods Block:
     methods
         function obj = InteractionHelper(final_data_explorer_obj, annotatingUser, backingFilePath)
             %InteractionHelper Construct an instance of this class
@@ -136,7 +136,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 				obj.GraphicalSelection.selectionCustomToolbar = foundExtantToolbar;
                 delete(obj.GraphicalSelection.selectionCustomToolbar);
 				% Remove any extant toolbar buttons:
-% 				obj.GraphicalSelection.selectionCustomToolbar.Children = [];
+
 				% hToolbarChildren = allchild(foundExtantToolbar(end)); % retrieve all hidden children of the toolbar
 				% for i = 1:length(hToolbarChildren)
 				% 	hToolbarChildren
@@ -324,7 +324,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 		end
     
 
-    end
+    end % end graphical callbacks methods block
     
     %% Backing File Methods Block:
     methods
