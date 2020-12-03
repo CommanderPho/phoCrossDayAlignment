@@ -76,32 +76,9 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 			obj.BackingFile.hasBackingFile = false;
             obj.BackingFile.shouldAutosaveToBackingFile = true;
             obj.tryOpenBackingFile();
-
-			% Build Colors Arrays:
-			% obj = obj.SetupColors();
 			
         end
 
-
-		% function obj = SetupColors(obj)
-		% 	% SetupColors: Build Color Matricies
-		% 	desiredSize = [512 512];
-		% 	obj.Colors.black3DArray = fnBuildCDataFromConstantColor([0.0 0.0 0.0], desiredSize);
-		% 	obj.Colors.darkgrey3DArray = fnBuildCDataFromConstantColor([0.3 0.3 0.3], desiredSize);
-		% 	obj.Colors.lightgrey3DArray = fnBuildCDataFromConstantColor([0.6 0.6 0.6], desiredSize);
-
-		% 	obj.Colors.orange3DArray = fnBuildCDataFromConstantColor([0.9 0.3 0.1], desiredSize);
-
-		% 	obj.Colors.red3DArray = fnBuildCDataFromConstantColor([1.0 0.0 0.0], desiredSize);
-		% 	obj.Colors.green3DArray = fnBuildCDataFromConstantColor([0.0 1.0 0.0], desiredSize);
-		% 	obj.Colors.blue3DArray = fnBuildCDataFromConstantColor([0.0 0.0 1.0], desiredSize);
-
-		% 	obj.Colors.darkRed3DArray = fnBuildCDataFromConstantColor([0.6 0.0 0.0], desiredSize);
-		% 	obj.Colors.darkGreen3DArray = fnBuildCDataFromConstantColor([0.0 0.6 0.0], desiredSize);
-		% 	obj.Colors.darkBlue3DArray = fnBuildCDataFromConstantColor([0.0 0.0 0.6], desiredSize);
-
-		% end
-        
         %% Selection Methods:
         function [obj, newIsSelected] = toggleCellRoiIsSelected(obj, uniqueCompListIndex)
             %toggleCellRoiIsSelected Summary of this method goes here
@@ -120,24 +97,11 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
     end %% end methods
     
 
-    %% Graphical Methods Block:
+    %% UX Methods Block:
     methods 
-        %% Graphical Methods (TODO: potentially refactor):
-        function obj = setupGraphicalSelectionFigure(obj, activeFigure, imagePlotHandles)
-            %setupGraphicalSelectionFigure 
-            %   activeFigure: 
-            %   imagePlotHandles: 
-			obj.selectionOptions.shouldHideSelectedRois = false;
-
-            obj.GraphicalSelection.activeFigure = activeFigure;
-            obj.GraphicalSelection.imagePlotHandles = imagePlotHandles;
-            
-			% Add the toolbar for selection operations:
-			obj.setupGraphicalSelectionToolbar(activeFigure);
-		end
 
 		function obj = setupGraphicalSelectionToolbar(obj, activeFigure, graphical_update_callback)
-
+			%% setupGraphicalSelectionToolbar: adds the toolbar to the activeFigure
 			obj.graphical_update_callback = graphical_update_callback;
 
             %% Add a Custom Toolbar to allow marking selections
@@ -168,7 +132,6 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 			obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay.CData = iconRead(obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay_imagePaths{1});
 			obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay.Tooltip = 'Toggle the eye polygon area on or off';
 			obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_ToggleEyePolyOverlay_callback(src, event));
-
 
 			%% Toggle MarkBad
 			obj.GraphicalSelection.selectionControls.btnMarkBad = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_MarkBad');
@@ -201,41 +164,6 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 			obj.selection_toolbar_update_custom_toolbar_buttons_appearance()
         end
 
-	% 	%% Update Selections graphically:
-	% 	function obj = updateGraphicalSelection(obj, uniqueCompIndex)
-    %         %updateGraphicalSelection: updates a single cellROI 
-	% 		curr_cellROI_IsSelected = obj.isCellRoiSelected(uniqueCompIndex);
-	% 		% Get the fill handle
-	% 		curr_sel_fill_im_h = obj.GraphicalSelection.imagePlotHandles(uniqueCompIndex, 1);
-	% %         updated_alpha_data = interaction_helper_obj.final_data_explorer_obj.getFillRoiMask(uniqueCompIndex);
-
-	% 		curr_is_visible = true;
-	% 		if curr_cellROI_IsSelected
-	% %             updated_alpha_data = updated_alpha_data .* 0.9;
-	% 			updated_color_data = obj.Colors.orange3DArray;
-	% 			if obj.GraphicalSelection.selectionOptions.shouldHideSelectedRois
-	% 				curr_is_visible = false;
-	% 			end
-				
-	% 		else
-	% %             updated_alpha_data = updated_alpha_data .* 0.5;
-	% 			updated_color_data = obj.Colors.lightgrey3DArray;
-				
-
-	% 		end
-	% %         set(curr_sel_fill_im_h,'CData', updated_color_data, 'AlphaData', updated_alpha_data);
-	% 		set(curr_sel_fill_im_h,'CData', updated_color_data, 'Visible', curr_is_visible);
-    %     end
-
-	% 	function obj = updateGraphicalSelections(obj)
-    %         %setupGraphicalSelectionFigure 
-    %         % Loop through all cellROIs and update the graphical selection according to the isSelectedIndex
-	% 		for i = 1:size(obj.GraphicalSelection.imagePlotHandles, 1)
-	% 			obj = obj.updateGraphicalSelection(i);
-	% 		end
-	% 		drawnow;
-    %     end
-
 		%% Updates the state of the toolbar buttons:
 		function selection_toolbar_update_custom_toolbar_buttons_appearance(obj)
 			
@@ -265,17 +193,15 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 			
 		end
 
-    end % end graphical methods block
+    end % end UX methods block
 
 
-    %% Graphical Callback Methods Block:
+    %% UX Callback Methods Block:
     methods
-	        % SaveUserAnnotations
         function selection_toolbar_btn_LoadUserSelections_callback(obj, src, event)
             fprintf('Loading from file %s...', obj.BackingFile.fullPath)
-            obj.loadFromExistingBackingFile(); % will this work?
+            obj.loadFromExistingBackingFile();
             fprintf('Done.\n')
-			% obj.updateGraphicalSelections();
 			obj.graphical_update_callback();
         end
 
@@ -320,12 +246,11 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 			obj.selectionOptions.shouldHideSelectedRois = ~obj.selectionOptions.shouldHideSelectedRois;
 			disp(obj.selectionOptions.shouldHideSelectedRois);
 			obj.selection_toolbar_update_custom_toolbar_buttons_appearance();
-			% obj.updateGraphicalSelections();
 			obj.graphical_update_callback();
 		end
     
 
-    end % end graphical callbacks methods block
+    end % end UX callbacks methods block
     
     %% Backing File Methods Block:
     methods

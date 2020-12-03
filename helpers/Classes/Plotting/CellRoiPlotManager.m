@@ -6,7 +6,7 @@ classdef CellRoiPlotManager < PlotManager
         
         interaction_helper_obj % InteractionHelper
         
-        %% Graphical (TODO: potentially refactor)
+        %% Graphical:
         Colors
 		GraphicalSelection
         
@@ -36,7 +36,6 @@ classdef CellRoiPlotManager < PlotManager
             % Call PlotManager constructor:
             obj@PlotManager([]);
             
-
             %% Build Interaction Helper Object:
             obj.interaction_helper_obj = InteractionHelper(final_data_explorer_obj, 'Pho', active_selections_backingFile_path);
 %             active_selections_backingFile_path = obj.interaction_helper_obj.BackingFile.fullPath;
@@ -159,7 +158,6 @@ classdef CellRoiPlotManager < PlotManager
 			set(gca,'xlim',[1 512],'ylim',[1 512])
 
 			%% Build Interaction Helper Object:
-			% obj.interaction_helper_obj.setupGraphicalSelectionFigure(obj.testCellROIBlob_Plot_figH, imagePlotHandles);
 			obj.setupGraphicalSelectionFigure(obj.testCellROIBlob_Plot_figH, imagePlotHandles);
 
 			dcm = datacursormode(obj.testCellROIBlob_Plot_figH);
@@ -192,11 +190,9 @@ classdef CellRoiPlotManager < PlotManager
 				cellROIString = ['[' num2str(uniqueCompIndex) ']' cellROI_CompName];
 
 				% Ask interaction_helper_obj to toggle the selection status.
-
 				[interaction_helper_obj, curr_cellROI_IsSelected] = interaction_helper_obj.toggleCellRoiIsSelected(uniqueCompIndex);
 
 				%% Update Selections graphically:
-				% interaction_helper_obj.updateGraphicalSelection(uniqueCompIndex);
 				obj.updateGraphicalAppearance(uniqueCompIndex);
 				drawnow
 
