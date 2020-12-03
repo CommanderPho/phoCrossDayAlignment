@@ -1,4 +1,6 @@
 %% testCellROIBlob_Plot.m
+% Plots the cell ROIs using the new CellRoiPlotManager class.
+
 addpath(genpath('../helpers'));
 
 combinedOffsetInsetIndicies = [nan, 0];
