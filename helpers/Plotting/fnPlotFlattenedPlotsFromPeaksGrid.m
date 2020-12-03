@@ -21,6 +21,9 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
     %specify colormaps for your figure. This is important!!
     amplitudeColorMap = winter(numel(uniqueAmps));
     frequencyColorMap = spring(numel(uniqueFreqs));
+    
+    plottingOptions.singleLegendForAllSessions = true;
+    
 
     curr_linear_subplot_index = 1;
     % For each session in this cell ROI
@@ -30,6 +33,8 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
         % Gets the grid for this session of this cell ROI
         temp.currPeaksGrid = squeeze(finalOutPeaksGrid(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x6x6)
         temp.currDateString = dateStrings{i};
+        
+        temp.isLastSession = (i == temp.numSessions);
         
         curr_ax = subplot(2, temp.numSessions, curr_linear_subplot_index);
         colororder(curr_ax, amplitudeColorMap)
@@ -54,7 +59,15 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
        
         ylabel('Peak DF/F')
         xlabel('AM Rate (Hz)')
-        legend(uniqueAmpLabels);
+        if plottingOptions.singleLegendForAllSessions
+            if temp.isLastSession
+                temp.lgd = legend(uniqueAmpLabels);
+                %set(temp.lgd,'Position',[0.911361538401866 0.769166666666668 0.103837471783295 0.120833333333333]);
+            end          
+        else
+            % Add the regular legend to every subplot
+            legend(uniqueAmpLabels);
+        end
       
         title(temp.currDateString,'FontSize',14);
 
@@ -74,7 +87,16 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
         set(h_x_freq, 'Marker', '.', 'MarkerSize', 20);
         ylabel('Peak DF/F')
         xlabel('AM Depth (%)')
-        legend(uniqueFreqLabels);
+        
+        if plottingOptions.singleLegendForAllSessions
+            if temp.isLastSession
+                temp.lgd = legend(uniqueFreqLabels);
+                %set(temp.lgd,'Position',[0.911361538401866 0.769166666666668 0.103837471783295 0.120833333333333]);
+            end
+        else
+            % Add the regular legend to every subplot
+            legend(uniqueFreqLabels);
+        end
 
         curr_linear_subplot_index = curr_linear_subplot_index + 1;
     end
