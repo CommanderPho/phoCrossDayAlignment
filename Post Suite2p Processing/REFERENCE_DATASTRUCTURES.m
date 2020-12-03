@@ -91,7 +91,8 @@
         %- PreferredStimulus_LinearStimulusIndex - 
         %- PreferredStimulusAmplitude - 
         %- PreferredStimulusFreq - 
-
+		%- ChangeScores: the number of changes in preferred tuning between sessions
+		%- InterSessionConsistencyScores: the number of consistently tuned sessions
     %
 
     %%%+S- roiComputedProperties

@@ -9,7 +9,8 @@ classdef FinalDataExplorer
         %- PreferredStimulus_LinearStimulusIndex - 
         %- PreferredStimulusAmplitude - 
         %- PreferredStimulusFreq - 
-
+		%- ChangeScores: the number of changes in preferred tuning between sessions
+		%- InterSessionConsistencyScores: the number of consistently tuned sessions
     %
 
     %%%+S- roiComputedProperties
@@ -188,7 +189,41 @@ classdef FinalDataExplorer
 				%% cellROI Specific Score:
 				temp.currRoiTuningScore = obj.componentAggregatePropeties.tuningScore(temp.cellRoiIndex); % currently only uses first session? TODO: CHECK
 				temp.numSessions = length(temp.currAllSessionCompIndicies);
+
+				% Loop through the sessions once so we can compute obj.preferredStimulusInfo.ChangeScores and other useful properties that might be used in the second loop.
+				for j = 1:temp.numSessions
+					temp.currCompSessionIndex = temp.currAllSessionCompIndicies(j);
+					temp.currCompMaximallyPreferredStimulusInfo = obj.componentAggregatePropeties.maximallyPreferredStimulusInfo(temp.currCompSessionIndex);
+					temp.currMaximalIndexTuple = temp.currCompMaximallyPreferredStimulusInfo.AmpFreqIndexTuple; %Check this to make sure it's always (0, 0) when one of the tuple elements are zero.
+					temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
+					temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
+					
+					obj.preferredStimulusInfo.PreferredStimulus_LinearStimulusIndex(temp.cellRoiIndex,j) = temp.currCompMaximallyPreferredStimulusInfo.LinearIndex;
+					obj.preferredStimulusInfo.PreferredStimulus(temp.cellRoiIndex,j,:) =  temp.currMaximalIndexTuple;
+
+					% If we're not on the first session, see if the preferred values changed between the sessions.
+					if j > 1
+						didPreferredAmpIndexChange = (temp.prev.maxPrefAmpIndex ~= temp.maxPrefAmpIndex);
+						didPreferredFreqIndexChange = (temp.prev.maxPrefFreqIndex ~= temp.maxPrefFreqIndex);
+						obj.preferredStimulusInfo.DidPreferredStimulusChange(temp.cellRoiIndex,j-1) = didPreferredAmpIndexChange | didPreferredFreqIndexChange;
+					end
+					% Update the prev values:
+					temp.prev.maxPrefAmpIndex = temp.maxPrefAmpIndex;
+					temp.prev.maxPrefFreqIndex = temp.maxPrefFreqIndex;
+				end % end for numSessions
+
+				%% TODO: BUG: This currently only compares consecutive sessions for changes in tuning. If a cell has a tuning one day0, then it changes on day1, but returns to the day0 values on day2 it currently has a ChangeScore of 2, meaning a currRoiConsistencyScore of 1.
+				%	I would prefer that it would return currRoiConsistencyScore of 2 
+
+				% ChangeScores: the number of changes between sessions
+				temp.currRoiChangeScore = sum(obj.preferredStimulusInfo.DidPreferredStimulusChange(temp.cellRoiIndex,:)); % 0..<temp.numSessions
+				temp.currRoiConsistencyScore = temp.numSessions - temp.currRoiChangeScore; % Number of sessions the tuning was the same.
+				obj.preferredStimulusInfo.ChangeScores(temp.cellRoiIndex) = temp.currRoiChangeScore;
+				obj.preferredStimulusInfo.InterSessionConsistencyScores(temp.cellRoiIndex) = temp.currRoiConsistencyScore;
 				
+
+
+				% Loop back through the sessions for a second time to build the masks
 				for j = 1:temp.numSessions
 					% Returns the linearCompIndex
 					temp.currCompSessionIndex = temp.currAllSessionCompIndicies(j);
@@ -244,6 +279,8 @@ classdef FinalDataExplorer
 						% Set the opacity of cell in this cellROI region based on the number of days that the cell passed the threshold:
 						obj.amalgamationMasks.AlphaRoiTuningScoreMask(temp.currCompSessionMask) = (double(temp.currRoiTuningScore) / 3.0);
 						
+						obj.amalgamationMasks.AlphaRoiConsistencyScoreMask(temp.currRoiConsistencyScore, temp.currCompSessionMask) = 1.0;
+
 						if (should_enable_edge_layering_mode && edge_layering_is_outset_mode)
 							obj.amalgamationMasks.AlphaConjunctionMask(BW2_Outer) = 1.0;
 							obj.amalgamationMasks.AlphaConjunctionMask(BW3_Outer) = 1.0;
@@ -256,13 +293,9 @@ classdef FinalDataExplorer
 					end
 					
 					% TODO: Currently just use the preferred stimulus info from the first of the three sessions:
-					temp.currCompMaximallyPreferredStimulusInfo = obj.componentAggregatePropeties.maximallyPreferredStimulusInfo(temp.currCompSessionIndex);
-					temp.currMaximalIndexTuple = temp.currCompMaximallyPreferredStimulusInfo.AmpFreqIndexTuple; %Check this to make sure it's always (0, 0) when one of the tuple elements are zero.
+					temp.currMaximalIndexTuple = obj.preferredStimulusInfo.PreferredStimulus(temp.cellRoiIndex,j,:);
 					temp.maxPrefAmpIndex = temp.currMaximalIndexTuple(1);
 					temp.maxPrefFreqIndex = temp.currMaximalIndexTuple(2);
-					
-					obj.preferredStimulusInfo.PreferredStimulus_LinearStimulusIndex(temp.cellRoiIndex,j) = temp.currCompMaximallyPreferredStimulusInfo.LinearIndex;
-					obj.preferredStimulusInfo.PreferredStimulus(temp.cellRoiIndex,j,:) =  temp.currMaximalIndexTuple;
 					
 					if should_enable_edge_layering_mode
 						if j <= 1
@@ -284,8 +317,10 @@ classdef FinalDataExplorer
 								temp.currCompSessionCustomEdgeMask = logical(squeeze(obj.roiMasks.InsetEdge0(temp.cellRoiIndex,:,:)));
 							end
 						end
+
 						obj.amalgamationMasks.PreferredStimulusAmplitudes(j, temp.currCompSessionCustomEdgeMask) = double(temp.maxPrefAmpIndex);
 						obj.amalgamationMasks.PreferredStimulusFreqs(j, temp.currCompSessionCustomEdgeMask) = double(temp.maxPrefFreqIndex);
+						
 						if edge_layering_is_outset_mode
 							% Fill in the main fill with nothing
 							obj.amalgamationMasks.PreferredStimulusAmplitudes(j, temp.currCompSessionFill) = -1.0; % obj.amalgamationMasks.PreferredStimulusAmplitude: a numSessions x
@@ -296,16 +331,6 @@ classdef FinalDataExplorer
 						obj.amalgamationMasks.PreferredStimulusAmplitudes(j, temp.currCompSessionMask) = double(temp.maxPrefAmpIndex);
 						obj.amalgamationMasks.PreferredStimulusFreqs(j, temp.currCompSessionMask) = double(temp.maxPrefFreqIndex);
 					end
-					
-					% If we're not on the first session, see if the preferred values changed between the sessions.
-					if j > 1
-						didPreferredAmpIndexChange = (temp.prev.maxPrefAmpIndex ~= temp.maxPrefAmpIndex);
-						didPreferredFreqIndexChange = (temp.prev.maxPrefFreqIndex ~= temp.maxPrefFreqIndex);
-						obj.preferredStimulusInfo.DidPreferredStimulusChange(temp.cellRoiIndex,j-1) = didPreferredAmpIndexChange | didPreferredFreqIndexChange;
-					end
-					% Update the prev values:
-					temp.prev.maxPrefAmpIndex = temp.maxPrefAmpIndex;
-					temp.prev.maxPrefFreqIndex = temp.maxPrefFreqIndex;
 					
 				end % end for numSessions
 				
@@ -352,6 +377,8 @@ classdef FinalDataExplorer
             obj.amalgamationMasks.AlphaRoiTuningScoreMask = zeros(imageDimensions(1), imageDimensions(2));
             obj.amalgamationMasks.NumberOfTunedDays = zeros(imageDimensions(1), imageDimensions(2));
 
+			obj.amalgamationMasks.AlphaRoiConsistencyScoreMask = zeros(obj.numOfSessions, imageDimensions(1), imageDimensions(2));
+
             % an amalgamationMask that will store the preferred stimuli for all cell ROIs, to be represented as colors
             obj.amalgamationMasks.PreferredStimulusAmplitudes = ones(obj.numOfSessions, imageDimensions(1), imageDimensions(2)) * -1;
             obj.amalgamationMasks.PreferredStimulusFreqs = ones(obj.numOfSessions, imageDimensions(1), imageDimensions(2)) * -1;
@@ -362,6 +389,9 @@ classdef FinalDataExplorer
 
             % outputMaps.DidPreferredStimulusChange: keeps track of whether the preferredStimulus amplitude or frequency changed for a cellROI between sessions.
             obj.preferredStimulusInfo.DidPreferredStimulusChange = zeros(obj.num_cellROIs, (obj.numOfSessions-1));
+			obj.preferredStimulusInfo.ChangeScores = zeros(obj.num_cellROIs, 1);
+			obj.preferredStimulusInfo.InterSessionConsistencyScores = zeros(obj.num_cellROIs, 1);
+			
 
             obj.roiComputedProperties.areas = zeros(obj.num_cellROIs, 1);
             obj.roiComputedProperties.boundingBoxes = zeros(obj.num_cellROIs, 4);

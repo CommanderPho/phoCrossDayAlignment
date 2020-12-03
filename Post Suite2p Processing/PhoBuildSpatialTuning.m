@@ -93,8 +93,8 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_expl
     [dcm_numDaysCriteria] = fnAddCustomDataCursor(figH_numDaysCriteria);
 
     if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode
-        temp.currPreferredStimulusAmplitude = squeeze(sum(final_data_explorer_obj.amalgamationMasks.PreferredStimulusAmplitude, 1));
-        temp.currPreferredStimulusFrequency = squeeze(sum(final_data_explorer_obj.amalgamationMasks.PreferredStimulusFreq, 1));
+        temp.currPreferredStimulusAmplitude = squeeze(sum(final_data_explorer_obj.amalgamationMasks.PreferredStimulusAmplitudes, 1));
+        temp.currPreferredStimulusFrequency = squeeze(sum(final_data_explorer_obj.amalgamationMasks.PreferredStimulusFreqs, 1));
 
         %Preferred Stimulus Figure:
         [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(final_data_explorer_obj.amalgamationMasks, final_data_explorer_obj.roiComputedProperties, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
@@ -136,6 +136,11 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_expl
         amplitudeHandles.axes = ha(1:2:length(ha)); % odd indicies [1 3 5]
         freqHandles.axes = ha(2:2:length(ha)); % even indicies, [2 4 6]
         
+        if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityFilteredByInterSessionConsistencyCriteria
+            % This currently allows plotting those rois that were consistent across either all 3 or the first 2 of the session days:
+            temp.currConsistencyMask = squeeze(amalgamationMasks.AlphaRoiConsistencyScoreMask(3,:,:)) + squeeze(amalgamationMasks.AlphaRoiConsistencyScoreMask(2,:,:));     
+        end
+        
         for i = 1:num_sessions
             % Get the current amplitude and frequencies to plot
             if (input_size_num_dims == 3)
@@ -150,6 +155,8 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_expl
             amplitudeHandles.tempImH = imshow(temp.currPreferredStimulusAmplitude, amplitudeColorMap, 'Parent', amplitudeHandles.axes(i));
             if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
                 set(amplitudeHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
+            elseif phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityFilteredByInterSessionConsistencyCriteria
+                set(amplitudeHandles.tempImH, 'AlphaData', temp.currConsistencyMask);
             else
                 set(amplitudeHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaConjunctionMask);
             end
@@ -161,6 +168,8 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_expl
             freqHandles.tempImH = imshow(temp.currPreferredStimulusFrequency, frequencyColorMap, 'Parent', freqHandles.axes(i));
             if phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria
                 set(freqHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaRoiTuningScoreMask);
+            elseif phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityFilteredByInterSessionConsistencyCriteria
+                set(freqHandles.tempImH, 'AlphaData', temp.currConsistencyMask);
             else
                 set(freqHandles.tempImH, 'AlphaData', amalgamationMasks.AlphaConjunctionMask);
             end
