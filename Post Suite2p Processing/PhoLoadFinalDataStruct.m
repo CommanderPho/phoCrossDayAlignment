@@ -14,6 +14,7 @@
 %                   - imagingData: 520x150 double
 %                   - imagingDataNeuropil: 520x150 double
 %                   - segmentLabelMatrix: 512x512 double
+%                   - neuropilMaskLabelMatrix: 512x512 double
 %                   - imagingDataDFF: 520x150 double
 
 %% SPEC: sessionList

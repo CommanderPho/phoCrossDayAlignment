@@ -39,7 +39,7 @@ classdef FinalDataExplorer
         %% Outputs:
         finalOutComponentSegment
         compMasks % struct containing sessionRoiMask fields. sessionRoiMask: *one for each ROI in each session*: matricies the size of the original images (512x512 for example) that specify specific pixels related to the ROIs.
-        
+        compNeuropilMasks
         
         active_DFF
         traceXIndicies

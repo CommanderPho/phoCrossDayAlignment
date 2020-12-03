@@ -293,7 +293,7 @@ end %% endfor each cellROI
 final_data_explorer_obj = FinalDataExplorer(cellROIIndexMapper, stimuli_mapper);
 
 final_data_explorer_obj.compMasks = compMasks; % Set the compMasks, which contains the masks.
-final_data_explorer_obj.compMasks = compMasks; % Set the compMasks, which contains the masks.
+final_data_explorer_obj.compNeuropilMasks = compNeuropilMasks; % Set the compNeuropilMasks, which contains the masks.
 
 % the value for outputs.tbImg should be the same for all traces, all cells, and all sessions, so we can just use the last one:
 final_data_explorer_obj.traceXIndicies = outputs.tbImg;
