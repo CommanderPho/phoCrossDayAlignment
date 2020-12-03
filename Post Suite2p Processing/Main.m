@@ -19,14 +19,14 @@ phoPipelineOptions.ignoredCellROI_CompNames = [phoPipelineOptions.ignoredCellROI
 
 % find(backup.uniqueComps(strcmpi({backup.uniqueComps}, {'comp198','comp237','comp370'})))
 % find(strcmpi(backup.uniqueComps, 'comp370'))
-neuropil_mask_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/exported_neuropil.mat';
-should_load_neuropil_masks = false;
-
-if should_load_neuropil_masks
-   fprintf('Loading neuropil masks from %s...', neuropil_mask_path);
-   neuropil_masks = load(neuropil_mask_path).neuropil; 
-   fprintf('.done.\n')
-end
+% neuropil_mask_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/exported_neuropil.mat';
+% should_load_neuropil_masks = false;
+% 
+% if should_load_neuropil_masks
+%    fprintf('Loading neuropil masks from %s...', neuropil_mask_path);
+%    neuropil_masks = load(neuropil_mask_path).neuropil; 
+%    fprintf('.done.\n')
+% end
 % Need to map each component (like 'comp674') to the neuropil in the loaded mask.
 
 

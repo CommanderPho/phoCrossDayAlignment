@@ -26,6 +26,7 @@
 %                   - imagingData: 520x150 double
 %                   - imagingDataNeuropil: 520x150 double
 %                   - segmentLabelMatrix: 512x512 double
+%                   - neuropilMaskLabelMatrix: 512x512 double
 %                   - imagingDataDFF: 520x150 double
 
 %% SPEC: sessionList
@@ -42,6 +43,7 @@
 
  %%%+S- fnProcessCompFromFDS outputs
     %= referenceMask - the reference mask for this component
+    %= referenceMaskNeuropil - the reference mask for the neuropil mask for this component
     %= stimList - 
     %= uniqueStimuli - 
     %= tracesForEachStimulus - 

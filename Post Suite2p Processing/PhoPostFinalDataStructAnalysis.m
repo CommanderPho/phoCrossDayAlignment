@@ -174,6 +174,8 @@ num_cellROIs = cellROIIndexMapper.num_cellROIs;
 compMasks.Masks = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
 compMasks.Edge = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
 
+compNeuropilMasks.Masks = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
+
 default_DFF.cellROI_FirstDayTuningMaxPeak = zeros(cellROIIndexMapper.num_cellROIs, 1); % Just the first day
 default_DFF.cellROI_SatisfiesFirstDayTuning = zeros(cellROIIndexMapper.num_cellROIs, 1); % Just the first day
 
@@ -225,6 +227,8 @@ for i = 1:num_cellROIs
         uniqueFreqs = outputs.uniqueFreqs; %
         compMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMask;
         compMasks.Edge(curr_day_linear_comp_index,:,:) = edge(outputs.referenceMask); %sobel by default;
+
+        compNeuropilMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMaskNeuropil;
         
         if ~exist('stimuli_mapper','var')
             % Only allow initialization once, if it doesn't exist.

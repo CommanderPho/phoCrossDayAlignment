@@ -29,7 +29,7 @@ for b = 1:length(idxOfTrueCells)
     disp(strcat('now processing','_',thisComp)); %tell the end user you haven't forgotten about them
     
     %these are the pixel locations for the roi
-    xLabels=stat{1,idxOfTrueCells(b)}.xpix+1; %also lmao another python/matlab conversion error need to do +1
+    xLabels = stat{1,idxOfTrueCells(b)}.xpix+1; %also lmao another python/matlab conversion error need to do +1
     yLabels = stat{1,idxOfTrueCells(b)}.ypix+1;
     
     %initialize these and save some stuff so that you can use the
@@ -38,7 +38,7 @@ for b = 1:length(idxOfTrueCells)
     ephysData.componentData.(thisComp).componentStackBinarized = zeros(imSize);
     ephysData.componentData.(thisComp).segmentLabelMatrix = zeros(imSize);
     
-    ephysData.componentData.(thisComp).neuropilMaskLabelMatrix = squeeze(trueNeuropil_masks(b,:,:));
+    ephysData.componentData.(thisComp).neuropilMaskLabelMatrix = squeeze(trueNeuropil_masks(b,:,:)); % Make sure this works, see how segmentLabelMatrix is done differently?
     
     %there has got to be a better way to do this than a for loop. but
     %at the moment I am having trouble with this.

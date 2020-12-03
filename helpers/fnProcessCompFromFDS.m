@@ -14,6 +14,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     %%%+S- fnProcessCompFromFDS outputs
     %= imgDataNeuropil - the neuropil data for this component. 520 x 150 double
     %= referenceMask - the reference mask for this component
+    %= referenceMaskNeuropil - the reference mask for the neuropil mask for this component
     %= stimList - 
     %= uniqueStimuli - 26x2 double - contains each unique pair of stimuli, with first column being freq and second column being depth
     %= tracesForEachStimulus - 
@@ -46,7 +47,8 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     
     
     outputs.referenceMask = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).segmentLabelMatrix; % get the reference mask for this component
-    
+    outputs.referenceMaskNeuropil = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).neuropilMaskLabelMatrix; % get the reference mask for the neuropil mask of this component
+
     [numTrials, numFrames] = size(imgDataDFF);
     
     if processingOptions.smoothValue>0
