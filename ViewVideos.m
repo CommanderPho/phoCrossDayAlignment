@@ -35,7 +35,6 @@ for i = registered_imageInfo.first_index:registered_imageInfo.last_index
     curr_tifFileName = imds.registered_prev.Files{i};
     temp.currStartIndex = (framesPerTiff * i) + 1;
     temp.currEndIndex = (temp.currStartIndex + framesPerTiff)-1;
-%     [movieFrames(:,:,temp.currStartIndex:temp.currEndIndex), ~] = fnLoadTifToMovieFrames(curr_tifFileName);
     [currMovieFrames, ~] = fnLoadTifToMovieFrames(curr_tifFileName);
     if (i == registered_imageInfo.first_index)
         movieFrames = currMovieFrames;
