@@ -93,20 +93,20 @@ cellROIIndexMapper = CellROIIndexMapper(activeAnimalSessionList, activeAnimalCom
 % compTable = [compTable compIDColumn];
 
 
-if should_load_neuropil_masks
-    amalgamation_combined_neuropil_mask = zeros(512, 512);
-    %% The loaded neuropils seem to be some sort of normalized format. They sum to one, or close to it.
-    %% Loop through the compIDs
-    for i = 1:length(compIDsArray)
-        curr_compID = compIDsArray(i);
-        curr_neuropilMask = squeeze(neuropil_masks(curr_compID,:,:));
-
-        amalgamation_combined_neuropil_mask = amalgamation_combined_neuropil_mask + curr_neuropilMask;
-    end
-
-    figure
-    fnPhoMatrixPlot(amalgamation_combined_neuropil_mask)
-end
+% if should_load_neuropil_masks
+%     amalgamation_combined_neuropil_mask = zeros(512, 512);
+%     %% The loaded neuropils seem to be some sort of normalized format. They sum to one, or close to it.
+%     %% Loop through the compIDs
+%     for i = 1:length(compIDsArray)
+%         curr_compID = compIDsArray(i);
+%         curr_neuropilMask = squeeze(neuropil_masks(curr_compID,:,:));
+% 
+%         amalgamation_combined_neuropil_mask = amalgamation_combined_neuropil_mask + curr_neuropilMask;
+%     end
+% 
+%     figure
+%     fnPhoMatrixPlot(amalgamation_combined_neuropil_mask)
+% end
 
 % %% Filter Explicitly Excluded ROI components:
 % foundNewToBeExcludedComps = {};
