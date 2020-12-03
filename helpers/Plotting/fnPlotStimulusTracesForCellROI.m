@@ -1,5 +1,5 @@
-function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, uniqueFreqs, currAllSessionCompIndicies, cellRoiIndex, tbImg, uniqueStimuli, indexMap_StimulusLinear2AmpsFreqsArray, redTraceLinesForAllStimuli, extantFigH)
-%FNPLOTSTIMULUSTRACESFORCELLROI Summary of this function goes here
+function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, uniqueFreqs, currAllSessionCompIndicies, cellRoiIndex, tbImg, uniqueStimuli, redTraceLinesForAllStimuli, extantFigH)
+%FNPLOTSTIMULUSTRACESFORCELLROI plots the array of traces for each stimulus pair for each session for a single cellRoi
 %   Detailed explanation goes here
 
     % currAllSessionCompIndicies: all sessions for the current ROI

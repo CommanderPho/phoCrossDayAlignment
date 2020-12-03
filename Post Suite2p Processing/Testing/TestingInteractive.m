@@ -21,7 +21,7 @@ if exist('slider_controller','var')
 end
 % Build a new slider controller
 iscInfo.curr_i = temp.cellRoiIndex;
-iscInfo.NumberOfSeries = length(uniqueComps);
+iscInfo.NumberOfSeries = length(final_data_explorer_obj.uniqueComps);
 
 % Build or get the figures that will be controlled by the slider.
 if should_show_masking_plot

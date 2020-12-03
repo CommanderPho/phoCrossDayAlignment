@@ -46,56 +46,56 @@ end
 
 %% Perform main plot:
 % [cellRoisToPlot, sortedTuningScores] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, compMasks, componentAggregatePropeties, finalOutPeaksGrid, redTraceLinesForAllStimuli, phoPipelineOptions);
-[cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFiguresUsingObject(final_data_explorer_obj, phoPipelineOptions);
+% [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFiguresUsingObject(final_data_explorer_obj, phoPipelineOptions);
 
 fprintf('\t done.\n');
 
-function [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFiguresUsingObject(final_data_explorer_obj, phoPipelineOptions)
-    [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFigures(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, final_data_explorer_obj.compMasks, final_data_explorer_obj.componentAggregatePropeties, final_data_explorer_obj.finalOutPeaksGrid, final_data_explorer_obj.redTraceLinesForAllStimuli, phoPipelineOptions);
-end
-
-function [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, compMasks, componentAggregatePropeties, finalOutPeaksGrid, redTraceLinesForAllStimuli, phoPipelineOptions)
-
-%     %% Sort based on tuning score:
-    [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
-
-    numToCompare = phoPipelineOptions.PhoTuningMeshExplorer.numToCompare;
-    cellRoisToPlot = cellRoiSortIndex(1:numToCompare);
-    % cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
-
-    for i = 1:length(cellRoisToPlot)
-        %% Plot the grid as a test
-        temp.cellRoiIndex = cellRoisToPlot(i);
-        temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
-    %     temp.firstCompSessionIndex = temp.currAllSessionCompIndicies(1);
-    %     temp.firstCompSessionMask = squeeze(compMasks.Masks(temp.firstCompSessionIndex,:,:));
-
-        if phoPipelineOptions.shouldShowPlots
-            % Mask Plot:
-            [figH_Blobs, ~] = fnPlotCellROIBlobs(dateStrings, temp.currAllSessionCompIndicies, temp.cellRoiIndex, compMasks);
-
-            % Make 2D Plots (Exploring):    
-            [figH_2d, ~] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
-
-            % Make 3D Mesh Plot:
-            [figH, ~] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
-    %         zlim([-0.2, 1])
-
-            if phoPipelineOptions.shouldSaveFiguresToDisk
-
-                %% Export plots:
-                fig_name = sprintf('TuningCurves_cellRoi_%d.fig', temp.cellRoiIndex);
-                fig_2d_export_path = fullfile(phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path, fig_name);
-                savefig(figH_2d, fig_2d_export_path);
-                close(figH_2d);
-
-                fig_name = sprintf('TuningMesh_cellRoi_%d.fig', temp.cellRoiIndex);
-                fig_export_path = fullfile(phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path, fig_name);
-                savefig(figH, fig_export_path);
-                close(figH);
-            end
-
-        end
-    end %% end for cellRoisToPlot
-    
-end
+% function [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFiguresUsingObject(final_data_explorer_obj, phoPipelineOptions)
+%     [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFigures(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, final_data_explorer_obj.compMasks, final_data_explorer_obj.componentAggregatePropeties, final_data_explorer_obj.finalOutPeaksGrid, final_data_explorer_obj.redTraceLinesForAllStimuli, phoPipelineOptions);
+% end
+% 
+% function [cellRoisToPlot] = fnPlotPhoTuningMeshExplorerFigures(dateStrings, uniqueAmps, uniqueFreqs, multiSessionCellRoi_CompListIndicies, compMasks, componentAggregatePropeties, finalOutPeaksGrid, redTraceLinesForAllStimuli, phoPipelineOptions)
+% 
+% %     %% Sort based on tuning score:
+%     [sortedTuningScores, cellRoiSortIndex] = sort(componentAggregatePropeties.tuningScore, 'descend');
+% 
+%     numToCompare = phoPipelineOptions.PhoTuningMeshExplorer.numToCompare;
+%     cellRoisToPlot = cellRoiSortIndex(1:numToCompare);
+%     % cellRoisToPlot = cellRoiSortIndex(sortedTuningScores == 1);
+% 
+%     for i = 1:length(cellRoisToPlot)
+%         %% Plot the grid as a test
+%         temp.cellRoiIndex = cellRoisToPlot(i);
+%         temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
+%     %     temp.firstCompSessionIndex = temp.currAllSessionCompIndicies(1);
+%     %     temp.firstCompSessionMask = squeeze(compMasks.Masks(temp.firstCompSessionIndex,:,:));
+% 
+%         if phoPipelineOptions.shouldShowPlots
+%             % Mask Plot:
+%             [figH_Blobs, ~] = fnPlotCellROIBlobs(dateStrings, temp.currAllSessionCompIndicies, temp.cellRoiIndex, compMasks);
+% 
+%             % Make 2D Plots (Exploring):    
+%             [figH_2d, ~] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
+% 
+%             % Make 3D Mesh Plot:
+%             [figH, ~] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, finalOutPeaksGrid);
+%     %         zlim([-0.2, 1])
+% 
+%             if phoPipelineOptions.shouldSaveFiguresToDisk
+% 
+%                 %% Export plots:
+%                 fig_name = sprintf('TuningCurves_cellRoi_%d.fig', temp.cellRoiIndex);
+%                 fig_2d_export_path = fullfile(phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path, fig_name);
+%                 savefig(figH_2d, fig_2d_export_path);
+%                 close(figH_2d);
+% 
+%                 fig_name = sprintf('TuningMesh_cellRoi_%d.fig', temp.cellRoiIndex);
+%                 fig_export_path = fullfile(phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path, fig_name);
+%                 savefig(figH, fig_export_path);
+%                 close(figH);
+%             end
+% 
+%         end
+%     end %% end for cellRoisToPlot
+%     
+% end

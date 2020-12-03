@@ -1,6 +1,8 @@
 
 %%% 2D Plotting
 function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, currAllSessionCompIndicies, cellRoiIndex, finalOutPeaksGrid, extantFigH)
+	% fnPlotFlattenedPlotsFromPeaksGrid: plots the 2D Peak DF/F values for each stimulus pairs and each session for a single cellRoi
+
     % currAllSessionCompIndicies: all sessions for the current ROI
     %% Options:
     temp.numSessions = length(currAllSessionCompIndicies);
