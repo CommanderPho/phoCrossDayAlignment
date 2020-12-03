@@ -42,7 +42,7 @@ classdef FinalDataExplorer
         
         
         active_DFF
-        
+        traceXIndicies
         
         %% Processed Outputs: Computed by running obj.buildSpatialTuningInfo(...)
         amalgamationMasks  % struct containing amalgamationMask fields. amalgamationMask: *only one that includes all ROIs*: matiricies the size of the original images (512x512 for example) that include all pixels related to ANY ROI.

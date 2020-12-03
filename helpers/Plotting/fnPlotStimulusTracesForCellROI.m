@@ -1,4 +1,4 @@
-function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, uniqueFreqs, currAllSessionCompIndicies, cellRoiIndex, tbImg, uniqueStimuli, redTraceLinesForAllStimuli, extantFigH)
+function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, uniqueFreqs, uniqueStimuli, currAllSessionCompIndicies, cellRoiIndex, traceXIndicies, redTraceLinesForAllStimuli, extantFigH)
 %FNPLOTSTIMULUSTRACESFORCELLROI plots the array of traces for each stimulus pair for each session for a single cellRoi
 %   Detailed explanation goes here
 
@@ -52,9 +52,9 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
 %             axes(ha(numStimuli-b+1));
             
             subplot(numRows, numCol, numStimuli-b+1);
-%             plot(tbImg, imgDataToPlot,'color','black')
+%             plot(traceXIndicies, imgDataToPlot,'color','black')
 %             hold on
-            h_PlotObj = plot(tbImg, meanData);
+            h_PlotObj = plot(traceXIndicies, meanData);
             set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 2);
             title(strcat(num2str(uniqueStimuli(b,1)), {' '}, 'Hz', {' '}, 'at', {' '}, num2str(uniqueStimuli(b,2)*100), {' '}, '% Depth'))
             xlim([0, 5]);

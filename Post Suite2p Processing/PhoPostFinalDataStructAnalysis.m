@@ -282,11 +282,17 @@ for i = 1:num_cellROIs
 
 end %% endfor each cellROI
 
+
+
 % Initialize the output object once the loop is finished.
 % final_data_explorer_obj = FinalDataExplorer(uniqueComps, multiSessionCellRoi_CompListIndicies, dateStrings, stimuli_mapper);
 final_data_explorer_obj = FinalDataExplorer(cellROIIndexMapper, stimuli_mapper);
 
 final_data_explorer_obj.compMasks = compMasks; % Set the compMasks, which contains the masks.
+final_data_explorer_obj.compMasks = compMasks; % Set the compMasks, which contains the masks.
+
+% the value for outputs.tbImg should be the same for all traces, all cells, and all sessions, so we can just use the last one:
+final_data_explorer_obj.traceXIndicies = outputs.tbImg;
 
 default_DFF.cellROI_SatisfiesFirstDayTuning = (default_DFF.cellROI_FirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
