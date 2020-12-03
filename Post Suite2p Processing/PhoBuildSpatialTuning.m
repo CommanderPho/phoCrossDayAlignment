@@ -84,9 +84,6 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_expl
     amplitudeColorMap(1,:) = [0, 0, 0];
     frequencyColorMap(1,:) = [0, 0, 0];
 
-    
-    
-
     % Number of Days Meeting Criteria Figure:
     figH_numDaysCriteria = fnPlotNumberOfDaysCriteriaFigure(final_data_explorer_obj.amalgamationMasks, final_data_explorer_obj.componentAggregatePropeties);
     % Custom Tooltips:
@@ -108,6 +105,7 @@ function [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_expl
         %Preferred Stimulus Figure:
         [figH_roiTuningPreferredStimulus, amplitudeHandles, freqHandles] = fnPlotROITuningPreferredStimulusFigure(final_data_explorer_obj.amalgamationMasks, final_data_explorer_obj.roiComputedProperties, temp.currPreferredStimulusAmplitude, temp.currPreferredStimulusFrequency);
 
+        
     end
 
     %% Custom Tooltips:
@@ -313,6 +311,17 @@ function txt = displayCoordinates(figH, info, final_data_explorer_obj, activeSli
     if exist('activeSliderController','var')
         fprintf('updating activeSliderController programmatically to value %d...\n', uniqueCompIndex);
         activeSliderController.controller.Slider.Value = uniqueCompIndex;
+    else
+        % Otherwise try to locate the slider using findobj and the tag
+        slider_controller_figureH_Potential = findobj('Type', 'Figure', 'Name', 'Slider Controller');
+        if ~isempty(slider_controller_figureH_Potential)
+            slider_controller_sliderH_Potential = findobj(slider_controller_figureH_Potential, 'Tag','iscPhoInteractiveSliderController_Slider');
+            if ~isempty(slider_controller_sliderH_Potential)
+                fprintf('updating activeSliderController programmatically to value %d...\n', uniqueCompIndex);
+                slider_controller_sliderH_Potential.Value = uniqueCompIndex;
+            end
+        end
+
     end
 end
     
