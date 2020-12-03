@@ -90,22 +90,32 @@ classdef CellRoiPlotManager < PlotManager
 		function obj = updateGraphicalAppearance(obj, uniqueCompIndex)
             %updateGraphicalSelection: updates a single cellROI 
 			curr_cellROI_IsSelected = obj.interaction_helper_obj.isCellRoiSelected(uniqueCompIndex);
-			% Get the fill handle
-			curr_sel_fill_im_h = obj.GraphicalSelection.imagePlotHandles(uniqueCompIndex, 1);
-	%         updated_alpha_data = interaction_helper_obj.final_data_explorer_obj.getFillRoiMask(uniqueCompIndex);
-			curr_is_visible = true;
-			if curr_cellROI_IsSelected
-	%             updated_alpha_data = updated_alpha_data .* 0.9;
-				updated_color_data = obj.Colors.orange3DArray;
-				if obj.interaction_helper_obj.selectionOptions.shouldHideSelectedRois
-					curr_is_visible = false;
-				end
-			else
-	%             updated_alpha_data = updated_alpha_data .* 0.5;
-				updated_color_data = obj.Colors.lightgrey3DArray;
+
+			curr_imagePlot_handles = obj.GraphicalSelection.imagePlotHandles(uniqueCompIndex, :);
+			for plotImageIndex = 1:length(curr_imagePlot_handles)
+				curr_cellROI_appearance = obj.getGraphicalAppearance(uniqueCompIndex, plotImageIndex);
+				curr_im_h = curr_imagePlot_handles(plotImageIndex);
+			
+	%         set(curr_sel_fill_im_h,'CData', updated_color_data, 'AlphaData', curr_cellROI_appearance.AlphaData);
+				set(curr_im_h,'CData', curr_cellROI_appearance.CData, 'Visible', curr_cellROI_appearance.is_visible);
 			end
-	%         set(curr_sel_fill_im_h,'CData', updated_color_data, 'AlphaData', updated_alpha_data);
-			set(curr_sel_fill_im_h,'CData', updated_color_data, 'Visible', curr_is_visible);
+
+	% 		% Get the fill handle
+	% 		curr_sel_fill_im_h = obj.GraphicalSelection.imagePlotHandles(uniqueCompIndex, 1);
+	% %         updated_alpha_data = interaction_helper_obj.final_data_explorer_obj.getFillRoiMask(uniqueCompIndex);
+	% 		curr_is_visible = true;
+	% 		if curr_cellROI_IsSelected
+	% %             updated_alpha_data = updated_alpha_data .* 0.9;
+	% 			updated_color_data = obj.Colors.orange3DArray;
+	% 			if obj.interaction_helper_obj.selectionOptions.shouldHideSelectedRois
+	% 				curr_is_visible = false;
+	% 			end
+	% 		else
+	% %             updated_alpha_data = updated_alpha_data .* 0.5;
+	% 			updated_color_data = obj.Colors.lightgrey3DArray;
+	% 		end
+	% %         set(curr_sel_fill_im_h,'CData', updated_color_data, 'AlphaData', updated_alpha_data);
+	% 		set(curr_sel_fill_im_h,'CData', updated_color_data, 'Visible', curr_is_visible);
         end
 
 		function obj = updateGraphicalAppearances(obj)
@@ -118,7 +128,48 @@ classdef CellRoiPlotManager < PlotManager
 			drawnow;
         end
 
+		%% Update Selections graphically:
+		function [graphicalAppearance] = getGraphicalAppearance(obj, uniqueCompIndex, plotImageIndex)
+            %updateGraphicalSelection: updates a single cellROI 
+			% returns:
+			% graphicalAppearance
+			%	is_visible
+			% 	CData: optional
+			%	AlphaData: optional
+			edgeOffsetIndex = obj.activeOffsetInsetIndicies(plotImageIndex);
+			is_fill_layer = isnan(edgeOffsetIndex);
 
+			curr_cellROI_IsSelected = obj.interaction_helper_obj.isCellRoiSelected(uniqueCompIndex);
+	        % updated_alpha_data = obj.interaction_helper_obj.final_data_explorer_obj.getFillRoiMask(uniqueCompIndex);
+
+			graphicalAppearance.is_visible = true;
+			
+			if is_fill_layer
+				% If it's a fill layer:
+				if curr_cellROI_IsSelected
+		%             updated_alpha_data = updated_alpha_data .* 0.9;
+					updated_color_data = obj.Colors.orange3DArray;
+					if obj.interaction_helper_obj.selectionOptions.shouldHideSelectedRois
+						graphicalAppearance.is_visible = false;
+					end
+				else
+		%             updated_alpha_data = updated_alpha_data .* 0.5;
+					updated_color_data = obj.Colors.lightgrey3DArray;
+				end
+			else
+				% If it's an edge, use its edge color
+				updated_color_data = obj.acitveColorsArray{plotImageIndex};
+				if curr_cellROI_IsSelected
+					if obj.interaction_helper_obj.selectionOptions.shouldHideSelectedRois
+						graphicalAppearance.is_visible = false;
+					end
+				end
+				
+			end
+
+			graphicalAppearance.CData = updated_color_data;
+			% graphicalAppearance.AlphaData = updated_alpha_data;
+        end
 
 		% Primary Plot Function
 		function [obj] = plotTestCellROIBlob(obj)
