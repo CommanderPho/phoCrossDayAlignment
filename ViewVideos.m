@@ -22,6 +22,7 @@ svpConfig.DataPlot.x = 1:imgStackSize.numberOfFrames;
 
 
 function [imds, registered_imageInfo] = fnLoadTifFolderToMovieFrames(registeredTifFolder)
+    %  fnLoadTifFolderToMovieFrames: loads an entire tifFolder
     % Set the datasources
     imds.registered_prev.ReadFcn = @fnCustomTifStackReader;
     
@@ -39,10 +40,6 @@ function [imds, registered_imageInfo] = fnLoadTifFolderToMovieFrames(registeredT
     registered_imageInfo.fileName = imds.registered_prev.Files{registered_imageInfo.first_index}; % Get the last index of the previous one
 
     [registered_imageInfo.currLoadedImgStack, registered_imageInfo.imgStackSize] = fnLoadTifToMovieFrames(registered_imageInfo.fileName);
-    %     registered_imageInfo.currLoadedData = bfOpen3DVolume(registered_imageInfo.fileName);
-%     registered_imageInfo.currLoadedImgStack = registered_imageInfo.currLoadedData{1,1}{1,1}; % Produces the desired 512x512x2000 (2000 frames per .tif) output
-%     registered_imageInfo.imgStackSize.numberOfFrames = size(registered_imageInfo.currLoadedImgStack,3);
-
 end
 
 
