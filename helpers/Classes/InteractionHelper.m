@@ -103,12 +103,17 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
             %% Add a Custom Toolbar to allow marking selections
             obj.GraphicalSelection.selectionCustomToolbar = uitoolbar(obj.GraphicalSelection.activeFigure,'Tag','uimgr.uitoolbar_PhoCustom_Selection');
 
+			%% Load User Annotations File
+            btn_LoadUserAnnotations = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_LoadUserAnnotations');
+            btn_LoadUserAnnotations.CData = iconRead('file_open.png');
+            btn_LoadUserAnnotations.Tooltip = 'Load current user annotations out to the pre-specified .MAT file';
+            btn_LoadUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_LoadUserSelections_callback(src, event));
+
             %% Save User Annotations File
             btn_SaveUserAnnotations = uipushtool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_SaveUserAnnotations');
-            btn_SaveUserAnnotations.CData = uint8(iconRead('file_save.png'));
+            btn_SaveUserAnnotations.CData = iconRead('file_save.png');
             btn_SaveUserAnnotations.Tooltip = 'Save current user annotations out to the pre-specified .MAT file';
-%             btn_SaveUserAnnotations.ClickedCallback = @selection_toolbar_btn_SaveUserAnnotations_callback;
-            btn_SaveUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_SaveUserAnnotations_callback(src, event));
+            btn_SaveUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_SaveUserSelections_callback(src, event));
 
         end
         
@@ -118,8 +123,15 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
     
     %% Graphical Callback Methods:
     methods
+	        % SaveUserAnnotations
+        function selection_toolbar_btn_LoadUserSelections_callback(obj, src, event)
+            fprintf('Loading from file %s...', obj.BackingFile.fullPath)
+            obj.loadFromExistingBackingFile(); % will this work?
+            fprintf('Done.\n')
+        end
+
         % SaveUserAnnotations
-        function selection_toolbar_btn_SaveUserAnnotations_callback(obj, src, event)
+        function selection_toolbar_btn_SaveUserSelections_callback(obj, src, event)
             fprintf('Saving out to file %s...', obj.BackingFile.fullPath)
             obj.saveToBackingFile();
             fprintf('Done.\n')
@@ -152,9 +164,8 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 		end
 		
 		function createBackingFile(obj)
-			fprintf('Creating new backing file at %s ...', obj.BackingFile.fullPath)
-            isCellRoiSelected = obj.isCellRoiSelected;
-			save(obj.BackingFile.fullPath,'isCellRoiSelected','-v7.3');
+			fprintf('Creating new backing file at %s ...\n', obj.BackingFile.fullPath)
+            obj.saveToBackingFile();
 			fprintf('done.\n')
 		end
 
@@ -163,7 +174,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 			L = load(obj.BackingFile.fullPath, 'isCellRoiSelected');
 			% obj.isCellRoiSelected = L.isCellRoiSelected;
 			% Use "deal" to distribute them to the variables.
-			[obj.isCellRoiSelected, curr_bbvaCurrFrameSegment] = deal(L.isCellRoiSelected, L.bbvaCurrFrameSegment);
+			[obj.isCellRoiSelected, obj.AnnotatingUser] = deal(L.isCellRoiSelected, L.AnnotatingUser);
 
 			fprintf('done.\n')
 	  	end
@@ -171,6 +182,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 
 		function saveToBackingFile(obj)
 			fprintf('Saving changes to backing file at %s...', obj.BackingFile.fullPath)
+			save_struct.AnnotatingUser = obj.AnnotatingUser;
             save_struct.isCellRoiSelected = obj.isCellRoiSelected;
 			save_struct.selected_cellROI_uniqueCompListIndicies = obj.selected_cellROI_uniqueCompListIndicies;
 			save_struct.selected_cellROI_roiNames = obj.selected_cellROI_roiNames;

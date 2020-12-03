@@ -141,8 +141,10 @@ classdef CellROIIndexMapper
             % returns the roiName for the single linear uniqueCompListIndex provided.
             if length(uniqueCompListIndex) > 1
                 roiName = obj.uniqueComps(uniqueCompListIndex); % return the soft-bracket cell array
-            else
+            elseif length(uniqueCompListIndex) == 1
                 roiName = obj.uniqueComps{uniqueCompListIndex}; % return the char string (as opposed to a single-element cell array containing the char string)
+            else
+                roiName = {}; % Return an empty cell array if the length is less than 1.
             end
            
         end
