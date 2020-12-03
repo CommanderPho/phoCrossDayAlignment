@@ -89,6 +89,8 @@ curr_output_fAll.stat = fAll.stat;
 % curr_output_fAll.ops = fAll.ops; % Currently don't include the ops, because they are for the combined file
 curr_output_fAll.iscell = fAll.iscell;
 curr_output_fAll.redcell = fAll.redcell;
+
+curr_output_fAll.neuropil_masks = fAll.neuropil_masks;
     
 for i = 1:folders_count
     curr_folder = fAll.ops.data_path(i,:);
