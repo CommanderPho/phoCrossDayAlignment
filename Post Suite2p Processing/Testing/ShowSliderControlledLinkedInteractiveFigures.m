@@ -65,29 +65,14 @@ figureLayoutManager.horizontalSpacing = 5;
 align_figure(linkedFigureHandles, 1, figureLayoutManager.figuresSize.width, figureLayoutManager.figuresSize.height,...
     100, figureLayoutManager.verticalSpacing, figureLayoutManager.horizontalSpacing, 100);
 
-relative_figure_info.handle = linkedFigureHandles(end);
-relative_figure_info.relative_figure_postion = get(relative_figure_info.handle, 'Position');
+%% Note this FigureLayoutManager is overkill
+fig_layout_manager_obj = FigureLayoutManager(linkedFigureHandles);
+relative_figHandleIndex = length(linkedFigureHandles);
+target_figureHandleRef = slider_controller.controller.figH;
 
-
-relative_figure_info.width = relative_figure_info.relative_figure_postion(3);
-relative_figure_info.height = relative_figure_info.relative_figure_postion(4);
-
-target_figure_info.handle = slider_controller.controller.figH;
-target_figure_info.original_postion = get(target_figure_info.handle, 'Position');
-target_figure_info.width = target_figure_info.original_postion(3);
-target_figure_info.height = target_figure_info.original_postion(4);
-
-target_figure_info.desired_postion = target_figure_info.original_postion;
-% Bind Same width:
-target_figure_info.desired_postion(3) = relative_figure_info.width;
-% Bind Same Left Edge alignment:
-target_figure_info.desired_postion(1) = relative_figure_info.relative_figure_postion(1);
-% Bind top target edge to bottom reference edge:
-% target_figure_info.desired_postion(2) = relative_figure_info.relative_figure_postion(2) + relative_figure_info.height;
-target_figure_info.desired_postion(2) = relative_figure_info.relative_figure_postion(2) - (figureLayoutManager.verticalSpacing + target_figure_info.height);
-
-set(target_figure_info.handle, 'Position', target_figure_info.desired_postion);
-
+fig_layout_manager_obj.bindSameWidth(relative_figHandleIndex, target_figureHandleRef)
+fig_layout_manager_obj.bindAlignedEdgeLeft(relative_figHandleIndex, target_figureHandleRef)
+fig_layout_manager_obj.bindAlignedTopTargetEdgeToBottomReferenceEdge(relative_figHandleIndex, target_figureHandleRef, figureLayoutManager.verticalSpacing)
 
 
 
