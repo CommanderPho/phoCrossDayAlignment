@@ -108,8 +108,9 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
 %                 fprintf('maxPoints: %s [%s, %s], %s\n', num2str(linearIndexesOfMaxes), num2str(rowsOfMaxes), num2str(colsOfMaxes), num2str(maxValue))
 %                 fprintf('\t xx,yy: [%s, %s]\n', num2str(xx(rowsOfMaxes)), num2str(yy(colsOfMaxes)))
 %                 fprintf('\t values: [%s, %s]\n', num2str(uniqueAmps(rowsOfMaxes)), num2str(uniqueFreqs(colsOfMaxes)))
-                axH = scatter3(xx(rowsOfMaxes, colsOfMaxes), yy(rowsOfMaxes, colsOfMaxes), maxValue, 60); % Draws a single point
-                set(axH,'MarkerEdgeColor',maxPointMarkerColor,'MarkerFaceColor',maxPointMarkerColor,'Marker','square');
+                axH_maximumPoints = scatter3(xx(rowsOfMaxes, colsOfMaxes), yy(rowsOfMaxes, colsOfMaxes), maxValue, 60); % Draws a single point
+                set(axH_maximumPoints,'MarkerEdgeColor',maxPointMarkerColor,'MarkerFaceColor',maxPointMarkerColor,'Marker','square');
+				axH_maximumPoints.Annotation.LegendInformation.IconDisplayStyle = 'off'; % Hide maximums from the legend
                 hold on;
             end
             
@@ -128,6 +129,8 @@ function [figH, axH] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFr
                         line_j = jj;
                         lineObj = line([xx(line_i,line_j) xx(line_i,line_j)], [yy(line_i,line_j) yy(line_i,line_j)], [temp.prevPeaksGrid(line_i,line_j) temp.currPeaksGrid(line_i,line_j)]);
                         set(lineObj, 'Color',meshDifferencesLineColor,'LineWidth', meshDifferencesLineWidth,'LineStyle',meshDifferencesLineStyle);
+						lineObj.Annotation.LegendInformation.IconDisplayStyle = 'off'; % Hide differences lines from the legend
+
                     end
                 end
             end
