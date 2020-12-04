@@ -167,6 +167,17 @@ classdef CellROIIndexMapper
             compListIndicies = getCompListIndicies(obj, uniqueCompListIndex);
         end
         
-    end
+    end % end methods block
+
+    methods (Static)
+      function [activeAnimalDataStruct, activeAnimalSessionList, activeAnimalCompList] = filterByAnimal(finalDataStruct, sessionList, compList, curr_animal)
+			%% Filter down to entries for the current animal:
+			activeAnimalDataStruct = finalDataStruct.(curr_animal); % get the final data struct for the current animal
+			activeAnimalSessionList = sessionList(strcmpi({sessionList.anmID}, curr_animal));
+			activeAnimalCompList = compList(strcmpi({compList.anmID}, curr_animal));
+	  end
+	
+	end % end methods static
+
 end
 
