@@ -10,6 +10,9 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
     
     plotting_options.should_plot_vertical_sound_start_stop_lines = true; % plotting_options.should_plot_vertical_sound_start_stop_lines: if true, vertical start/stop lines are drawn to show when the sound started and stopped.
     
+    plotting_options.should_normalize_to_local_peak = true;
+    
+    
     if ~exist('processingOptions','var')
         processingOptions.startSound = 31;
         processingOptions.endSound = 90;
@@ -29,6 +32,14 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
         session_traces_opacity = 0.42;
         session_traces_colors = {[0.6350 0.0780 0.1840, session_traces_opacity],[0.4660 0.6740 0.1880, session_traces_opacity],[0 0.4470 0.7410, session_traces_opacity]}; % way too dark
     end
+    
+    %% Get Information about the ranges to be plotted:
+    
+    redTraceLinesExtrema.local_max_peaks = max(redTraceLinesForAllStimuli, [], [2 3]);
+    redTraceLinesExtrema.local_min_extrema = min(redTraceLinesForAllStimuli, [], [2 3]);
+    
+    tracesForAllStimuliExtrema.local_max_peaks = max(tracesForAllStimuli.imgDataToPlot, [], [2 3 4]);
+    tracesForAllStimuliExtrema.local_min_extrema = min(tracesForAllStimuli.imgDataToPlot, [], [2 3 4]);
     
     
     if ~exist('extantFigH','var')
@@ -51,8 +62,20 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
         % Gets the grid for this session of this cell ROI
         temp.currRedTraceLinesForAllStimuli = squeeze(redTraceLinesForAllStimuli(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x26x150)
         
+        if plotting_options.should_normalize_to_local_peak
+           temp.local_max_peak = max(temp.currRedTraceLinesForAllStimuli, [], 'all');
+           temp.local_min_extrema = min(temp.currRedTraceLinesForAllStimuli, [], 'all');
+           temp.currRedTraceLinesForAllStimuli = temp.currRedTraceLinesForAllStimuli ./ temp.local_max_peak;
+        end
+        
+        
         if plotting_options.should_plot_all_traces
             temp.currTrialTraceLinesForAllStimuli = squeeze(tracesForAllStimuli.imgDataToPlot(temp.compIndex,:,:,:));
+            if plotting_options.should_normalize_to_local_peak
+               temp.local_max_peak_trial_traces = max(temp.currTrialTraceLinesForAllStimuli, [], 'all');
+               temp.local_min_extrema_trial_traces = min(temp.currTrialTraceLinesForAllStimuli, [], 'all');
+               temp.currTrialTraceLinesForAllStimuli = temp.currTrialTraceLinesForAllStimuli ./ temp.local_max_peak_trial_traces;
+            end
         end
         
         temp.currDateString = dateStrings{i};
@@ -98,6 +121,10 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
             title(strcat(num2str(uniqueStimuli(b,1)), {' '}, 'Hz', {' '}, 'at', {' '}, num2str(uniqueStimuli(b,2)*100), {' '}, '% Depth'))
             xlim([0, 5]);
             hold on;
+            
+            if plotting_options.should_normalize_to_local_peak
+               ylim([-1, 1]);
+            end
             
         end % end for numStimuli
         
