@@ -6,6 +6,18 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
     %% Options:
     temp.numSessions = length(currAllSessionCompIndicies);
     
+    plotting_options.should_plot_all_traces = true; % plotting_options.should_plot_all_traces: if true, line traces for all trials are plotted in addition the mean line
+    
+    session_colors = {'r','g','b'};
+%     session_colors = {[0.6350 0.0780 0.1840, 1.0],[0.4660 0.6740 0.1880, 1.0],[0 0.4470 0.7410, 1.0]};
+
+    if plotting_options.should_plot_all_traces
+    %     traces_base_color = [0.2, 0.2, 0.2, 0.4];
+        session_traces_opacity = 0.42;
+        session_traces_colors = {[0.6350 0.0780 0.1840, session_traces_opacity],[0.4660 0.6740 0.1880, session_traces_opacity],[0 0.4470 0.7410, session_traces_opacity]}; % way too dark
+    end
+    
+    
     if ~exist('extantFigH','var')
         figH = createFigureWithNameIfNeeded(['CellROI StimulusTraces Figure: cellROI ' num2str(cellRoiIndex)]); % generate a new figure to plot the sessions.
     else
@@ -19,11 +31,6 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
     numRows = numel(nonzeros(uniqueFreqs))+1; %+1 because you have the zero mod condition too
     numCol = numel(nonzeros(uniqueAmps));
 
-%     ha = tight_subplot(numRows, numCol);
-    
-    curr_linear_subplot_index = 1;
-    session_colors = {'r','g','b'};
-    
     % For each session in this cell ROI
     for i = 1:temp.numSessions
         % Get the index for this session of this cell ROI
@@ -31,23 +38,30 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
         % Gets the grid for this session of this cell ROI
         temp.currRedTraceLinesForAllStimuli = squeeze(redTraceLinesForAllStimuli(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x26x150)
         
-        temp.currTrialTraceLinesForAllStimuli = squeeze(tracesForAllStimuli.imgDataToPlot(temp.compIndex,:,:,:));
-
+        if plotting_options.should_plot_all_traces
+            temp.currTrialTraceLinesForAllStimuli = squeeze(tracesForAllStimuli.imgDataToPlot(temp.compIndex,:,:,:));
+        end
+        
         temp.currDateString = dateStrings{i};
         
         numStimuli = size(temp.currRedTraceLinesForAllStimuli,1);
         
         for b = 1:numStimuli
-
-            currAllTraces = squeeze(temp.currTrialTraceLinesForAllStimuli(b,:,:));
+            if plotting_options.should_plot_all_traces
+                currAllTraces = squeeze(temp.currTrialTraceLinesForAllStimuli(b,:,:));
+            end
             
             meanData = squeeze(temp.currRedTraceLinesForAllStimuli(b,:));
 %             axes(ha(numStimuli-b+1));
             
             subplot(numRows, numCol, numStimuli-b+1);
-            % plot the traces:
-            h_PlotObj_allTraces = plot(traceTimebase_t, currAllTraces,'color','black');
-            hold on;
+            % plot the traces for all trials:
+            if plotting_options.should_plot_all_traces
+                curr_session_traces_color = session_traces_colors{i};
+                h_PlotObj_allTraces = plot(traceTimebase_t, currAllTraces, 'color', curr_session_traces_color);
+                hold on;
+            end
+            
             % plot the average (red) line:
             h_PlotObj = plot(traceTimebase_t, meanData);
             set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 2);
@@ -55,8 +69,7 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
             xlim([0, 5]);
             hold on;
             
-        end
-        
+        end % end for numStimuli
         
     end %% end for session
     
