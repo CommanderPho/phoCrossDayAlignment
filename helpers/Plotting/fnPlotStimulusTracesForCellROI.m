@@ -10,8 +10,7 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
     
     plotting_options.should_plot_vertical_sound_start_stop_lines = true; % plotting_options.should_plot_vertical_sound_start_stop_lines: if true, vertical start/stop lines are drawn to show when the sound started and stopped.
     
-    plotting_options.should_normalize_to_local_peak = true;
-    
+    plotting_options.should_normalize_to_local_peak = true; % plotting_options.should_normalize_to_local_peak: if true, the y-values are normalized across all stimuli and sessions for a cellRoi to the maximal peak value.
     
     if ~exist('processingOptions','var')
         processingOptions.startSound = 31;
@@ -34,13 +33,17 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
     end
     
     %% Get Information about the ranges to be plotted:
-    
-    redTraceLinesExtrema.local_max_peaks = max(redTraceLinesForAllStimuli, [], [2 3]);
-    redTraceLinesExtrema.local_min_extrema = min(redTraceLinesForAllStimuli, [], [2 3]);
-    
-    tracesForAllStimuliExtrema.local_max_peaks = max(tracesForAllStimuli.imgDataToPlot, [], [2 3 4]);
-    tracesForAllStimuliExtrema.local_min_extrema = min(tracesForAllStimuli.imgDataToPlot, [], [2 3 4]);
-    
+    % TODO: May want to factor these out for both computational efficiency and to be able to access them elsewhere.
+ 
+    if plotting_options.should_normalize_to_local_peak
+       redTraceLinesExtrema.local_max_peaks = max(redTraceLinesForAllStimuli, [], [2 3]);
+       redTraceLinesExtrema.local_min_extrema = min(redTraceLinesForAllStimuli, [], [2 3]);
+     
+        if plotting_options.should_plot_all_traces
+            tracesForAllStimuliExtrema.local_max_peaks = max(tracesForAllStimuli.imgDataToPlot, [], [2 3 4]);
+            tracesForAllStimuliExtrema.local_min_extrema = min(tracesForAllStimuli.imgDataToPlot, [], [2 3 4]);
+        end    
+    end
     
     if ~exist('extantFigH','var')
         figH = createFigureWithNameIfNeeded(['CellROI StimulusTraces Figure: cellROI ' num2str(cellRoiIndex)]); % generate a new figure to plot the sessions.
@@ -63,18 +66,18 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
         temp.currRedTraceLinesForAllStimuli = squeeze(redTraceLinesForAllStimuli(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x26x150)
         
         if plotting_options.should_normalize_to_local_peak
-           temp.local_max_peak = max(temp.currRedTraceLinesForAllStimuli, [], 'all');
-           temp.local_min_extrema = min(temp.currRedTraceLinesForAllStimuli, [], 'all');
-           temp.currRedTraceLinesForAllStimuli = temp.currRedTraceLinesForAllStimuli ./ temp.local_max_peak;
+%            temp.local_max_peak = max(temp.currRedTraceLinesForAllStimuli, [], 'all');
+%            temp.local_min_extrema = min(temp.currRedTraceLinesForAllStimuli, [], 'all');
+           temp.currRedTraceLinesForAllStimuli = temp.currRedTraceLinesForAllStimuli ./ redTraceLinesExtrema.local_max_peaks(temp.compIndex);
         end
         
         
         if plotting_options.should_plot_all_traces
             temp.currTrialTraceLinesForAllStimuli = squeeze(tracesForAllStimuli.imgDataToPlot(temp.compIndex,:,:,:));
             if plotting_options.should_normalize_to_local_peak
-               temp.local_max_peak_trial_traces = max(temp.currTrialTraceLinesForAllStimuli, [], 'all');
-               temp.local_min_extrema_trial_traces = min(temp.currTrialTraceLinesForAllStimuli, [], 'all');
-               temp.currTrialTraceLinesForAllStimuli = temp.currTrialTraceLinesForAllStimuli ./ temp.local_max_peak_trial_traces;
+%                temp.local_max_peak_trial_traces = max(temp.currTrialTraceLinesForAllStimuli, [], 'all');
+%                temp.local_min_extrema_trial_traces = min(temp.currTrialTraceLinesForAllStimuli, [], 'all');
+               temp.currTrialTraceLinesForAllStimuli = temp.currTrialTraceLinesForAllStimuli ./ tracesForAllStimuliExtrema.local_max_peaks(temp.compIndex);
             end
         end
         
@@ -94,14 +97,18 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
             
             if plotting_options.should_plot_vertical_sound_start_stop_lines
                 % Plot the stimulus indicator lines:
+                if plotting_options.should_normalize_to_local_peak
+                    y = [-0.5 1.0];
+                else
+                    y = [-0.1 0.1]; % the same y-values are used for both lines (as they are the same height)
+                end
+            
                 x = [processingOptions.startSoundSeconds processingOptions.startSoundSeconds];
-                y = [-0.1 0.1];
                 line(x, y,'Color','black','LineStyle','-')
                 hold on;
 
                 % end sound line:
                 x = [processingOptions.endSoundSeconds processingOptions.endSoundSeconds];
-                y = [-0.1 0.1];
                 line(x, y,'Color','black','LineStyle','-')
                 hold on;
 
@@ -120,10 +127,12 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
             set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 2);
             title(strcat(num2str(uniqueStimuli(b,1)), {' '}, 'Hz', {' '}, 'at', {' '}, num2str(uniqueStimuli(b,2)*100), {' '}, '% Depth'))
             xlim([0, 5]);
+            xticks([]);
+            yticks([]);
             hold on;
             
             if plotting_options.should_normalize_to_local_peak
-               ylim([-1, 1]);
+               ylim([-0.5, 1]);
             end
             
         end % end for numStimuli
