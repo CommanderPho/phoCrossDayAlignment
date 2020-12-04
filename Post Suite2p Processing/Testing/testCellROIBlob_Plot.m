@@ -19,7 +19,9 @@ combinedOffsetInsetIndicies = [nan, 0];
 %  plot_manager_cellRoiPlot.interaction_helper_obj.isCellRoiSelected
   
 phoPipelineOptions.shouldSaveFiguresToDisk = true;
-
+export_extension = 'fig';
+% export_extension = 'png';
+        
 %% Export All:
 num_rois_to_plot = plot_manager_cellRoiPlot.final_data_explorer_obj.num_cellROIs;
 for i = 1:num_rois_to_plot
@@ -40,19 +42,19 @@ for i = 1:num_rois_to_plot
 
     %% Optional Export to disk:
     if phoPipelineOptions.shouldSaveFiguresToDisk
-        
-        %% Export plots:
-        fig_name = sprintf('cellROI_%d_%s_2d.fig', i, temp.currRoiName);
-        curr_fig_export_path = fullfile(phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path, fig_name);
-        fprintf('\t Saving to file %s ...\n', fig_name);
-        savefig(figH_2d, curr_fig_export_path);
-        close(figH_2d);
 
-        fig_name = sprintf('cellROI_%d_%s_StimulusTraces_Tuning.fig', i, temp.currRoiName);
+        %% Export plots:
+        fig_name = sprintf('cellROI_%d_%s_2d.%s', i, temp.currRoiName, export_extension);
         curr_fig_export_path = fullfile(phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path, fig_name);
         fprintf('\t Saving to file %s ...\n', fig_name);
-        savefig(figH_StimulusTraces, curr_fig_export_path);
-        close(figH_StimulusTraces);
+        savefig(figH_2d, curr_fig_export_path,'compact');
+%         close(figH_2d);
+
+        fig_name = sprintf('cellROI_%d_%s_StimulusTraces_Tuning.%s', i, temp.currRoiName, export_extension);
+        curr_fig_export_path = fullfile(phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path, fig_name);
+        fprintf('\t Saving to file %s ...\n', fig_name);
+        savefig(figH_StimulusTraces, curr_fig_export_path,'compact');
+%         close(figH_StimulusTraces);
     end
     
     fprintf('\t done.\n')
