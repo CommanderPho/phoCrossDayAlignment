@@ -21,6 +21,8 @@ classdef CellRoiPlotManager < PlotManager
     properties (Dependent)
         final_data_explorer_obj % FinalDataExplorer
 		number_of_cellROI_plotSubGraphics % The number of graphics objects belonging to each cellROI. For example, these might be the fill, the edge, and several inset/outset edge objects
+        
+        extantFigH_plot_2d
     end
     methods
        function final_data_explorer_obj = get.final_data_explorer_obj(obj)
@@ -31,6 +33,9 @@ classdef CellRoiPlotManager < PlotManager
 		  if obj.plottingSettings.should_plot_neuropil_masks
 			number_of_cellROI_plotSubGraphics = number_of_cellROI_plotSubGraphics + 1;
 		  end
+       end
+       function extantFigH_plot_2d = get.extantFigH_plot_2d(obj)
+          extantFigH_plot_2d = createFigureWithNameIfNeeded('CellROI 2D Plot'); % generate a new figure to plot the sessions.
        end
 	   
     end
@@ -112,26 +117,10 @@ classdef CellRoiPlotManager < PlotManager
 				curr_cellROI_appearance = obj.getGraphicalAppearance(uniqueCompIndex, plotImageIndex);
 				curr_im_h = curr_imagePlot_handles(plotImageIndex);
 			
-	%         set(curr_sel_fill_im_h,'CData', updated_color_data, 'AlphaData', curr_cellROI_appearance.AlphaData);
+				%         set(curr_sel_fill_im_h,'CData', updated_color_data, 'AlphaData', curr_cellROI_appearance.AlphaData);
 				set(curr_im_h,'CData', curr_cellROI_appearance.CData, 'Visible', curr_cellROI_appearance.is_visible);
 			end
 
-	% 		% Get the fill handle
-	% 		curr_sel_fill_im_h = obj.GraphicalSelection.imagePlotHandles(uniqueCompIndex, 1);
-	% %         updated_alpha_data = interaction_helper_obj.final_data_explorer_obj.getFillRoiMask(uniqueCompIndex);
-	% 		curr_is_visible = true;
-	% 		if curr_cellROI_IsSelected
-	% %             updated_alpha_data = updated_alpha_data .* 0.9;
-	% 			updated_color_data = obj.Colors.orange3DArray;
-	% 			if obj.interaction_helper_obj.selectionOptions.shouldHideSelectedRois
-	% 				curr_is_visible = false;
-	% 			end
-	% 		else
-	% %             updated_alpha_data = updated_alpha_data .* 0.5;
-	% 			updated_color_data = obj.Colors.lightgrey3DArray;
-	% 		end
-	% %         set(curr_sel_fill_im_h,'CData', updated_color_data, 'AlphaData', updated_alpha_data);
-	% 		set(curr_sel_fill_im_h,'CData', updated_color_data, 'Visible', curr_is_visible);
         end
 
 		function obj = updateGraphicalAppearances(obj)
@@ -263,6 +252,20 @@ classdef CellRoiPlotManager < PlotManager
 			end
 
 		end % end plotTestCellROIBlob
+
+
+		function [obj, plotted_figH] = pho_plot_2d(obj, curr_cellRoiIndex)
+% 			obj.extantFigH_plot_2d = createFigureWithNameIfNeeded('CellROI 2D Plot'); % generate a new figure to plot the sessions.
+			clf(obj.extantFigH_plot_2d);
+
+			temp.currAllSessionCompIndicies = obj.final_data_explorer_obj.multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
+			% Make 2D Plots (Exploring):    
+			[plotted_figH, ~] = fnPlotTunedStimulusPeaks(obj.final_data_explorer_obj.dateStrings, obj.final_data_explorer_obj.uniqueAmps, obj.final_data_explorer_obj.uniqueFreqs, ...
+				 temp.currAllSessionCompIndicies, curr_cellRoiIndex, ...
+				 obj.final_data_explorer_obj.finalOutPeaksGrid, obj.extantFigH_plot_2d);
+
+			set(plotted_figH, 'Name', sprintf('CellROI 2D Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+		end
 
 
 	end % end graphical methods block

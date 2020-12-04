@@ -17,6 +17,7 @@ combinedOffsetInsetIndicies = [nan, 0];
  
   
 
+plot_manager_cellRoiPlot.pho_plot_2d(1);
 
 
 
