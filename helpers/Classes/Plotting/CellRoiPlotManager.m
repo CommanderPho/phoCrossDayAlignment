@@ -23,6 +23,8 @@ classdef CellRoiPlotManager < PlotManager
 		number_of_cellROI_plotSubGraphics % The number of graphics objects belonging to each cellROI. For example, these might be the fill, the edge, and several inset/outset edge objects
         
         extantFigH_plot_2d
+        extantFigH_plot_3d
+		extantFigH_plot_stimulus_traces
     end
     methods
        function final_data_explorer_obj = get.final_data_explorer_obj(obj)
@@ -35,9 +37,14 @@ classdef CellRoiPlotManager < PlotManager
 		  end
        end
        function extantFigH_plot_2d = get.extantFigH_plot_2d(obj)
-          extantFigH_plot_2d = createFigureWithNameIfNeeded('CellROI 2D Plot'); % generate a new figure to plot the sessions.
+          extantFigH_plot_2d = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_2D'); % generate a new figure to plot the sessions.
        end
-	   
+	   function extantFigH_plot_3d = get.extantFigH_plot_3d(obj)
+          extantFigH_plot_3d = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_3D_Mesh'); % generate a new figure to plot the sessions.
+       end
+	   function extantFigH_plot_stimulus_traces = get.extantFigH_plot_stimulus_traces(obj)
+          extantFigH_plot_stimulus_traces = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_StimulusTraces'); % generate a new figure to plot the sessions.
+       end
     end
     
     
@@ -254,7 +261,7 @@ classdef CellRoiPlotManager < PlotManager
 		end % end plotTestCellROIBlob
 
 
-		function [obj, plotted_figH] = pho_plot_2d(obj, curr_cellRoiIndex)
+		function [obj] = pho_plot_2d(obj, curr_cellRoiIndex)
 % 			obj.extantFigH_plot_2d = createFigureWithNameIfNeeded('CellROI 2D Plot'); % generate a new figure to plot the sessions.
 			clf(obj.extantFigH_plot_2d);
 
@@ -267,6 +274,31 @@ classdef CellRoiPlotManager < PlotManager
 			set(plotted_figH, 'Name', sprintf('CellROI 2D Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
 		end
 
+		function [obj] = pho_plot_3d_mesh(obj, curr_cellRoiIndex)
+			clf(obj.extantFigH_plot_3d);
+
+			temp.currAllSessionCompIndicies = obj.final_data_explorer_obj.multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
+			% Make 3D Mesh Plot:  
+			[plotted_figH, ~] = fnPlotMeshFromPeaksGrid(obj.final_data_explorer_obj.dateStrings, obj.final_data_explorer_obj.uniqueAmps, obj.final_data_explorer_obj.uniqueFreqs, ...
+				 temp.currAllSessionCompIndicies, curr_cellRoiIndex, ...
+				 obj.final_data_explorer_obj.finalOutPeaksGrid, obj.extantFigH_plot_3d);
+
+			%     zlim([-0.2, 1])
+			set(plotted_figH, 'Name', sprintf('CellROI 3D Mesh Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+		end
+
+		function [obj] = pho_plot_stimulus_traces(obj, curr_cellRoiIndex)
+			clf(obj.extantFigH_plot_stimulus_traces);
+
+			temp.currAllSessionCompIndicies = obj.final_data_explorer_obj.multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
+			% Make Stimuli Traces Plot:  
+			[plotted_figH] = fnPlotStimulusTracesForCellROI(obj.final_data_explorer_obj.dateStrings, obj.final_data_explorer_obj.uniqueAmps, obj.final_data_explorer_obj.uniqueFreqs, obj.final_data_explorer_obj.uniqueStimuli, ...
+				temp.currAllSessionCompIndicies, curr_cellRoiIndex, ...
+				obj.final_data_explorer_obj.traceTimebase_t, obj.final_data_explorer_obj.active_DFF.TracesForAllStimuli, obj.final_data_explorer_obj.redTraceLinesForAllStimuli, ...
+				obj.extantFigH_plot_stimulus_traces);
+			
+			set(plotted_figH, 'Name', sprintf('CellROI Stimuli Traces Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+		end
 
 	end % end graphical methods block
 

@@ -18,6 +18,6 @@ combinedOffsetInsetIndicies = [nan, 0];
   
 
 plot_manager_cellRoiPlot.pho_plot_2d(1);
+plot_manager_cellRoiPlot.pho_plot_3d_mesh(1);
 
-
-
+plot_manager_cellRoiPlot.pho_plot_stimulus_traces(1);
