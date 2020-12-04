@@ -167,6 +167,8 @@ num_cellROIs = cellROIIndexMapper.num_cellROIs;
 % fprintf('Using %d of %d rows (Ignoring %d): %s.\n', num_cellROIs, temp.numberOriginal, temp.numberIgnored, temp.excludedCompsStatusString);
 
 % multiSessionCellRoi_CompListIndicies = zeros(cellROIIndexMapper.num_cellROIs, cellROIIndexMapper.numOfSessions); % a list of comp indicies for each CellRoi
+
+%% Pre-Allocate:
 compMasks.Masks = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
 compMasks.Edge = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
 
@@ -175,6 +177,7 @@ compNeuropilMasks.Masks = zeros(cellROIIndexMapper.numCompListEntries, 512, 512)
 default_DFF.cellROI_FirstDayTuningMaxPeak = zeros(cellROIIndexMapper.num_cellROIs, 1); % Just the first day
 default_DFF.cellROI_SatisfiesFirstDayTuning = zeros(cellROIIndexMapper.num_cellROIs, 1); % Just the first day
 
+default_DFF.TracesForAllStimuli.imgDataToPlot = zeros(cellROIIndexMapper.numCompListEntries, 26, 20, 150);
 default_DFF.redTraceLinesForAllStimuli = zeros(cellROIIndexMapper.numCompListEntries, 26, 150);
 % Build 2D Mesh for each component
 default_DFF.finalOutPeaksGrid = zeros(cellROIIndexMapper.numCompListEntries,6,6);
@@ -186,6 +189,7 @@ default_DFF.componentAggregatePropeties.sumTuningPeaksValue = zeros(cellROIIndex
 
 if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
      % Generate similar grids for minusNeuropil outputs
+     minusNeuropil.TracesForAllStimuli.imgDataToPlot = default_DFF.TracesForAllStimuli.imgDataToPlot;
      minusNeuropil.redTraceLinesForAllStimuli = default_DFF.redTraceLinesForAllStimuli;
      minusNeuropil.finalOutPeaksGrid = default_DFF.finalOutPeaksGrid;
      minusNeuropil.cellROI_FirstDayTuningMaxPeak = default_DFF.cellROI_FirstDayTuningMaxPeak; % Just the first day
@@ -204,13 +208,6 @@ end
 
 %% Process Each Cell ROI:
 for i = 1:num_cellROIs
-%    curr_cellROI = uniqueComps{i}; % Get the name of the current cellROI. It has a name like 'comp14'
-%    curr_cellROI_compListIndicies = find(strcmp(compTable.compName, curr_cellROI)); % Should be a list of 3 relevant indicies, one corresponding to each day.
-   
-%    fprintf('\t \t uniqueComp[%d]: %s', i, curr_cellROI);
-%    disp(curr_cellROI_compListIndicies');
-%    multiSessionCellRoi_CompListIndicies(i,:) = curr_cellROI_compListIndicies';
-   
    
    curr_cellROI_compListIndicies = cellROIIndexMapper.getCompListIndicies(i);
 
@@ -240,8 +237,10 @@ for i = 1:num_cellROIs
         default_DFF.peakSignals = outputs.default_DFF.AMConditions.peakSignal; % used
         default_DFF.maxPeakSignal = max(default_DFF.peakSignals); % used
         default_DFF.componentAggregatePropeties.maxTuningPeakValue(curr_day_linear_comp_index) = default_DFF.maxPeakSignal; 
-        default_DFF.componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_comp_index) = sum(default_DFF.peakSignals);
+        default_DFF.componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_comp_index) = sum(default_DFF.peakSignals);   
+        default_DFF.TracesForAllStimuli.imgDataToPlot(curr_day_linear_comp_index, :, :, :) = outputs.TracesForAllStimuli.imgDataToPlot;
         default_DFF.redTraceLinesForAllStimuli(curr_day_linear_comp_index, :, :) = outputs.default_DFF.AMConditions.imgDataToPlot; % [26   150]
+     
         
         if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
             % Store the outputs in the grid:
@@ -251,6 +250,7 @@ for i = 1:num_cellROIs
             minusNeuropil.maxPeakSignal = max(minusNeuropil.peakSignals); % used
             minusNeuropil.componentAggregatePropeties.maxTuningPeakValue(curr_day_linear_comp_index) = minusNeuropil.maxPeakSignal; 
             minusNeuropil.componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_comp_index) = sum(minusNeuropil.peakSignals);
+            minusNeuropil.TracesForAllStimuli.imgDataToPlot(curr_day_linear_comp_index, :, :, :) = outputs.TracesForAllStimuli.neuroPillCorrected;
             minusNeuropil.redTraceLinesForAllStimuli(curr_day_linear_comp_index, :, :) = outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot; % [26   150]
         end
 

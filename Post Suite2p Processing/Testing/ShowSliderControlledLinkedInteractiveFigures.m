@@ -48,7 +48,7 @@ if should_show_masking_plot
 end
 
 if should_show_stimulus_traces_plot
-    stimulus_traces_plot_callback = @(curr_i) (pho_plot_stimulus_traces(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, final_data_explorer_obj.uniqueStimuli, final_data_explorer_obj.traceTimebase_t, final_data_explorer_obj.redTraceLinesForAllStimuli, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, extantFigH_plot_stimulus_traces, curr_i));
+    stimulus_traces_plot_callback = @(curr_i) (pho_plot_stimulus_traces(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, final_data_explorer_obj.uniqueStimuli, final_data_explorer_obj.traceTimebase_t, final_data_explorer_obj.active_DFF.TracesForAllStimuli, final_data_explorer_obj.redTraceLinesForAllStimuli, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, extantFigH_plot_stimulus_traces, curr_i));
     plot_callbacks{end+1} = stimulus_traces_plot_callback;
 end
 
@@ -98,14 +98,14 @@ function plotted_figH = pho_plot_cell_mask(dateStrings, compMasks, multiSessionC
 end
 
 
-function plotted_figH = pho_plot_stimulus_traces(dateStrings, uniqueAmps, uniqueFreqs, uniqueStimuli, traceTimebase_t, redTraceLinesForAllStimuli, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
+function plotted_figH = pho_plot_stimulus_traces(dateStrings, uniqueAmps, uniqueFreqs, uniqueStimuli, traceTimebase_t, tracesForAllStimuli, redTraceLinesForAllStimuli, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
     % COMPUTED
     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
 
     % Cell Mask Plots:
     [plotted_figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, uniqueFreqs, uniqueStimuli, ...
         temp.currAllSessionCompIndicies, curr_cellRoiIndex, ...
-        traceTimebase_t, redTraceLinesForAllStimuli, extantFigH);
+        traceTimebase_t, tracesForAllStimuli, redTraceLinesForAllStimuli, extantFigH);
     
     set(plotted_figH, 'Name', sprintf('Slider Controlled Stimuli Traces Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted 
 end

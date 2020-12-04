@@ -1,4 +1,4 @@
-function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, uniqueFreqs, uniqueStimuli, currAllSessionCompIndicies, cellRoiIndex, traceTimebase_t, redTraceLinesForAllStimuli, extantFigH)
+function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, uniqueFreqs, uniqueStimuli, currAllSessionCompIndicies, cellRoiIndex, traceTimebase_t, tracesForAllStimuli, redTraceLinesForAllStimuli, extantFigH)
 %FNPLOTSTIMULUSTRACESFORCELLROI plots the array of traces for each stimulus pair for each session for a single cellRoi
 %   Detailed explanation goes here
 
@@ -30,10 +30,12 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
         temp.compIndex = currAllSessionCompIndicies(i); 
         % Gets the grid for this session of this cell ROI
         temp.currRedTraceLinesForAllStimuli = squeeze(redTraceLinesForAllStimuli(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x26x150)
+        
+        temp.currTrialTraceLinesForAllStimuli = squeeze(tracesForAllStimuli.imgDataToPlot(temp.compIndex,:,:,:));
+
         temp.currDateString = dateStrings{i};
         
         numStimuli = size(temp.currRedTraceLinesForAllStimuli,1);
-        
         
 %         axH = plot(traceTimebase_t, temp.currRedTraceLinesForAllStimuli);
         
@@ -48,12 +50,15 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
 %             %make an average
 %             meanData=mean(imgDataToPlot,1);
 
+            currAllTraces = squeeze(temp.currTrialTraceLinesForAllStimuli(b,:,:));
+            
+
             meanData = squeeze(temp.currRedTraceLinesForAllStimuli(b,:));
 %             axes(ha(numStimuli-b+1));
             
             subplot(numRows, numCol, numStimuli-b+1);
-%             plot(traceTimebase_t, imgDataToPlot,'color','black')
-%             hold on
+            h_PlotObj_allTraces = plot(traceTimebase_t, currAllTraces,'color','black');
+            hold on;
             h_PlotObj = plot(traceTimebase_t, meanData);
             set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 2);
             title(strcat(num2str(uniqueStimuli(b,1)), {' '}, 'Hz', {' '}, 'at', {' '}, num2str(uniqueStimuli(b,2)*100), {' '}, '% Depth'))

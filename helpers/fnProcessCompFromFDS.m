@@ -75,7 +75,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     
     % What is this doing?
     % Using the 'ib' indexes found corresponding to each unique [freq, amp] stimuli-pair, find all rows corresponding to each stimulus:
-    outputs.linearStimulusPairToTraceIndicies = accumarray(ib, find(ib), [], @(rows){rows}); % a outputs.numStimuli x outputs.numStimulusPairTrialRepetitionsPerSession (e.g. 26 x 20) map
+    outputs.linearStimulusPairIndexToTrialIndicies = accumarray(ib, find(ib), [], @(rows){rows}); % a outputs.numStimuli x outputs.numStimulusPairTrialRepetitionsPerSession (e.g. 26 x 20) map
     outputs.numStimulusPairTrialRepetitionsPerSession = 20;
     % outputs.linearStimulusPairIndexToTrialIndicies: 26x1 cell
         % each entry is a 20x1 double of indicies into the original stimulus array
