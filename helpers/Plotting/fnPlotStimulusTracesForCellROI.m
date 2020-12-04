@@ -82,7 +82,8 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
         temp.currDateString = dateStrings{i};
         
         numStimuli = size(temp.currRedTraceLinesForAllStimuli,1);
-        
+        is_first_session_for_stimuli = (i == 1); % used to perform first-plot-only setup
+
         for b = 1:numStimuli
             if plotting_options.should_plot_all_traces
                 currAllTraces = squeeze(temp.currTrialTraceLinesForAllStimuli(b,:,:));
@@ -93,24 +94,26 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
             
             subplot(numRows, numCol, numStimuli-b+1);
             
-            if plotting_options.should_plot_vertical_sound_start_stop_lines
-                % Plot the stimulus indicator lines:
-                if plotting_options.should_normalize_to_local_peak
-                    y = [-0.5 1.0];
-                else
-                    y = [-0.1 0.1]; % the same y-values are used for both lines (as they are the same height)
-                end
-            
-                x = [processingOptions.startSoundSeconds processingOptions.startSoundSeconds];
-                line(x, y,'Color','black','LineStyle','-')
-                hold on;
+			if is_first_session_for_stimuli
+				if plotting_options.should_plot_vertical_sound_start_stop_lines
+					% Plot the stimulus indicator lines:
+					if plotting_options.should_normalize_to_local_peak
+						y = [-0.5 1.0];
+					else
+						y = [-0.1 0.1]; % the same y-values are used for both lines (as they are the same height)
+					end
+				
+					x = [processingOptions.startSoundSeconds processingOptions.startSoundSeconds];
+					line(x, y,'Color','black','LineStyle','-')
+					hold on;
 
-                % end sound line:
-                x = [processingOptions.endSoundSeconds processingOptions.endSoundSeconds];
-                line(x, y,'Color','black','LineStyle','-')
-                hold on;
+					% end sound line:
+					x = [processingOptions.endSoundSeconds processingOptions.endSoundSeconds];
+					line(x, y,'Color','black','LineStyle','-')
+					hold on;
 
-            end
+				end
+			end
             
 
             % plot the traces for all trials:
@@ -123,16 +126,21 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
             % plot the average (red) line:
             h_PlotObj = plot(traceTimebase_t, meanData);
             set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 2);
-            title(strcat(num2str(uniqueStimuli(b,1)), {' '}, 'Hz', {' '}, 'at', {' '}, num2str(uniqueStimuli(b,2)*100), {' '}, '% Depth'))
-            xlim([0, 5]);
-            xticks([]);
-            yticks([]);
+
+			if is_first_session_for_stimuli
+				title(strcat(num2str(uniqueStimuli(b,1)), {' '}, 'Hz', {' '}, 'at', {' '}, num2str(uniqueStimuli(b,2)*100), {' '}, '% Depth'))
+				xlim([0, 5]);
+				xticks([]);
+				yticks([]);
+
+				if plotting_options.should_normalize_to_local_peak
+				ylim([-0.5, 1]);
+				end
+			end
+
             hold on;
             
-            if plotting_options.should_normalize_to_local_peak
-               ylim([-0.5, 1]);
-            end
-            
+
         end % end for numStimuli
         
     end %% end for session
