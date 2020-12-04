@@ -8,6 +8,19 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
     
     plotting_options.should_plot_all_traces = true; % plotting_options.should_plot_all_traces: if true, line traces for all trials are plotted in addition the mean line
     
+    plotting_options.should_plot_vertical_sound_start_stop_lines = false; % plotting_options.should_plot_vertical_sound_start_stop_lines: if true, vertical start/stop lines are drawn to show when the sound started and stopped.
+    
+    if ~exist('processingOptions','var')
+        processingOptions.startSound = 31;
+        processingOptions.endSound = 90;
+        processingOptions.startSoundSeconds = traceTimebase_t(processingOptions.startSound);
+        processingOptions.endSoundSeconds = traceTimebase_t(processingOptions.endSound);
+        
+%         processingOptions.sampPeak = 2;
+%         processingOptions.frameRate = 30;
+%         processingOptions.smoothValue = 5;
+    end
+    
     session_colors = {'r','g','b'};
 %     session_colors = {[0.6350 0.0780 0.1840, 1.0],[0.4660 0.6740 0.1880, 1.0],[0 0.4470 0.7410, 1.0]};
 
@@ -55,6 +68,23 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
 %             axes(ha(numStimuli-b+1));
             
             subplot(numRows, numCol, numStimuli-b+1);
+            
+            if plotting_options.should_plot_vertical_sound_start_stop_lines
+                % Plot the stimulus indicator lines:
+                x = [processingOptions.startSoundSeconds processingOptions.startSoundSeconds];
+                y = [-0.5 0.5];
+                line(x, y,'Color','black','LineStyle','-')
+                hold on;
+
+                % end sound line:
+                x = [processingOptions.endSoundSeconds processingOptions.endSoundSeconds];
+                y = [-0.4 0.4];
+                line(x, y,'Color','black','LineStyle','--')
+                hold on;
+
+            end
+            
+
             % plot the traces for all trials:
             if plotting_options.should_plot_all_traces
                 curr_session_traces_color = session_traces_colors{i};
