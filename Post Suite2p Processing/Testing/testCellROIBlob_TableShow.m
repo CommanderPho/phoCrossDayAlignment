@@ -5,6 +5,10 @@ addpath(genpath('../helpers'));
 
 plot_manager_cellRoiPlot.setupGraphicalSelectionTable();
 
+% plot_manager_cellRoiPlot.interaction_helper_obj.updateGraphicalSelectionTable();
+
+
+
 % plot_manager_cellRoiPlot.interaction_helper_obj.isCellRoiSelected;
 %  
 %  
@@ -40,22 +44,22 @@ plot_manager_cellRoiPlot.setupGraphicalSelectionTable();
 
 % uit.Data = data_table;
 
-function selectionChangedChecked(src, eventdata, plot_manager_cellRoiPlot)
-    if (eventdata.Indices(2) == 5)% check if 'isCellRoiSelected' column
-       selected_row_index = eventdata.Indices(1);
-       selected_row_updated_value = eventdata.NewData;
-       fprintf('row[%d]: isCellRoiSelected changed to %d\n', selected_row_index, selected_row_updated_value);
-       plot_manager_cellRoiPlot.interaction_helper_obj.updateCellRoiIsSelected(selected_row_index, selected_row_updated_value);
-%        tableData = src.Data;
-%        tableData{eventdata.Indices(1), eventdata.Indices(2)} = eventdata.PreviousData;
-%        src.Data = tableData;                              % set the data back to its original value
-    end
-end
-
-
-function updatePlot(src, event)
-    disp('updatePlot(...)')
-end
+% function selectionChangedChecked(src, eventdata, plot_manager_cellRoiPlot)
+%     if (eventdata.Indices(2) == 5)% check if 'isCellRoiSelected' column
+%        selected_row_index = eventdata.Indices(1);
+%        selected_row_updated_value = eventdata.NewData;
+%        fprintf('row[%d]: isCellRoiSelected changed to %d\n', selected_row_index, selected_row_updated_value);
+%        plot_manager_cellRoiPlot.interaction_helper_obj.updateCellRoiIsSelected(selected_row_index, selected_row_updated_value);
+% %        tableData = src.Data;
+% %        tableData{eventdata.Indices(1), eventdata.Indices(2)} = eventdata.PreviousData;
+% %        src.Data = tableData;                              % set the data back to its original value
+%     end
+% end
+% 
+% 
+% function updatePlot(src, event)
+%     disp('updatePlot(...)')
+% end
 
  
   

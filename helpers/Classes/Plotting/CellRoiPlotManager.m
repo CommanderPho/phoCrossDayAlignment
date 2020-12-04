@@ -194,6 +194,11 @@ classdef CellRoiPlotManager < PlotManager
 			graphicalAppearance.CData = updated_color_data;
 			% graphicalAppearance.AlphaData = updated_alpha_data;
         end
+    end % end graphical update methods
+    
+    
+    %% Plots Methods Block:
+    methods
 
 		% Primary Plot Function
 		function [obj] = plotTestCellROIBlob(obj)
