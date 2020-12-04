@@ -84,6 +84,11 @@ classdef CellRoiPlotManager < PlotManager
     %% Graphical Methods Block:
     methods 
 
+		function obj = setupGraphicalSelectionTable(obj)
+			% Add the toolbar for selection operations:
+			obj.interaction_helper_obj.setupGraphicalSelectionTable();
+		end
+
         function obj = setupGraphicalSelectionFigure(obj, activeFigure, imagePlotHandles)
             %setupGraphicalSelectionFigure 
             %   activeFigure: 
@@ -137,6 +142,7 @@ classdef CellRoiPlotManager < PlotManager
 				obj = obj.updateGraphicalAppearance(i);
 			end
 			drawnow;
+			obj.interaction_helper_obj.updateGraphicalSelectionTable();
         end
 
 		%% Update Selections graphically:

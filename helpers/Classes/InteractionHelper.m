@@ -16,7 +16,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
         %% Graphical (TODO: potentially refactor)
         GraphicalSelection
 		Colors
-		graphical_update_callback %% Stores the callback to update the graphics after a toolbar item is clicked or other UX input
+		graphical_update_callbacks = []; %% Stores the callback to update the graphics after a toolbar item is clicked or other UX input
         
     end
     
@@ -100,9 +100,52 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
     %% UX Methods Block:
     methods 
 
+		function obj = setupGraphicalSelectionTable(obj, graphical_update_callback)
+			if exist('graphical_update_callback','var')
+				obj.graphical_update_callbacks = [obj.graphical_update_callbacks, graphical_update_callback];
+			end
+
+			indexArray = 1:obj.num_cellROIs;
+			obj.GraphicalSelection.selectionCustomTableFigure.data_table = table(indexArray', obj.final_data_explorer_obj.uniqueComps, obj.final_data_explorer_obj.cellROIIndex_mapper.compIDsArray, obj.final_data_explorer_obj.multiSessionCellRoi_CompListIndicies,...
+				'VariableNames',{'uniqueCompListIndex', 'roiName', 'compID', 'sessionCompListIndicies'});
+
+			% Add an index column to the table:
+			isSelectedColumn = table(obj.isCellRoiSelected,'VariableNames',{'isCellRoiSelected'});
+			obj.GraphicalSelection.selectionCustomTableFigure.data_table = [obj.GraphicalSelection.selectionCustomTableFigure.data_table isSelectedColumn];
+
+			foundExtantTableFigure = findobj('Tag','uimgr.uifigure_PhoCustom_SelectionTable');
+			if ~isempty(foundExtantTableFigure) && isgraphics(foundExtantTableFigure)
+				obj.GraphicalSelection.selectionCustomTableFigure.Figure = foundExtantTableFigure;
+                delete(obj.GraphicalSelection.selectionCustomTableFigure.Figure);                
+                obj.GraphicalSelection.selectionCustomTableFigure.Figure = uifigure('Position',[500 500 750 350],'Tag','uimgr.uifigure_PhoCustom_SelectionTable');
+			else
+				obj.GraphicalSelection.selectionCustomTableFigure.Figure = uifigure('Position',[500 500 750 350],'Tag','uimgr.uifigure_PhoCustom_SelectionTable');
+			end
+
+			obj.GraphicalSelection.selectionCustomTableFigure.Table = uitable(obj.GraphicalSelection.selectionCustomTableFigure.Figure, 'Data', obj.GraphicalSelection.selectionCustomTableFigure.data_table,'Tag','uimgr.uitable_PhoCustom_SelectionTable');
+			obj.GraphicalSelection.selectionCustomTableFigure.Table.Position = [20 20 710 310];
+			obj.GraphicalSelection.selectionCustomTableFigure.Table.ColumnEditable = [false, false, false, false, true];
+			% obj.GraphicalSelection.selectionCustomTableFigure.Table.DisplayDataChangedFcn = @updatePlot;
+			obj.GraphicalSelection.selectionCustomTableFigure.Table.CellEditCallback = @(src, eventdata) (obj.selection_table_checkSelectedToggled_callback(src, eventdata));
+
+		end
+
+		function obj = updateGraphicalSelectionTable(obj)
+			fprintf('updateGraphicalSelectionTable() called. \n')
+			
+			foundExtantTableObj = findobj('Tag','uimgr.uitable_PhoCustom_SelectionTable');
+			if ~isempty(foundExtantTableObj) && isgraphics(foundExtantTableObj)
+				foundExtantTableObj.Data.isCellRoiSelected = obj.isCellRoiSelected;
+			else
+				warning('could not find table!')
+			end
+			% obj.GraphicalSelection.selectionCustomTableFigure.Table.Data.isCellRoiSelected = obj.isCellRoiSelected;
+		end
+
+
 		function obj = setupGraphicalSelectionToolbar(obj, activeFigure, graphical_update_callback)
 			%% setupGraphicalSelectionToolbar: adds the toolbar to the activeFigure
-			obj.graphical_update_callback = graphical_update_callback;
+			obj.graphical_update_callbacks = [obj.graphical_update_callbacks, graphical_update_callback];
 
             %% Add a Custom Toolbar to allow marking selections
 			foundExtantToolbar = findobj(activeFigure,'Tag','uimgr.uitoolbar_PhoCustom_Selection');
@@ -167,28 +210,6 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 		%% Updates the state of the toolbar buttons:
 		function selection_toolbar_update_custom_toolbar_buttons_appearance(obj)
 			
-			% User Marked Bad:
-	%         final_is_marked_bad = svp.userAnnotations.isMarkedBad(curr_video_frame);
-			
-	% 		[~, doesAnnotationExist] = svp.userAnnotations.uaMan.tryGetAnnotation('BadUnspecified', curr_video_frame);
-	% 		final_is_marked_bad = doesAnnotationExist;
-			
-	% 		final_is_marked_bad_index = 0;
-	% 		if final_is_marked_bad
-	% 		final_is_marked_bad_index = 2;
-	% 		else
-	% 		final_is_marked_bad_index = 1;
-	% 		end
-			% obj.GraphicalSelection.selectionControls.btnMarkBad.CData = iconRead(obj.GraphicalSelection.selectionControls.btnMarkBad_imagePaths{final_is_marked_bad_index});
-	% % 		btn_LogFrame.CData = iconRead(btn_LogFrame_imagePaths{(svp.userAnnotations.uaMan.DoesAnnotationExist('Log', curr_video_frame) + 1)});        
-			
-	% 		btnMarkUnusual.CData = iconRead(btnMarkUnusual_imagePaths{(svp.userAnnotations.uaMan.DoesAnnotationExist('UnusualFrame', curr_video_frame) + 1)});
-	% 		btnMarkNeedsReview.CData = iconRead(btnMarkNeedsReview_imagePaths{(svp.userAnnotations.uaMan.DoesAnnotationExist('NeedsReview', curr_video_frame) + 1)});
-	% 		btnMarkTransition.CData = iconRead(btnMarkTransition_imagePaths{(svp.userAnnotations.uaMan.DoesAnnotationExist('EventChange', curr_video_frame) + 1)});
-	% 		btnMarkList.CData = iconRead(btnMarkList_imagePaths{(svp.userAnnotations.uaMan.DoesAnnotationExist('AccumulatedListA', curr_video_frame) + 1)});
-
-			% obj.GraphicalSelection.selectionControls.btn_TogglePupilCircleOverlay.CData = iconRead(obj.GraphicalSelection.selectionControls.btn_TogglePupilCircleOverlay_imagePaths{(svpSettings.shouldShowPupilOverlay + 1)});
-			
 			obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay.CData = iconRead(obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay_imagePaths{(obj.selectionOptions.shouldHideSelectedRois + 1)});
 			
 		end
@@ -202,7 +223,15 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
             fprintf('Loading from file %s...', obj.BackingFile.fullPath)
             obj.loadFromExistingBackingFile();
             fprintf('Done.\n')
-			obj.graphical_update_callback();
+			% Perform user callbacks:
+			if length(obj.graphical_update_callbacks) == 1
+                obj.graphical_update_callbacks();
+            else
+                for i = 1:length(obj.graphical_update_callbacks)
+                    curr_callback = obj.graphical_update_callbacks(i);
+                    curr_callback();
+                end
+            end
         end
 
         % SaveUserAnnotations
@@ -231,23 +260,43 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 
 		function selection_toolbar_btn_ToggleEyePolyOverlay_callback(obj, src, event)
 			disp('btnToggleEyePolyOverlay callback hit!');
-			% if svpSettings.shouldShowEyePolygonOverlay
-			%    svpSettings.shouldShowEyePolygonOverlay = false;
-			%    disp('    toggled off');
-			%    currAxes = svp.vidPlayer.Visual.Axes;
-			%    hExistingPlot = findobj(currAxes, 'Tag','eyePolyPlotHandle');
-			%    delete(hExistingPlot) % Remove existing plot
-			
-			% else
-			%    svpSettings.shouldShowEyePolygonOverlay = true;
-			%    disp('    toggled on');
-			%    % TODO: update button icon, refresh displayed plot
-			% end
 			obj.selectionOptions.shouldHideSelectedRois = ~obj.selectionOptions.shouldHideSelectedRois;
 			disp(obj.selectionOptions.shouldHideSelectedRois);
 			obj.selection_toolbar_update_custom_toolbar_buttons_appearance();
-			obj.graphical_update_callback();
+			% Perform user callbacks:
+            if length(obj.graphical_update_callbacks) == 1
+                obj.graphical_update_callbacks();
+            else
+                for i = 1:length(obj.graphical_update_callbacks)
+                    curr_callback = obj.graphical_update_callbacks(i);
+                    curr_callback();
+                end
+            end
 		end
+
+		function selection_table_checkSelectedToggled_callback(obj, src, eventdata)
+			disp('selection_table_checkSelectedToggled_callback callback hit!');
+			
+			if (eventdata.Indices(2) == 5) % check if 'isCellRoiSelected' column
+				selected_row_index = eventdata.Indices(1);
+				selected_row_updated_value = eventdata.NewData;
+				fprintf('row[%d]: isCellRoiSelected changed to %d\n', selected_row_index, selected_row_updated_value);
+				obj.updateCellRoiIsSelected(selected_row_index, selected_row_updated_value);
+				% Perform user callbacks:
+                if length(obj.graphical_update_callbacks) == 1
+                    obj.graphical_update_callbacks();
+                else
+                    for i = 1:length(obj.graphical_update_callbacks)
+                        curr_callback = obj.graphical_update_callbacks(i);
+                        curr_callback();
+                    end
+                end
+			end
+
+
+		end
+
+
     
 
     end % end UX callbacks methods block
