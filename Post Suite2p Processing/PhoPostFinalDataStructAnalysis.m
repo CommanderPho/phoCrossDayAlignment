@@ -292,7 +292,7 @@ final_data_explorer_obj.compMasks = compMasks; % Set the compMasks, which contai
 final_data_explorer_obj.compNeuropilMasks = compNeuropilMasks; % Set the compNeuropilMasks, which contains the masks.
 
 % the value for outputs.traceTimebase_t should be the same for all traces, all cells, and all sessions, so we can just use the last one:
-final_data_explorer_obj.traceXIndicies = outputs.traceTimebase_t;
+final_data_explorer_obj.traceTimebase_t = outputs.traceTimebase_t;
 
 default_DFF.cellROI_SatisfiesFirstDayTuning = (default_DFF.cellROI_FirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
