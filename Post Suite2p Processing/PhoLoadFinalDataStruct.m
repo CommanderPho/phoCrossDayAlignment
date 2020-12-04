@@ -12,7 +12,7 @@
 %           - imgData:  1x1 struct - has one field for each ROI (referred to as a "component" or "comp") named "comp%d" in printf format
 %               - comp1:    1x1 struct
 %                   - imagingData: 520x150 double
-%                   - imagingDataNeuropil: 520x150 double
+%                   - imagingDataNeuropil: 520x150 double  %% TODO: make sure this is a DFF, not the raw neuropil fluoresence
 %                   - segmentLabelMatrix: 512x512 double
 %                   - neuropilMaskLabelMatrix: 512x512 double
 %                   - imagingDataDFF: 520x150 double

@@ -32,8 +32,6 @@ classdef CellROIIndexMapper
 
             obj.uniqueComps = unique(obj.compTable.compName, 'stable'); % Each unique component corresponds to a cellROI
             
-            obj = obj.parseNames(); % Parse the comp names
-
             % Parse the comp names for uniqueComps:
             [obj, obj.compIDsArray] = parseNames(obj, obj.uniqueComps);
             
