@@ -15,6 +15,10 @@ classdef CellRoiPlotManager < PlotManager
 		activeOffsetInsetIndicies = []; % activeOffsetInsetIndicies: the insets to display
 		acitveColorsArray = {}; % acitveColorsArray: the colors corresponding to the edge Offset/Insets in activeOffsetInsetIndicies
 
+        extantFigH_plot_2d
+        extantFigH_plot_3d
+        extantFigH_plot_stimulus_traces
+
     end
     
     %% Computed Properties:
@@ -22,9 +26,7 @@ classdef CellRoiPlotManager < PlotManager
         final_data_explorer_obj % FinalDataExplorer
 		number_of_cellROI_plotSubGraphics % The number of graphics objects belonging to each cellROI. For example, these might be the fill, the edge, and several inset/outset edge objects
         
-        extantFigH_plot_2d
-        extantFigH_plot_3d
-		extantFigH_plot_stimulus_traces
+
     end
     methods
        function final_data_explorer_obj = get.final_data_explorer_obj(obj)
@@ -36,15 +38,15 @@ classdef CellRoiPlotManager < PlotManager
 			number_of_cellROI_plotSubGraphics = number_of_cellROI_plotSubGraphics + 1;
 		  end
        end
-       function extantFigH_plot_2d = get.extantFigH_plot_2d(obj)
-          extantFigH_plot_2d = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_2D'); % generate a new figure to plot the sessions.
-       end
-	   function extantFigH_plot_3d = get.extantFigH_plot_3d(obj)
-          extantFigH_plot_3d = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_3D_Mesh'); % generate a new figure to plot the sessions.
-       end
-	   function extantFigH_plot_stimulus_traces = get.extantFigH_plot_stimulus_traces(obj)
-          extantFigH_plot_stimulus_traces = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_StimulusTraces'); % generate a new figure to plot the sessions.
-       end
+%        function extantFigH_plot_2d = get.extantFigH_plot_2d(obj)
+%           extantFigH_plot_2d = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_2D'); % generate a new figure to plot the sessions.
+%        end
+% 	   function extantFigH_plot_3d = get.extantFigH_plot_3d(obj)
+%           extantFigH_plot_3d = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_3D_Mesh'); % generate a new figure to plot the sessions.
+%        end
+% 	   function extantFigH_plot_stimulus_traces = get.extantFigH_plot_stimulus_traces(obj)
+%           extantFigH_plot_stimulus_traces = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_StimulusTraces'); % generate a new figure to plot the sessions.
+%        end
     end
     
     
@@ -120,13 +122,28 @@ classdef CellRoiPlotManager < PlotManager
 			curr_cellROI_IsSelected = obj.interaction_helper_obj.isCellRoiSelected(uniqueCompIndex);
 
 			curr_imagePlot_handles = obj.GraphicalSelection.imagePlotHandles(uniqueCompIndex, :);
+            are_invalid_plot_handles = ~isvalid(curr_imagePlot_handles);
+            num_invalid_plot_handles = sum(are_invalid_plot_handles,'all');
+            if (num_invalid_plot_handles > 0)
+               fprintf('%d plot handles were invalid. removing them...\n', num_invalid_plot_handles);
+%                obj.GraphicalSelection.imagePlotHandles(uniqueCompIndex, are_invalid_plot_handles) = []; % Remove from the array
+               obj.GraphicalSelection.imagePlotHandles(uniqueCompIndex, :) = [];
+%                curr_imagePlot_handles = obj.GraphicalSelection.imagePlotHandles(uniqueCompIndex, :);
+               curr_imagePlot_handles = [];
+            end
+            
 			for plotImageIndex = 1:length(curr_imagePlot_handles)
-				curr_cellROI_appearance = obj.getGraphicalAppearance(uniqueCompIndex, plotImageIndex);
-				curr_im_h = curr_imagePlot_handles(plotImageIndex);
-			
-				%         set(curr_sel_fill_im_h,'CData', updated_color_data, 'AlphaData', curr_cellROI_appearance.AlphaData);
-				set(curr_im_h,'CData', curr_cellROI_appearance.CData, 'Visible', curr_cellROI_appearance.is_visible);
-			end
+%                 if isvalid(curr_imagePlot_handles(plotImageIndex))
+                    curr_cellROI_appearance = obj.getGraphicalAppearance(uniqueCompIndex, plotImageIndex);
+                    curr_im_h = curr_imagePlot_handles(plotImageIndex);
+                    %         set(curr_sel_fill_im_h,'CData', updated_color_data, 'AlphaData', curr_cellROI_appearance.AlphaData);
+                    set(curr_im_h,'CData', curr_cellROI_appearance.CData, 'Visible', curr_cellROI_appearance.is_visible);
+%                 else
+%                     % Probably remove it so this doesn't happen again
+%                     continue
+%                 end % end if isvalid
+
+            end % end for
 
         end
 
@@ -138,6 +155,7 @@ classdef CellRoiPlotManager < PlotManager
 				obj = obj.updateGraphicalAppearance(i);
 			end
 			drawnow;
+            % update the table:
 			obj.interaction_helper_obj.updateGraphicalSelectionTable();
         end
 
@@ -267,7 +285,7 @@ classdef CellRoiPlotManager < PlotManager
 
 
 		function [obj] = pho_plot_2d(obj, curr_cellRoiIndex)
-% 			obj.extantFigH_plot_2d = createFigureWithNameIfNeeded('CellROI 2D Plot'); % generate a new figure to plot the sessions.
+			obj.extantFigH_plot_2d = createFigureWithTagIfNeeded('CellROI 2D Plot'); % generate a new figure to plot the sessions.
 			clf(obj.extantFigH_plot_2d);
 
 			temp.currAllSessionCompIndicies = obj.final_data_explorer_obj.multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
@@ -280,6 +298,7 @@ classdef CellRoiPlotManager < PlotManager
 		end
 
 		function [obj] = pho_plot_3d_mesh(obj, curr_cellRoiIndex)
+            obj.extantFigH_plot_3d = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_3D_Mesh'); % generate a new figure to plot the sessions.
 			clf(obj.extantFigH_plot_3d);
 
 			temp.currAllSessionCompIndicies = obj.final_data_explorer_obj.multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
@@ -293,6 +312,7 @@ classdef CellRoiPlotManager < PlotManager
 		end
 
 		function [obj] = pho_plot_stimulus_traces(obj, curr_cellRoiIndex)
+            obj.extantFigH_plot_stimulus_traces = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_StimulusTraces'); % generate a new figure to plot the sessions.
 			clf(obj.extantFigH_plot_stimulus_traces);
 
 			temp.currAllSessionCompIndicies = obj.final_data_explorer_obj.multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
