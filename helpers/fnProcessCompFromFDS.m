@@ -137,7 +137,8 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         %% plotAMConditions_FDS Style
         outputs.default_DFF.AMConditions.imgDataToPlot(b,:) = mean(imgDataDFF(currStimulusTrialIndicies,:));
         [~, maxInd] = max(outputs.default_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
-        maxInd = maxInd+processingOptions.startSound-1;
+        maxInd = maxInd + processingOptions.startSound - 1; % convert back to a frame index instead of a stimulus start relative index
+        % Finally, the peakSignal(b): the portion of the fluoresence data surrounding the peak index (by extending +processingOptions.sampPeak and -processingOptions.sampPeak on both sides of the peak index) is extracted and the mean value is used as the peakSignal value.
         outputs.default_DFF.AMConditions.peakSignal(b) = mean(outputs.default_DFF.AMConditions.imgDataToPlot(b, maxInd-processingOptions.sampPeak:maxInd+processingOptions.sampPeak));
         
         
@@ -147,7 +148,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
             %% plotAMConditions_FDS Style
             outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b,:) = mean(imagingDataMinusNeuropilDFF(currStimulusTrialIndicies,:));
             [~, maxInd] = max(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
-            maxInd = maxInd + processingOptions.startSound - 1;
+            maxInd = maxInd + processingOptions.startSound - 1; % convert back to a frame index instead of a stimulus start relative index
             outputs.minusNeuropil_DFF.AMConditions.peakSignal(b) = mean(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, maxInd-processingOptions.sampPeak:maxInd+processingOptions.sampPeak));
         end
     
@@ -177,26 +178,26 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
             activeUniqueFreq = outputs.uniqueFreqs(j);
             % Get the appropriate linear index from the map
             linearStimulusIndex = outputs.indexMap_AmpsFreqs2StimulusArray(i, j);
-            currPeaks = outputs.default_DFF.AMConditions.peakSignal(linearStimulusIndex); % 'Peak DF/F'
-            outputs.default_DFF.finalOutGrid(i,j) = currPeaks;
+            currPeakValue = outputs.default_DFF.AMConditions.peakSignal(linearStimulusIndex); % 'Peak DF/F'
+            outputs.default_DFF.finalOutGrid(i,j) = currPeakValue;
             % Check if this new peak value exceeds the previous maximum, and if it does, keep track of the new value and index.
-            if currPeaks > outputs.default_DFF.maximallyPreferredStimulus.Value 
+            if currPeakValue > outputs.default_DFF.maximallyPreferredStimulus.Value 
                 outputs.default_DFF.maximallyPreferredStimulus.LinearIndex = linearStimulusIndex; % Set this linear index as the maximum one.
                 outputs.default_DFF.maximallyPreferredStimulus.AmpFreqIndexTuple = [i, j];
                 outputs.default_DFF.maximallyPreferredStimulus.AmpFreqValuesTuple = [activeUniqueAmp, activeUniqueFreq];
-                outputs.default_DFF.maximallyPreferredStimulus.Value = currPeaks;
+                outputs.default_DFF.maximallyPreferredStimulus.Value = currPeakValue;
             end
             
             % neuropil-corrected version
             if processingOptions.compute_neuropil_corrected_versions
-                currPeaks = outputs.minusNeuropil_DFF.AMConditions.peakSignal(linearStimulusIndex); % 'Peak DF/F'
-                outputs.minusNeuropil_DFF.finalOutGrid(i,j) = currPeaks;
+                currPeakValue = outputs.minusNeuropil_DFF.AMConditions.peakSignal(linearStimulusIndex); % 'Peak DF/F'
+                outputs.minusNeuropil_DFF.finalOutGrid(i,j) = currPeakValue;
                 % Check if this new peak value exceeds the previous maximum, and if it does, keep track of the new value and index.
-                if currPeaks > outputs.minusNeuropil_DFF.maximallyPreferredStimulus.Value 
+                if currPeakValue > outputs.minusNeuropil_DFF.maximallyPreferredStimulus.Value 
                     outputs.minusNeuropil_DFF.maximallyPreferredStimulus.LinearIndex = linearStimulusIndex; % Set this linear index as the maximum one.
                     outputs.minusNeuropil_DFF.maximallyPreferredStimulus.AmpFreqIndexTuple = [i, j];
                     outputs.minusNeuropil_DFF.maximallyPreferredStimulus.AmpFreqValuesTuple = [activeUniqueAmp, activeUniqueFreq];
-                    outputs.minusNeuropil_DFF.maximallyPreferredStimulus.Value = currPeaks;
+                    outputs.minusNeuropil_DFF.maximallyPreferredStimulus.Value = currPeakValue;
                 end
             end
     
