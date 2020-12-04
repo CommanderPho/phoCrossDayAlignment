@@ -33,6 +33,16 @@ classdef CellROIIndexMapper
             obj.uniqueComps = unique(obj.compTable.compName, 'stable'); % Each unique component corresponds to a cellROI
             
             obj = obj.parseNames(); % Parse the comp names
+
+            % Parse the comp names for uniqueComps:
+            [obj, obj.compIDsArray] = parseNames(obj, obj.uniqueComps);
+            
+            % Parse the comp names for all entries in the table:
+            [obj, table_allCompIDsArray] = parseNames(obj, obj.compTable.compName);
+            % Add the compIDs to the table:
+            compIDColumn = table(table_allCompIDsArray,'VariableNames',{'compID'});
+            obj.compTable = [obj.compTable compIDColumn];
+            
 %             obj = obj.filterComps(phoPipelineOptions); % Filter out any excluded comp names
             
             obj.num_cellROIs = length(obj.uniqueComps); 
@@ -57,13 +67,13 @@ classdef CellROIIndexMapper
             
         end
         
-        function obj = parseNames(obj)
-            %METHOD1 Summary of this method goes here
+        function [obj, compIDsArray] = parseNames(obj, compNames)
+            %parseNames Summary of this method goes here
             %   Detailed explanation goes here
             % Parse the compName into a distinct compID (an index).
             regex.compNameParser = 'comp(?<compID>\d+)';
 
-            tokenNames = regexp(obj.compTable.compName, regex.compNameParser, 'names');
+            tokenNames = regexp(compNames, regex.compNameParser, 'names');
 
             if ~isempty(tokenNames)
                 compIDsArray = zeros(length(tokenNames),1);
@@ -74,9 +84,6 @@ classdef CellROIIndexMapper
                 error('cannot parse names');
             end
             
-            % Add the compIDs to the table:
-            compIDColumn = table(compIDsArray,'VariableNames',{'compID'});
-            obj.compTable = [obj.compTable compIDColumn];
         end
         
                 
