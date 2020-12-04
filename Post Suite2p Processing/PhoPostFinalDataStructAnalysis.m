@@ -156,10 +156,6 @@ cellROIIndexMapper = CellROIIndexMapper(activeAnimalSessionList, activeAnimalCom
 % num_cellROIs = length(uniqueComps);
 num_cellROIs = cellROIIndexMapper.num_cellROIs;
 
-% % Add an index column to the table:
-% indexArray = 1:height(compTable);
-% indexColumn = table(indexArray','VariableNames',{'index'});
-% compTable = [compTable indexColumn];
 % % update numCompListEntries after removing the irrelevant ones
 % numCompListEntries = height(compTable); 
 % 
@@ -295,8 +291,8 @@ final_data_explorer_obj = FinalDataExplorer(cellROIIndexMapper, stimuli_mapper);
 final_data_explorer_obj.compMasks = compMasks; % Set the compMasks, which contains the masks.
 final_data_explorer_obj.compNeuropilMasks = compNeuropilMasks; % Set the compNeuropilMasks, which contains the masks.
 
-% the value for outputs.tbImg should be the same for all traces, all cells, and all sessions, so we can just use the last one:
-final_data_explorer_obj.traceXIndicies = outputs.tbImg;
+% the value for outputs.traceTimebase_t should be the same for all traces, all cells, and all sessions, so we can just use the last one:
+final_data_explorer_obj.traceXIndicies = outputs.traceTimebase_t;
 
 default_DFF.cellROI_SatisfiesFirstDayTuning = (default_DFF.cellROI_FirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 

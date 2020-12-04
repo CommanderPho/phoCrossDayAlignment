@@ -53,7 +53,7 @@
     %= indexMap_AmpsFreqs2StimulusArray - a map from each unique stimuli to a linear stimulus index. Each row contains a fixed amplitude, each column a fixed freq
     %= indexMap_StimulusLinear2AmpsFreqsArray - each row contains a fixed linear stimulus, and the two entries in the adjacent columns contain the uniqueAmps index and the uniqueFreqs index.
     %= imgDataToPlot - 
-    %= tbImg - make a timebase to plot as xAxis for traces
+    %= traceTimebase_t - make a timebase to plot as xAxis for traces
     %= TracesForAllStimuli.meanData - The important red lines
     %= TracesForAllStimuli.imgDataToPlot - 
     %= TracesForAllStimuli.finalSeriesAmps - 2D projections of the plots

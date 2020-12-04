@@ -35,7 +35,7 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
         numStimuli = size(temp.currRedTraceLinesForAllStimuli,1);
         
         
-%         axH = plot(tbImg, temp.currRedTraceLinesForAllStimuli);
+%         axH = plot(traceTimebase_t, temp.currRedTraceLinesForAllStimuli);
         
         for b = 1:numStimuli
 %             [ampsIndex, freqsIndex] = indexMap_StimulusLinear2AmpsFreqsArray(b,:,:);

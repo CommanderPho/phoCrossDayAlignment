@@ -42,8 +42,8 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
         
         % Deal with the 0,0 index:
 %          if uniqueAmps(c)==0
-%             plot(tbImg, imgDataToPlot(currentAmpIdx,:),'Color','black','Linewidth',2)
-% %             text(max(tbImg),c-1,strcat(num2str(uniqueAmps(c)*100),'%'))
+%             plot(traceTimebase_t, imgDataToPlot(currentAmpIdx,:),'Color','black','Linewidth',2)
+% %             text(max(traceTimebase_t),c-1,strcat(num2str(uniqueAmps(c)*100),'%'))
 %          end
          
         freq_zero = uniqueFreqs(1);
@@ -51,7 +51,7 @@ function [figH, curr_ax] = fnPlotFlattenedPlotsFromPeaksGrid(dateStrings, unique
         plot(freq_zero, peak_zero,'x','Color','black','MarkerSize',20,...
             'LineWidth',3); % Draws a single point
         hold on;
-%         text(max(tbImg),c-1,strcat(num2str(uniqueAmps(c)*100),'%'))
+%         text(max(traceTimebase_t),c-1,strcat(num2str(uniqueAmps(c)*100),'%'))
         
         h_x_amp = plot(repmat(uniqueFreqs(2:end)', [length(uniqueAmps(2:end)) 1])', temp.currPeaksGrid(2:end,2:end)');
         set(h_x_amp, 'linewidth', 2);

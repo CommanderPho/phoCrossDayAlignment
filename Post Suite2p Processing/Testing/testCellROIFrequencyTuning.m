@@ -14,5 +14,5 @@
     [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, final_data_explorer_obj.uniqueStimuli, ...
         temp.currAllSessionCompIndicies, temp.cellRoiIndex, final_data_explorer_obj.traceXIndicies, final_data_explorer_obj.redTraceLinesForAllStimuli);    
      
-%     [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, outputs.tbImg, final_data_explorer_obj.uniqueStimuli, final_data_explorer_obj.stimuli_mapper.indexMap_StimulusLinear2AmpsFreqsArray, final_data_explorer_obj.redTraceLinesForAllStimuli);
+%     [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, temp.currAllSessionCompIndicies, temp.cellRoiIndex, outputs.traceTimebase_t, final_data_explorer_obj.uniqueStimuli, final_data_explorer_obj.stimuli_mapper.indexMap_StimulusLinear2AmpsFreqsArray, final_data_explorer_obj.redTraceLinesForAllStimuli);
 % end

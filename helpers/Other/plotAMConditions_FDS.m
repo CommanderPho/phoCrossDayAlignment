@@ -50,7 +50,7 @@ for a = 1:numel(compList)
     
     %pre-allocate
     imgDataToPlot = zeros(numStimuli,numFrames);
-    tbImg = linspace(0,numFrames/frameRate,numFrames); % make a timebase to plot as xAxis for traces
+    traceTimebase_t = linspace(0,numFrames/frameRate,numFrames); % make a timebase to plot as xAxis for traces
     peakSignal=zeros(numStimuli,1);
     
     for b = 1:numStimuli
@@ -93,13 +93,13 @@ for a = 1:numel(compList)
         subplot(2,2,3)
         hold on
         if uniqueAmps(c)==0
-            plot(tbImg,imgDataToPlot(currentAmpIdx,:),'Color','black','Linewidth',2)
-            text(max(tbImg),c-1,strcat(num2str(uniqueAmps(c)*100),'%'))
+            plot(traceTimebase_t,imgDataToPlot(currentAmpIdx,:),'Color','black','Linewidth',2)
+            text(max(traceTimebase_t),c-1,strcat(num2str(uniqueAmps(c)*100),'%'))
         else
             for cc = 1:numel(currentAmpIdx)
-                plot(tbImg,imgDataToPlot(currentAmpIdx(cc),:)+((c-1)*1),'Color',frequencyColorMap(cc+1,:),'Linewidth',2)
+                plot(traceTimebase_t,imgDataToPlot(currentAmpIdx(cc),:)+((c-1)*1),'Color',frequencyColorMap(cc+1,:),'Linewidth',2)
             end
-            text(max(tbImg),(c-1)*1,strcat(num2str(uniqueAmps(c)*100),'%'))
+            text(max(traceTimebase_t),(c-1)*1,strcat(num2str(uniqueAmps(c)*100),'%'))
         end
         hold on
         ylabel('ModulationDepth ->')
@@ -143,13 +143,13 @@ for a = 1:numel(compList)
         subplot(2,2,4)
         hold on
         if uniqueFreqs(d)==0
-            plot(tbImg,imgDataToPlot(currentFreqIdx,:),'Color','black','Linewidth',2)
-            text(max(tbImg),(d-1)*2,strcat(num2str(uniqueFreqs(d)),{' '},'Hz'))
+            plot(traceTimebase_t,imgDataToPlot(currentFreqIdx,:),'Color','black','Linewidth',2)
+            text(max(traceTimebase_t),(d-1)*2,strcat(num2str(uniqueFreqs(d)),{' '},'Hz'))
         else
             for dd =1:numel(currentFreqIdx)
-                plot(tbImg,imgDataToPlot(currentFreqIdx(dd),:)+((d-1)*1),'Color',amplitudeColorMap(dd+1,:),'Linewidth',2)
+                plot(traceTimebase_t,imgDataToPlot(currentFreqIdx(dd),:)+((d-1)*1),'Color',amplitudeColorMap(dd+1,:),'Linewidth',2)
             end
-            text(max(tbImg),(d-1)*1,strcat(num2str(uniqueFreqs(d)),{' '},'Hz'))
+            text(max(traceTimebase_t),(d-1)*1,strcat(num2str(uniqueFreqs(d)),{' '},'Hz'))
         end
         ylabel('ModulationRate ->')
         xlabel('Time (s)')
