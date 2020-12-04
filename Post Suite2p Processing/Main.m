@@ -50,7 +50,7 @@ phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.sampPeak = 2
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.frameRate = 30;
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.smoothValue = 5;
 
-phoPipelineOptions.PhoPostFinalDataStructAnalysis.should_use_neuropil_corrected_version = true;
+phoPipelineOptions.PhoPostFinalDataStructAnalysis.should_use_neuropil_corrected_version = false;
     
     
 %%% PhoTuningMeshExplorer Options:

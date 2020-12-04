@@ -6,9 +6,9 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
     %% Options:
     temp.numSessions = length(currAllSessionCompIndicies);
     
-    plotting_options.should_plot_all_traces = true; % plotting_options.should_plot_all_traces: if true, line traces for all trials are plotted in addition the mean line
+    plotting_options.should_plot_all_traces = false; % plotting_options.should_plot_all_traces: if true, line traces for all trials are plotted in addition the mean line
     
-    plotting_options.should_plot_vertical_sound_start_stop_lines = false; % plotting_options.should_plot_vertical_sound_start_stop_lines: if true, vertical start/stop lines are drawn to show when the sound started and stopped.
+    plotting_options.should_plot_vertical_sound_start_stop_lines = true; % plotting_options.should_plot_vertical_sound_start_stop_lines: if true, vertical start/stop lines are drawn to show when the sound started and stopped.
     
     if ~exist('processingOptions','var')
         processingOptions.startSound = 31;
@@ -72,14 +72,14 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
             if plotting_options.should_plot_vertical_sound_start_stop_lines
                 % Plot the stimulus indicator lines:
                 x = [processingOptions.startSoundSeconds processingOptions.startSoundSeconds];
-                y = [-0.5 0.5];
+                y = [-0.1 0.1];
                 line(x, y,'Color','black','LineStyle','-')
                 hold on;
 
                 % end sound line:
                 x = [processingOptions.endSoundSeconds processingOptions.endSoundSeconds];
-                y = [-0.4 0.4];
-                line(x, y,'Color','black','LineStyle','--')
+                y = [-0.1 0.1];
+                line(x, y,'Color','black','LineStyle','-')
                 hold on;
 
             end
