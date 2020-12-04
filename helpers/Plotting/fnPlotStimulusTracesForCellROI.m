@@ -37,28 +37,18 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
         
         numStimuli = size(temp.currRedTraceLinesForAllStimuli,1);
         
-%         axH = plot(traceTimebase_t, temp.currRedTraceLinesForAllStimuli);
-        
         for b = 1:numStimuli
-%             [ampsIndex, freqsIndex] = indexMap_StimulusLinear2AmpsFreqsArray(b,:,:);
-            
-            %stimulusList = flip(uniqueStimuli);
-%             tracesToPlot = squeeze(temp.currRedTraceLinesForAllStimuli(b,:));
-%             %get the raw data that you're gonna plot
-%             imgDataToPlot = imgData(tracesToPlot,:);
-% 
-%             %make an average
-%             meanData=mean(imgDataToPlot,1);
 
             currAllTraces = squeeze(temp.currTrialTraceLinesForAllStimuli(b,:,:));
             
-
             meanData = squeeze(temp.currRedTraceLinesForAllStimuli(b,:));
 %             axes(ha(numStimuli-b+1));
             
             subplot(numRows, numCol, numStimuli-b+1);
+            % plot the traces:
             h_PlotObj_allTraces = plot(traceTimebase_t, currAllTraces,'color','black');
             hold on;
+            % plot the average (red) line:
             h_PlotObj = plot(traceTimebase_t, meanData);
             set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 2);
             title(strcat(num2str(uniqueStimuli(b,1)), {' '}, 'Hz', {' '}, 'at', {' '}, num2str(uniqueStimuli(b,2)*100), {' '}, '% Depth'))
