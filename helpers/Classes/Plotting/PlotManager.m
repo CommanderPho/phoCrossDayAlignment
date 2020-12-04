@@ -1,4 +1,4 @@
-classdef PlotManager < handle & matlab.mixin.CustomDisplay
+classdef PlotManager < handle
     %PLOTMANAGER Summary of this class goes here
     %   Detailed explanation goes here
     

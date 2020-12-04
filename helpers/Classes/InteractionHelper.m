@@ -1,4 +1,4 @@
-classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
+classdef InteractionHelper < handle
     %InteractionHelper Summary of this class goes here
     %   Detailed explanation goes here
     

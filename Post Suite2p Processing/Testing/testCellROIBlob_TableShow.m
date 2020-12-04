@@ -7,8 +7,20 @@ plot_manager_cellRoiPlot.setupGraphicalSelectionTable();
 
 % plot_manager_cellRoiPlot.interaction_helper_obj.updateGraphicalSelectionTable();
 
+omit_list = [4 5 7 9 10 13 18 20 21 22 24 28];
+% plot_manager_cellRoiPlot.interaction_helper_obj.GraphicalSelection.selectionCustomTableFigure.data_table.
+table_rows = height(plot_manager_cellRoiPlot.interaction_helper_obj.GraphicalSelection.selectionCustomTableFigure.data_table);
+new_is_excluded = logical(zeros(table_rows, 1));
+new_is_excluded(omit_list) = true;
 
+omit_compIDs = plot_manager_cellRoiPlot.interaction_helper_obj.GraphicalSelection.selectionCustomTableFigure.data_table.compID(omit_list);
+omit_roiNames = plot_manager_cellRoiPlot.interaction_helper_obj.GraphicalSelection.selectionCustomTableFigure.data_table.roiName(omit_list);
 
+is_excluded_table = table(new_is_excluded);
+
+debug_table = [plot_manager_cellRoiPlot.interaction_helper_obj.GraphicalSelection.selectionCustomTableFigure.data_table, is_excluded_table]; 
+
+% plot_manager_cellRoiPlot.interaction_helper_obj.GraphicalSelection.selectionCustomTableFigure.data_table.is_excluded = );
 % plot_manager_cellRoiPlot.interaction_helper_obj.isCellRoiSelected;
 %  
 %  
