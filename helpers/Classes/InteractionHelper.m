@@ -16,7 +16,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
         %% Graphical (TODO: potentially refactor)
         GraphicalSelection
 		Colors
-		graphical_update_callbacks = []; %% Stores the callback to update the graphics after a toolbar item is clicked or other UX input
+		graphical_update_callback %% Stores the callback to update the graphics after a toolbar item is clicked or other UX input
         
     end
     
@@ -102,7 +102,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 
 		function obj = setupGraphicalSelectionTable(obj, graphical_update_callback)
 			if exist('graphical_update_callback','var')
-				obj.graphical_update_callbacks = [obj.graphical_update_callbacks, graphical_update_callback];
+                obj.graphical_update_callback = graphical_update_callback;
 			end
 
 			indexArray = 1:obj.num_cellROIs;
@@ -131,10 +131,13 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 		end
 
 		function obj = updateGraphicalSelectionTable(obj)
+            % updateGraphicalSelectionTable(): called to update the table values
 			fprintf('updateGraphicalSelectionTable() called. \n')
 			
-			foundExtantTableObj = findobj('Tag','uimgr.uitable_PhoCustom_SelectionTable');
+% 			foundExtantTableObj = findobj('Tag','uimgr.uitable_PhoCustom_SelectionTable');
+            foundExtantTableObj = findall(0,'Type','uitable','tag','uimgr.uitable_PhoCustom_SelectionTable');
 			if ~isempty(foundExtantTableObj) && isgraphics(foundExtantTableObj)
+                fprintf('found table!');
 				foundExtantTableObj.Data.isCellRoiSelected = obj.isCellRoiSelected;
 			else
 				warning('could not find table!')
@@ -224,14 +227,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
             obj.loadFromExistingBackingFile();
             fprintf('Done.\n')
 			% Perform user callbacks:
-			if length(obj.graphical_update_callbacks) == 1
-                obj.graphical_update_callbacks();
-            else
-                for i = 1:length(obj.graphical_update_callbacks)
-                    curr_callback = obj.graphical_update_callbacks(i);
-                    curr_callback();
-                end
-            end
+			obj.perform_graphics_update_callbacks();
         end
 
         % SaveUserAnnotations
@@ -264,14 +260,7 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 			disp(obj.selectionOptions.shouldHideSelectedRois);
 			obj.selection_toolbar_update_custom_toolbar_buttons_appearance();
 			% Perform user callbacks:
-            if length(obj.graphical_update_callbacks) == 1
-                obj.graphical_update_callbacks();
-            else
-                for i = 1:length(obj.graphical_update_callbacks)
-                    curr_callback = obj.graphical_update_callbacks(i);
-                    curr_callback();
-                end
-            end
+            obj.perform_graphics_update_callbacks();
 		end
 
 		function selection_table_checkSelectedToggled_callback(obj, src, eventdata)
@@ -282,19 +271,37 @@ classdef InteractionHelper < handle & matlab.mixin.CustomDisplay
 				selected_row_updated_value = eventdata.NewData;
 				fprintf('row[%d]: isCellRoiSelected changed to %d\n', selected_row_index, selected_row_updated_value);
 				obj.updateCellRoiIsSelected(selected_row_index, selected_row_updated_value);
-				% Perform user callbacks:
-                if length(obj.graphical_update_callbacks) == 1
-                    obj.graphical_update_callbacks();
-                else
-                    for i = 1:length(obj.graphical_update_callbacks)
-                        curr_callback = obj.graphical_update_callbacks(i);
-                        curr_callback();
-                    end
-                end
+				obj.perform_graphics_update_callbacks();
 			end
 
 
-		end
+        end
+        
+        function [obj] = perform_graphics_update_callbacks(obj)
+            % Perform user callbacks:
+            
+            obj.updateGraphicalSelectionTable();
+            
+            if isprop(obj, 'graphical_update_callback')
+                obj.graphical_update_callback();
+            else
+                warning('callback not defined for InteractionHelper')
+            end
+            
+%             
+%             if length(obj.graphical_update_callbacks) == 1
+% %                 obj.graphical_update_callbacks();
+%                 curr_callback = obj.graphical_update_callbacks{1};
+%                 curr_callback();
+%                 
+%             else
+%                 for i = 1:length(obj.graphical_update_callbacks)
+% %                     curr_callback = obj.graphical_update_callbacks(i);
+%                     curr_callback = obj.graphical_update_callbacks{1};
+%                     curr_callback();
+%                 end
+%             end
+        end
 
 
     
