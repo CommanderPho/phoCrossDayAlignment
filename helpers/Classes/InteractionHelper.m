@@ -113,21 +113,46 @@ classdef InteractionHelper < handle
 			isSelectedColumn = table(obj.isCellRoiSelected,'VariableNames',{'isCellRoiSelected'});
 			obj.GraphicalSelection.selectionCustomTableFigure.data_table = [obj.GraphicalSelection.selectionCustomTableFigure.data_table isSelectedColumn];
 
-			foundExtantTableFigure = findobj('Tag','uimgr.uifigure_PhoCustom_SelectionTable');
+            foundExtantTableFigure = findall(0,'Type','figure','tag','uimgr.uifigure_PhoCustom_SelectionTable'); % Get the handle.
 			if ~isempty(foundExtantTableFigure) && isgraphics(foundExtantTableFigure)
+                fprintf('found existing table figure. re-using...\n');
 				obj.GraphicalSelection.selectionCustomTableFigure.Figure = foundExtantTableFigure;
                 delete(obj.GraphicalSelection.selectionCustomTableFigure.Figure);                
-                obj.GraphicalSelection.selectionCustomTableFigure.Figure = uifigure('Position',[500 500 750 350],'Tag','uimgr.uifigure_PhoCustom_SelectionTable');
-			else
-				obj.GraphicalSelection.selectionCustomTableFigure.Figure = uifigure('Position',[500 500 750 350],'Tag','uimgr.uifigure_PhoCustom_SelectionTable');
-			end
+                obj.GraphicalSelection.selectionCustomTableFigure.Figure = uifigure('Position',[500 500 750 350],'Name','cellROI Table','Tag','uimgr.uifigure_PhoCustom_SelectionTable');
+            else
+                fprintf('no existing table found. building new...\n');
+				obj.GraphicalSelection.selectionCustomTableFigure.Figure = uifigure('Position',[500 500 750 350],'Name','cellROI Table','Tag','uimgr.uifigure_PhoCustom_SelectionTable');
+                
+                %% Add a Custom Toolbar to allow loading/saving selections
+                foundExtantToolbar = findobj(obj.GraphicalSelection.selectionCustomTableFigure.Figure,'Tag','uimgr.uitoolbar_PhoCustom_TableSaving');
+                if ~isempty(foundExtantToolbar) && isgraphics(foundExtantToolbar)
+                    obj.GraphicalSelection.tableCustomToolbar = foundExtantToolbar;
+                    delete(obj.GraphicalSelection.tableCustomToolbar);                
+                    obj.GraphicalSelection.tableCustomToolbar = uitoolbar(obj.GraphicalSelection.selectionCustomTableFigure.Figure,'Tag','uimgr.uitoolbar_PhoCustom_TableSaving');
+                else
+                    obj.GraphicalSelection.tableCustomToolbar = uitoolbar(obj.GraphicalSelection.selectionCustomTableFigure.Figure,'Tag','uimgr.uitoolbar_PhoCustom_TableSaving');
+                end
 
-			obj.GraphicalSelection.selectionCustomTableFigure.Table = uitable(obj.GraphicalSelection.selectionCustomTableFigure.Figure, 'Data', obj.GraphicalSelection.selectionCustomTableFigure.data_table,'Tag','uimgr.uitable_PhoCustom_SelectionTable');
+                %% Load User Annotations File
+                obj.GraphicalSelection.tableControls.btn_LoadUserAnnotations = uipushtool(obj.GraphicalSelection.tableCustomToolbar,'Tag','uimgr.uipushtool_LoadUserAnnotationsTable');
+                obj.GraphicalSelection.tableControls.btn_LoadUserAnnotations.CData = iconRead('file_open.png');
+                obj.GraphicalSelection.tableControls.btn_LoadUserAnnotations.Tooltip = 'Load current user annotations out to the pre-specified .MAT file';
+                obj.GraphicalSelection.tableControls.btn_LoadUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_LoadUserSelections_callback(src, event));
+
+                %% Save User Annotations File
+                obj.GraphicalSelection.tableControls.btn_SaveUserAnnotations = uipushtool(obj.GraphicalSelection.tableCustomToolbar,'Tag','uimgr.uipushtool_SaveUserAnnotationsTable');
+                obj.GraphicalSelection.tableControls.btn_SaveUserAnnotations.CData = iconRead('file_save.png');
+                obj.GraphicalSelection.tableControls.btn_SaveUserAnnotations.Tooltip = 'Save current user annotations out to the pre-specified .MAT file';
+                obj.GraphicalSelection.tableControls.btn_SaveUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_SaveUserSelections_callback(src, event));
+
+            end
+
+			obj.GraphicalSelection.selectionCustomTableFigure.Table = uitable(obj.GraphicalSelection.selectionCustomTableFigure.Figure, 'Data', obj.GraphicalSelection.selectionCustomTableFigure.data_table,...
+                'Tag','uimgr.uitable_PhoCustom_SelectionTable');
 			obj.GraphicalSelection.selectionCustomTableFigure.Table.Position = [20 20 710 310];
 			obj.GraphicalSelection.selectionCustomTableFigure.Table.ColumnEditable = [false, false, false, false, true];
 			% obj.GraphicalSelection.selectionCustomTableFigure.Table.DisplayDataChangedFcn = @updatePlot;
 			obj.GraphicalSelection.selectionCustomTableFigure.Table.CellEditCallback = @(src, eventdata) (obj.selection_table_checkSelectedToggled_callback(src, eventdata));
-
 		end
 
 		function obj = updateGraphicalSelectionTable(obj)
@@ -148,7 +173,10 @@ classdef InteractionHelper < handle
 
 		function obj = setupGraphicalSelectionToolbar(obj, activeFigure, graphical_update_callback)
 			%% setupGraphicalSelectionToolbar: adds the toolbar to the activeFigure
-			obj.graphical_update_callbacks = [obj.graphical_update_callbacks, graphical_update_callback];
+            if exist('graphical_update_callback','var')
+               fprintf('setting graphical_update_callback...\n');
+               obj.graphical_update_callback = graphical_update_callback; 
+            end
 
             %% Add a Custom Toolbar to allow marking selections
 			foundExtantToolbar = findobj(activeFigure,'Tag','uimgr.uitoolbar_PhoCustom_Selection');
@@ -172,6 +200,7 @@ classdef InteractionHelper < handle
             obj.GraphicalSelection.selectionControls.btn_SaveUserAnnotations.Tooltip = 'Save current user annotations out to the pre-specified .MAT file';
             obj.GraphicalSelection.selectionControls.btn_SaveUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_SaveUserSelections_callback(src, event));
 
+            
 			%% Toggle Eye Area overlay:
 			obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay_imagePaths = {'HideEyePoly.png', 'ShowEyePoly.png'};
 			obj.GraphicalSelection.selectionControls.btn_ToggleEyePolyOverlay = uitoggletool(obj.GraphicalSelection.selectionCustomToolbar,'Tag','uimgr.uipushtool_ToggleEyePolyOverlay');
