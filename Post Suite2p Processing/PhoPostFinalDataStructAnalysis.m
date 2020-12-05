@@ -80,24 +80,6 @@ end
 cellROIIndexMapper = CellROIIndexMapper(activeSessionList, activeCompList, phoPipelineOptions);
 
 
-% % Parse the compName into a distinct compID (an index).
-% regex.compNameParser = 'comp(?<compID>\d+)';
-% 
-% tokenNames = regexp(compTable.compName, regex.compNameParser, 'names');
-% 
-% if ~isempty(tokenNames)
-%     compIDsArray = zeros(length(tokenNames),1);
-%     for i = 1:length(compIDsArray)
-%         compIDsArray(i) = str2num(tokenNames{i}.compID);
-%     end
-% else
-%     error('cannot parse names');
-% end
-% % Add the compIDs to the table:
-% compIDColumn = table(compIDsArray,'VariableNames',{'compID'});
-% compTable = [compTable compIDColumn];
-
-
 % if should_load_neuropil_masks
 %     amalgamation_combined_neuropil_mask = zeros(512, 512);
 %     %% The loaded neuropils seem to be some sort of normalized format. They sum to one, or close to it.
@@ -111,51 +93,6 @@ cellROIIndexMapper = CellROIIndexMapper(activeSessionList, activeCompList, phoPi
 % 
 %     figure
 %     fnPhoMatrixPlot(amalgamation_combined_neuropil_mask)
-% end
-
-% %% Filter Explicitly Excluded ROI components:
-% foundNewToBeExcludedComps = {};
-% if exist('excludedCompsList','var')
-% %     potentiallyNewExcludedCompsList = uniqueComps(phoPipelineOptions.ignoredCellROI_Indicies); % Before removing them, get the list of the component names that are being removed.
-%     potentiallyNewExcludedCompsList = phoPipelineOptions.ignoredCellROI_CompNames;
-% %     lia = ismember(potentiallyNewExcludedCompsList, excludedCompsList);
-%     for i = 1:length(potentiallyNewExcludedCompsList)
-%        if ~ismember(potentiallyNewExcludedCompsList{i}, excludedCompsList)
-%            % Found one that hasn't been filtered for
-%            foundNewToBeExcludedComps{end+1} = potentiallyNewExcludedCompsList{i};
-%        end
-%     end
-%       
-% else
-%      % Make a backup before removing anything:
-%     backup.uniqueComps = uniqueComps;
-%     backup.compList = compList;
-%     backup.activeAnimalCompList = activeAnimalCompList;
-%     backup.compTable = compTable;
-%     
-%     excludedCompsList = {};
-%     foundNewToBeExcludedComps = phoPipelineOptions.ignoredCellROI_CompNames;
-% %     excludedCompsList = uniqueComps(phoPipelineOptions.ignoredCellROI_Indicies); % Before removing them, get the list of the component names that are being removed.
-% end
-% 
-% 
-% numNew = length(foundNewToBeExcludedComps);
-% if numNew > 0
-%     
-%     for i = 1:length(foundNewToBeExcludedComps)
-% %        curr_ignoredCellROI_OriginalIndex = phoPipelineOptions.ignoredCellROI_Indicies(i);
-%        curr_ignoredCellROI_ComponentName = foundNewToBeExcludedComps{i};
-% 
-%        uniqueComps(strcmpi(uniqueComps, curr_ignoredCellROI_ComponentName)) = []; % Remove the comps that are excluded
-%        
-%        rowsToRemove = strcmpi(compTable.compName, curr_ignoredCellROI_ComponentName);
-%        compTable(rowsToRemove, :) = []; % Remove these rows
-%        compList(rowsToRemove) = [];
-%        activeAnimalCompList(rowsToRemove) = [];
-%        
-%        excludedCompsList{end+1} = curr_ignoredCellROI_ComponentName;
-%     end
-% 
 % end
 
 % num_cellROIs = length(uniqueComps);
