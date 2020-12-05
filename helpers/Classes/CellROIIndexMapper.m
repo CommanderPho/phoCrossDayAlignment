@@ -85,54 +85,54 @@ classdef CellROIIndexMapper
         end
         
                 
-        function obj = filterComps(obj, phoPipelineOptions)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            %% Filter Explicitly Excluded ROI components:
-            foundNewToBeExcludedComps = {};
-            if exist('excludedCompsList','var')
-            %     potentiallyNewExcludedCompsList = uniqueComps(phoPipelineOptions.ignoredCellROI_Indicies); % Before removing them, get the list of the component names that are being removed.
-                potentiallyNewExcludedCompsList = phoPipelineOptions.ignoredCellROI_CompNames;
-            %     lia = ismember(potentiallyNewExcludedCompsList, excludedCompsList);
-                for i = 1:length(potentiallyNewExcludedCompsList)
-                   if ~ismember(potentiallyNewExcludedCompsList{i}, excludedCompsList)
-                       % Found one that hasn't been filtered for
-                       foundNewToBeExcludedComps{end+1} = potentiallyNewExcludedCompsList{i};
-                   end
-                end
+        % function obj = filterComps(obj, phoPipelineOptions)
+        %     %METHOD1 Summary of this method goes here
+        %     %   Detailed explanation goes here
+        %     %% Filter Explicitly Excluded ROI components:
+        %     foundNewToBeExcludedComps = {};
+        %     if exist('excludedCompsList','var')
+        %     %     potentiallyNewExcludedCompsList = uniqueComps(phoPipelineOptions.ignoredCellROI_Indicies); % Before removing them, get the list of the component names that are being removed.
+        %         potentiallyNewExcludedCompsList = phoPipelineOptions.ignoredCellROI_CompNames;
+        %     %     lia = ismember(potentiallyNewExcludedCompsList, excludedCompsList);
+        %         for i = 1:length(potentiallyNewExcludedCompsList)
+        %            if ~ismember(potentiallyNewExcludedCompsList{i}, excludedCompsList)
+        %                % Found one that hasn't been filtered for
+        %                foundNewToBeExcludedComps{end+1} = potentiallyNewExcludedCompsList{i};
+        %            end
+        %         end
 
-            else
-                 % Make a backup before removing anything:
-                backup.uniqueComps = obj.uniqueComps;
-                backup.compList = compList;
-                backup.activeAnimalCompList = activeAnimalCompList;
-                backup.compTable = obj.compTable;
+        %     else
+        %          % Make a backup before removing anything:
+        %         backup.uniqueComps = obj.uniqueComps;
+        %         backup.compList = compList;
+        %         backup.activeAnimalCompList = activeAnimalCompList;
+        %         backup.compTable = obj.compTable;
 
-                excludedCompsList = {};
-                foundNewToBeExcludedComps = phoPipelineOptions.ignoredCellROI_CompNames;
-            %     excludedCompsList = uniqueComps(phoPipelineOptions.ignoredCellROI_Indicies); % Before removing them, get the list of the component names that are being removed.
-            end
+        %         excludedCompsList = {};
+        %         foundNewToBeExcludedComps = phoPipelineOptions.ignoredCellROI_CompNames;
+        %     %     excludedCompsList = uniqueComps(phoPipelineOptions.ignoredCellROI_Indicies); % Before removing them, get the list of the component names that are being removed.
+        %     end
 
-            numNew = length(foundNewToBeExcludedComps);
-            if numNew > 0
+        %     numNew = length(foundNewToBeExcludedComps);
+        %     if numNew > 0
 
-                for i = 1:length(foundNewToBeExcludedComps)
-            %        curr_ignoredCellROI_OriginalIndex = phoPipelineOptions.ignoredCellROI_Indicies(i);
-                   curr_ignoredCellROI_ComponentName = foundNewToBeExcludedComps{i};
+        %         for i = 1:length(foundNewToBeExcludedComps)
+        %     %        curr_ignoredCellROI_OriginalIndex = phoPipelineOptions.ignoredCellROI_Indicies(i);
+        %            curr_ignoredCellROI_ComponentName = foundNewToBeExcludedComps{i};
 
-                   obj.uniqueComps(strcmpi(obj.uniqueComps, curr_ignoredCellROI_ComponentName)) = []; % Remove the comps that are excluded
+        %            obj.uniqueComps(strcmpi(obj.uniqueComps, curr_ignoredCellROI_ComponentName)) = []; % Remove the comps that are excluded
 
-                   rowsToRemove = strcmpi(obj.compTable.compName, curr_ignoredCellROI_ComponentName);
-                   obj.compTable(rowsToRemove, :) = []; % Remove these rows
-                   compList(rowsToRemove) = [];
-                   activeAnimalCompList(rowsToRemove) = [];
+        %            rowsToRemove = strcmpi(obj.compTable.compName, curr_ignoredCellROI_ComponentName);
+        %            obj.compTable(rowsToRemove, :) = []; % Remove these rows
+        %            compList(rowsToRemove) = [];
+        %            activeAnimalCompList(rowsToRemove) = [];
 
-                   excludedCompsList{end+1} = curr_ignoredCellROI_ComponentName;
-                end
+        %            excludedCompsList{end+1} = curr_ignoredCellROI_ComponentName;
+        %         end
 
-            end
+        %     end
 
-        end
+        % end
         
         
         %% Accessor functions:
