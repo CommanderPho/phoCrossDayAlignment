@@ -2,7 +2,7 @@ classdef CellROIIndexMapper
     %CELLROIINDEXMAPPER Provides mapping between cellROIIDs, compList linear indices, etc.
     %   Detailed explanation goes here
     % a uniqueCompListIndex is the unique linear index of the first session ONLY where a compName occurs.
-    
+
     properties
         dateStrings % a cell array of character strings corresponding to each session date.
         numOfSessions
@@ -21,13 +21,13 @@ classdef CellROIIndexMapper
     end
     
     methods
-        function obj = CellROIIndexMapper(activeAnimalSessionList, activeAnimalCompList, phoPipelineOptions)
+        function obj = CellROIIndexMapper(activeSessionList, activeCompList, phoPipelineOptions)
             %CELLROIINDEXMAPPER Construct an instance of this class
             %   Detailed explanation goes here
-            obj.dateStrings = {activeAnimalSessionList.date};  % Strings representing each date.
+            obj.dateStrings = {activeSessionList.date};  % Strings representing each date.
             obj.numOfSessions = length(obj.dateStrings); % The number of sessions (days) for this animal.
 
-            obj.compTable = struct2table(activeAnimalCompList);
+            obj.compTable = struct2table(activeCompList);
             obj.numCompListEntries = height(obj.compTable); % The number of rows in the compTable. Should be a integer multiple of the number of unique comps (corresponding to multiple sessions/days for each unique comp)
 
             obj.uniqueComps = unique(obj.compTable.compName, 'stable'); % Each unique component corresponds to a cellROI
@@ -169,15 +169,15 @@ classdef CellROIIndexMapper
         
     end % end methods block
 
-    methods (Static)
-      function [activeAnimalDataStruct, activeAnimalSessionList, activeAnimalCompList] = filterByAnimal(finalDataStruct, sessionList, compList, curr_animal)
-			%% Filter down to entries for the current animal:
-			activeAnimalDataStruct = finalDataStruct.(curr_animal); % get the final data struct for the current animal
-			activeAnimalSessionList = sessionList(strcmpi({sessionList.anmID}, curr_animal));
-			activeAnimalCompList = compList(strcmpi({compList.anmID}, curr_animal));
-	  end
+    % methods (Static)
+    %   function [activeAnimalDataStruct, activeAnimalSessionList, activeAnimalCompList] = filterByAnimal(finalDataStruct, sessionList, compList, curr_animal)
+	% 		%% Filter down to entries for the current animal:
+	% 		activeAnimalDataStruct = finalDataStruct.(curr_animal); % get the final data struct for the current animal
+	% 		activeAnimalSessionList = sessionList(strcmpi({sessionList.anmID}, curr_animal));
+	% 		activeAnimalCompList = compList(strcmpi({compList.anmID}, curr_animal));
+	%   end
 	
-	end % end methods static
+	% end % end methods static
 
 end
 

@@ -11,11 +11,15 @@ phoPipelineOptions.shouldSaveFiguresToDisk = false; % Note that this has no effe
 phoPipelineOptions.default_interactionManager_backingStorePath = '/Users/pho/repo/phoCrossDayAlignment/Post Suite2p Processing/Testing/UAnnotations-CellROI-0.mat';
 
 phoPipelineOptions.imageDimensions = [512 512];
-% phoPipelineOptions.ignoredCellROIs = [];
-% phoPipelineOptions.ignoredCellROI_Indicies = [3, 50, 132, 157, 116];
-phoPipelineOptions.ignoredCellROI_CompNames = {'comp4','comp123','comp625','comp677','comp480'};
-% phoPipelineOptions.ignoredCellROI_Indicies = [phoPipelineOptions.ignoredCellROI_Indicies [70, 79, 102]];
-phoPipelineOptions.ignoredCellROI_CompNames = [phoPipelineOptions.ignoredCellROI_CompNames {'comp198','comp237','comp370'}];
+
+
+
+
+% % phoPipelineOptions.ignoredCellROIs = [];
+% % phoPipelineOptions.ignoredCellROI_Indicies = [3, 50, 132, 157, 116];
+% phoPipelineOptions.ignoredCellROI_CompNames = {'comp4','comp123','comp625','comp677','comp480'};
+% % phoPipelineOptions.ignoredCellROI_Indicies = [phoPipelineOptions.ignoredCellROI_Indicies [70, 79, 102]];
+% phoPipelineOptions.ignoredCellROI_CompNames = [phoPipelineOptions.ignoredCellROI_CompNames {'comp198','comp237','comp370'}];
 
 % find(backup.uniqueComps(strcmpi({backup.uniqueComps}, {'comp198','comp237','comp370'})))
 % find(strcmpi(backup.uniqueComps, 'comp370'))
@@ -30,17 +34,18 @@ phoPipelineOptions.ignoredCellROI_CompNames = [phoPipelineOptions.ignoredCellROI
 % Need to map each component (like 'comp674') to the neuropil in the loaded mask.
 
 
-
-
-
-
 %%% PhoLoadFinalDataStruct Options:
 phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave = false;
 phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil = true;
 phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames = [1, 30];
 
+%% Filtering:
+phoPipelineOptions.PhoLoadFinalDataStruct.filtering.specFilePath = fullfile('../data','manualRoiFilteringResults-12_04_2020.mat');
+phoPipelineOptions.loadedFilteringData = load(phoPipelineOptions.PhoLoadFinalDataStruct.filtering.specFilePath, 'manualRoiFilteringResults');
+phoPipelineOptions.loadedFilteringData.curr_animal = 'anm265';
+
+
 %%% PhoPostFinalDataStructAnalysis Options:
-phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal = 'anm265';
 % tuning_max_threshold_criteria: the threshold value for peakDFF
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria = 0.1;
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions = true;

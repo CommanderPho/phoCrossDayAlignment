@@ -10,6 +10,7 @@ combinedOffsetInsetIndicies = [nan, 0];
     active_selections_backingFile_path = phoPipelineOptions.default_interactionManager_backingStorePath;
  end
  
+ %% Build a new plot manager object:
  plot_manager_cellRoiPlot = CellRoiPlotManager(final_data_explorer_obj, active_selections_backingFile_path);
  plot_manager_cellRoiPlot.activeOffsetInsetIndicies = combinedOffsetInsetIndicies;
  

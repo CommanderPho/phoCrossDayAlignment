@@ -61,9 +61,14 @@ end
 %
 
 %% Filter down to entries for the current animal:
-activeAnimalDataStruct = finalDataStruct.(phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal); % get the final data struct for the current animal
-activeAnimalSessionList = sessionList(strcmpi({sessionList.anmID}, phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal));
-activeAnimalCompList = compList(strcmpi({compList.anmID}, phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal));
+
+%% TODO: refactoring filtered data struct stuff:
+% activeAnimalDataStruct = finalDataStruct.(phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal); % get the final data struct for the current animal
+% activeSessionList = sessionList(strcmpi({sessionList.anmID}, phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal));
+% activeAnimalCompList = compList(strcmpi({compList.anmID}, phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal));
+
+
+
 %% Processing Options:
 
 %% This will need to be modified for bad/ignored cellROIs:
@@ -72,7 +77,7 @@ activeAnimalCompList = compList(strcmpi({compList.anmID}, phoPipelineOptions.Pho
 if exist('cellROIIndexMapper','var')
     clear cellROIIndexMapper;
 end
-cellROIIndexMapper = CellROIIndexMapper(activeAnimalSessionList, activeAnimalCompList, phoPipelineOptions);
+cellROIIndexMapper = CellROIIndexMapper(activeSessionList, activeCompList, phoPipelineOptions);
 
 
 % % Parse the compName into a distinct compID (an index).
@@ -214,7 +219,7 @@ for i = 1:num_cellROIs
    % Iterate through each component (all days) for this cellROI
 	for j = 1:length(curr_cellROI_compListIndicies)
 		curr_day_linear_comp_index = curr_cellROI_compListIndicies(j); % The linear comp index, not the unique cellROI index
-		[currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(activeAnimalCompList, curr_day_linear_comp_index); % TODO: potentially refactor into CellROIIndexMapper?
+		[currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(activeCompList, curr_day_linear_comp_index); % TODO: potentially refactor into CellROIIndexMapper?
         [outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp, phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions);
         uniqueAmps = outputs.uniqueAmps;
         uniqueFreqs = outputs.uniqueFreqs; %

@@ -38,19 +38,12 @@ if ~exist('finalDataStruct','var')
     finalDataStruct = [];
 end
 
-[finalDataStruct, sessionList, compList] = fnPhoLoadFinalDataStruct(finalDataStruct, phoPipelineOptions);
-
+%% Load the finalDataStruct:
+[finalDataStruct, activeSessionList, activeCompList] = fnPhoLoadFinalDataStruct(finalDataStruct, phoPipelineOptions);
 fprintf('\t done.\n');
-% %plotting
-% disp('Plotting finalDataStruct...')
-% % plotTracesForAllStimuli_FDS(finalDataStruct, compList(4))
-% plotTracesForAllStimuli_FDS(finalDataStruct, compList(162))
-% plotTracesForAllStimuli_FDS(finalDataStruct, compList(320))
-% plotAMConditions_FDS(finalDataStruct, compList(2:8))
 
-% plotAMConditions_FDS(finalDataStruct, compList(4))
 
-function [finalDataStruct, sessionList, compList] = fnPhoLoadFinalDataStruct(finalDataStruct, phoPipelineOptions)
+function [finalDataStruct, activeSessionList, activeCompList] = fnPhoLoadFinalDataStruct(finalDataStruct, phoPipelineOptions)
     fprintf('> Running PhoLoadFinalDataStruct...\n');
 
     %% Options:
@@ -90,19 +83,20 @@ function [finalDataStruct, sessionList, compList] = fnPhoLoadFinalDataStruct(fin
 		end
 
 		fprintf('\t Loading %s...',FDPath);
-        load(FDPath);
+        load(FDPath,'finalDataStruct');
         fprintf('done.\n');
     end
 
     % TODO: Check if the fields exist (DFF already computed):
     fprintf('\t Running makeSessionList_FDS on finalDataStruct...\n');
-    [sessionList, compList] = makeSessionList_FDS(finalDataStruct); %make a list of sessions and comps in FDS
+%     [sessionList, compList] = makeSessionList_FDS(finalDataStruct); %make a list of sessions and comps in FDS
+    [finalDataStruct, activeSessionList, activeCompList] = makeFiltered_FDS(finalDataStruct, phoPipelineOptions); % filter the FDS and get the filtered sessionList, compList as well  
     fprintf('\t\t done.\n');
 
     %% "FD (final data)" file output:
     if phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave
         fprintf('\t Running baselineDFF_fds on finalDataStruct...\n')
-        finalDataStruct = baselineDFF_fds(finalDataStruct, sessionList, phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames, phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions); % Adds the DFF baseline to the finalDataStruct
+        finalDataStruct = baselineDFF_fds(finalDataStruct, activeSessionList, phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames, phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions); % Adds the DFF baseline to the finalDataStruct
         isValidExtantPathFile = (~isempty(FDPath) & exist(FDPath, 'file'));
         if ~isValidExtantPathFile
             % Prompt the user to select a file if the path isn't valid
