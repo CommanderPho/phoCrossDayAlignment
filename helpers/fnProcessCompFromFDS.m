@@ -136,8 +136,8 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 
         %% plotAMConditions_FDS Style
         outputs.default_DFF.AMConditions.imgDataToPlot(b,:) = mean(imgDataDFF(currStimulusTrialIndicies,:));
-        [~, maxInd] = max(outputs.default_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
-        maxInd = maxInd + processingOptions.startSound - 1; % convert back to a frame index instead of a stimulus start relative index
+        [~, stimStartRelative_maxInd] = max(outputs.default_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
+		maxInd = stimStartRelative_maxInd + processingOptions.startSound - 1; % convert back to a frame index instead of a stimulus start relative index
         % Finally, the peakSignal(b): the portion of the fluoresence data surrounding the peak index (by extending +processingOptions.sampPeak and -processingOptions.sampPeak on both sides of the peak index) is extracted and the mean value is used as the peakSignal value.
         outputs.default_DFF.AMConditions.peakSignal(b) = mean(outputs.default_DFF.AMConditions.imgDataToPlot(b, maxInd-processingOptions.sampPeak:maxInd+processingOptions.sampPeak));
         
@@ -147,8 +147,8 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 
             %% plotAMConditions_FDS Style
             outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b,:) = mean(imagingDataMinusNeuropilDFF(currStimulusTrialIndicies,:));
-            [~, maxInd] = max(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
-            maxInd = maxInd + processingOptions.startSound - 1; % convert back to a frame index instead of a stimulus start relative index
+            [~, stimStartRelative_maxInd] = max(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
+            maxInd = stimStartRelative_maxInd + processingOptions.startSound - 1; % convert back to a frame index instead of a stimulus start relative index
             outputs.minusNeuropil_DFF.AMConditions.peakSignal(b) = mean(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, maxInd-processingOptions.sampPeak:maxInd+processingOptions.sampPeak));
         end
     
