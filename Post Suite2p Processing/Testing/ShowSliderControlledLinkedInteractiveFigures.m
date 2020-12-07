@@ -8,7 +8,7 @@
 
 addpath(genpath('../../helpers'));
 
-final_data_explorer_obj = final_data_explorer_obj.computeCurveAnalysis();
+
 
 
 %% Options:
@@ -118,50 +118,71 @@ fig_layout_manager_obj.bindAlignedTopTargetEdgeToBottomReferenceEdge(relative_fi
 %     end
 % end
 
+% function pho_plot_interactive_masking_all(dateStrings, compMasks, multiSessionCellRoi_CompListIndicies, extantFigH_masking, curr_cellRoiIndex)
+%     pho_plot_cell_mask(dateStrings, compMasks, multiSessionCellRoi_CompListIndicies, extantFigH_masking, curr_cellRoiIndex);
+% end
 
-function pho_plot_interactive_masking_all(dateStrings, compMasks, multiSessionCellRoi_CompListIndicies, extantFigH_masking, curr_cellRoiIndex)
-    pho_plot_cell_mask(dateStrings, compMasks, multiSessionCellRoi_CompListIndicies, extantFigH_masking, curr_cellRoiIndex);
-end
-
-function plotted_figH = pho_plot_cell_mask(dateStrings, compMasks, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
+function [callbackOutput] = pho_plot_cell_mask(dateStrings, compMasks, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
     % COMPUTED
+    callbackOutput.shouldRemoveCallback = false;
     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
 
-    % Cell Mask Plots:
-    [plotted_figH, ~] = fnPlotCellROIBlobs(dateStrings, temp.currAllSessionCompIndicies, curr_cellRoiIndex, compMasks, extantFigH);
-    set(plotted_figH, 'Name', sprintf('Slider Controlled Blobs/ROIs Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted 
+    if isvalid(extantFigH)
+        [callbackOutput.plotted_figH, ~] = fnPlotCellROIBlobs(dateStrings, temp.currAllSessionCompIndicies, curr_cellRoiIndex, compMasks, extantFigH);
+        set(callbackOutput.plotted_figH, 'Name', sprintf('Slider Controlled Blobs/ROIs Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted 
+    else
+        callbackOutput.plotted_figH = extantFigH;
+        callbackOutput.shouldRemoveCallback = true;
+    end
 end
 
 
-function plotted_figH = pho_plot_stimulus_traces(dateStrings, uniqueAmps, uniqueFreqs, uniqueStimuli, traceTimebase_t, tracesForAllStimuli, redTraceLinesForAllStimuli, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
+function [callbackOutput] = pho_plot_stimulus_traces(dateStrings, uniqueAmps, uniqueFreqs, uniqueStimuli, traceTimebase_t, tracesForAllStimuli, redTraceLinesForAllStimuli, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
     % COMPUTED
+    callbackOutput.shouldRemoveCallback = false;
     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
 
-    % Cell Mask Plots:
-    [plotted_figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, uniqueFreqs, uniqueStimuli, ...
-        temp.currAllSessionCompIndicies, curr_cellRoiIndex, ...
-        traceTimebase_t, tracesForAllStimuli, redTraceLinesForAllStimuli, extantFigH);
-    
-    set(plotted_figH, 'Name', sprintf('Slider Controlled Stimuli Traces Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted 
+    if isvalid(extantFigH)
+        % Cell Mask Plots:
+        [callbackOutput.plotted_figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, uniqueFreqs, uniqueStimuli, ...
+            temp.currAllSessionCompIndicies, curr_cellRoiIndex, ...
+            traceTimebase_t, tracesForAllStimuli, redTraceLinesForAllStimuli, extantFigH);
+        set(callbackOutput.plotted_figH, 'Name', sprintf('Slider Controlled Stimuli Traces Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted 
+    else
+        callbackOutput.plotted_figH = extantFigH;
+        callbackOutput.shouldRemoveCallback = true;
+    end
 end
 
-function plotted_figH = pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
+function [callbackOutput] = pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
     % COMPUTED
+    callbackOutput.shouldRemoveCallback = false;
     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
 
-    % Make 2D Plots (Exploring):    
-    [plotted_figH, ~] = fnPlotTunedStimulusPeaks(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, curr_cellRoiIndex, finalOutPeaksGrid, extantFigH);
-    set(plotted_figH, 'Name', sprintf('Slider Controlled 2D Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+    % Make 2D Plots (Exploring):   
+    if isvalid(extantFigH)
+        [callbackOutput.plotted_figH, ~] = fnPlotTunedStimulusPeaks(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, curr_cellRoiIndex, finalOutPeaksGrid, extantFigH);
+        set(callbackOutput.plotted_figH, 'Name', sprintf('Slider Controlled 2D Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+    else
+        callbackOutput.plotted_figH = extantFigH;
+        callbackOutput.shouldRemoveCallback = true;
+    end
 end
 
-function plotted_figH = pho_plot_3d_mesh(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
+function [callbackOutput] = pho_plot_3d_mesh(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
     % COMPUTED
+    callbackOutput.shouldRemoveCallback = false;
     temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
 
     % Make 3D Mesh Plot:
-    [plotted_figH, ~] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, curr_cellRoiIndex, finalOutPeaksGrid, extantFigH);
-%     zlim([-0.2, 1])
-    set(plotted_figH, 'Name', sprintf('Slider Controlled 3D Mesh Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+    if isvalid(extantFigH)
+        [callbackOutput.plotted_figH, ~] = fnPlotMeshFromPeaksGrid(dateStrings, uniqueAmps, uniqueFreqs, temp.currAllSessionCompIndicies, curr_cellRoiIndex, finalOutPeaksGrid, extantFigH);
+    %     zlim([-0.2, 1])
+        set(callbackOutput.plotted_figH, 'Name', sprintf('Slider Controlled 3D Mesh Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+    else
+        callbackOutput.plotted_figH = extantFigH;
+        callbackOutput.shouldRemoveCallback = true;
+    end
 end
 
 
