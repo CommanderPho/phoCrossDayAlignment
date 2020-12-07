@@ -111,21 +111,29 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 	%pre-allocate
 %     outputs.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
     outputs.traceTimebase_t = linspace(0, outputs.numFramesPerTrial/processingOptions.frameRate, outputs.numFramesPerTrial); % make a timebase to plot as xAxis for traces
-    
+	
+	%% timingInfo: an object containing information about the timing of the trials and the peaks within the trials:
+	outputs.timingInfo.Index.startSound = processingOptions.startSound;
+	outputs.timingInfo.Index.endSound = processingOptions.endSound;
+    outputs.timingInfo.Index.sampPeak = processingOptions.sampPeak;
+
     outputs.TracesForAllStimuli.imgDataToPlot = zeros([outputs.numStimuli, outputs.numStimulusPairTrialRepetitionsPerSession, outputs.numFramesPerTrial]); % raw traces
-    outputs.default_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, outputs.numFramesPerTrial); % The important red lines:
+    outputs.default_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, outputs.numFramesPerTrial); % The important red lines
     outputs.default_DFF.AMConditions.peakSignal = zeros(outputs.numStimuli, 1);
+    
+    % Timing info helpers:
+    outputs.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
+    outputs.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
+    
+    
     
     if processingOptions.compute_neuropil_corrected_versions
         outputs.TracesForAllStimuli.neuroPillCorrected = zeros([outputs.numStimuli, outputs.numStimulusPairTrialRepetitionsPerSession, outputs.numFramesPerTrial]); % raw traces
-        outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, outputs.numFramesPerTrial); % The important red lines:
+        outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, outputs.numFramesPerTrial); % The important red lines
         outputs.minusNeuropil_DFF.AMConditions.peakSignal = zeros(outputs.numStimuli, 1);
     end
     
 
-    
-    
-    
     %% Loop through all stimuli:
     for b = 1:outputs.numStimuli
         currStimulusTrialIndicies = outputs.linearStimulusPairIndexToTrialIndicies{b}; % The 20x1 repetitions of this specific stimulus
@@ -135,12 +143,16 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         outputs.TracesForAllStimuli.imgDataToPlot(b,:,:) = imgDataDFF(currStimulusTrialIndicies, :); % These are sets of stimuli for this entry.
 
         %% plotAMConditions_FDS Style
-        outputs.default_DFF.AMConditions.imgDataToPlot(b,:) = mean(imgDataDFF(currStimulusTrialIndicies,:));
+        outputs.default_DFF.AMConditions.imgDataToPlot(b,:) = mean(imgDataDFF(currStimulusTrialIndicies,:)); % This gets the particular red line for this stimulus
+        
         [~, stimStartRelative_maxInd] = max(outputs.default_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
 		maxInd = stimStartRelative_maxInd + processingOptions.startSound - 1; % convert back to a frame index instead of a stimulus start relative index
+
+		% timingInfo.Index.trialStartRelative.peakIndexRange: range surrounding the peak index (by extending +processingOptions.sampPeak and -processingOptions.sampPeak on both sides of the peak index)
+		timingInfo.Index.trialStartRelative.peakIndexRange = (maxInd-processingOptions.sampPeak):(maxInd+processingOptions.sampPeak);
+
         % Finally, the peakSignal(b): the portion of the fluoresence data surrounding the peak index (by extending +processingOptions.sampPeak and -processingOptions.sampPeak on both sides of the peak index) is extracted and the mean value is used as the peakSignal value.
-        outputs.default_DFF.AMConditions.peakSignal(b) = mean(outputs.default_DFF.AMConditions.imgDataToPlot(b, maxInd-processingOptions.sampPeak:maxInd+processingOptions.sampPeak));
-        
+        outputs.default_DFF.AMConditions.peakSignal(b) = mean(outputs.default_DFF.AMConditions.imgDataToPlot(b, timingInfo.Index.trialStartRelative.peakIndexRange));
         
         if processingOptions.compute_neuropil_corrected_versions
             outputs.TracesForAllStimuli.neuroPillCorrected(b,:,:) = imagingDataMinusNeuropilDFF(currStimulusTrialIndicies, :); % These are sets of stimuli for this entry.
@@ -150,7 +162,15 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
             [~, stimStartRelative_maxInd] = max(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
             maxInd = stimStartRelative_maxInd + processingOptions.startSound - 1; % convert back to a frame index instead of a stimulus start relative index
             outputs.minusNeuropil_DFF.AMConditions.peakSignal(b) = mean(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, maxInd-processingOptions.sampPeak:maxInd+processingOptions.sampPeak));
+            
         end
+        
+        %% NOTE: Uses the neuropil corrected version for timingInfo if that option is enabled, as the default_DFF values of (stimStartRelative_maxInd, maxInd) are over-written.
+        % the relative offset between the start of the sound stimulus and the max peak
+		outputs.timingInfo.Index.startSoundRelative.maxPeakIndex(b) = stimStartRelative_maxInd;
+		% timingInfo.Index.trialStartRelative.maxPeakIndex: the relative offset between the start of the trial (not the stimulus) and the max peak. As close to an absolute index as it gets.
+		outputs.timingInfo.Index.trialStartRelative.maxPeakIndex(b) = maxInd;
+        
     
     end
 

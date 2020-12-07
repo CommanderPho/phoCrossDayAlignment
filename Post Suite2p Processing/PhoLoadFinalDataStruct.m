@@ -93,6 +93,15 @@ function [finalDataStruct, activeSessionList, activeCompList] = fnPhoLoadFinalDa
     [finalDataStruct, activeSessionList, activeCompList] = makeFiltered_FDS(finalDataStruct, phoPipelineOptions); % filter the FDS and get the filtered sessionList, compList as well  
     fprintf('\t\t done.\n');
 
+    % TODO: print the exclusion/inclusion information for the cellROIs
+    % temp.excludedCompsStatusString = join(excludedCompsList,', ');
+    % temp.excludedCompsStatusString = temp.excludedCompsStatusString{1};
+    % temp.numberOriginal = length(backup.uniqueComps);
+    % temp.numberIgnored = (temp.numberOriginal - num_cellROIs);
+    % 
+    % fprintf('Using %d of %d rows (Ignoring %d): %s.\n', num_cellROIs, temp.numberOriginal, temp.numberIgnored, temp.excludedCompsStatusString);
+
+
     %% "FD (final data)" file output:
     if phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave
         fprintf('\t Running baselineDFF_fds on finalDataStruct...\n')

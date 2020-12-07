@@ -79,36 +79,8 @@ if exist('cellROIIndexMapper','var')
 end
 cellROIIndexMapper = CellROIIndexMapper(activeSessionList, activeCompList, phoPipelineOptions);
 
-
-% if should_load_neuropil_masks
-%     amalgamation_combined_neuropil_mask = zeros(512, 512);
-%     %% The loaded neuropils seem to be some sort of normalized format. They sum to one, or close to it.
-%     %% Loop through the compIDs
-%     for i = 1:length(compIDsArray)
-%         curr_compID = compIDsArray(i);
-%         curr_neuropilMask = squeeze(neuropil_masks(curr_compID,:,:));
-% 
-%         amalgamation_combined_neuropil_mask = amalgamation_combined_neuropil_mask + curr_neuropilMask;
-%     end
-% 
-%     figure
-%     fnPhoMatrixPlot(amalgamation_combined_neuropil_mask)
-% end
-
-% num_cellROIs = length(uniqueComps);
 num_cellROIs = cellROIIndexMapper.num_cellROIs;
 
-% % update numCompListEntries after removing the irrelevant ones
-% numCompListEntries = height(compTable); 
-% 
-% temp.excludedCompsStatusString = join(excludedCompsList,', ');
-% temp.excludedCompsStatusString = temp.excludedCompsStatusString{1};
-% temp.numberOriginal = length(backup.uniqueComps);
-% temp.numberIgnored = (temp.numberOriginal - num_cellROIs);
-% 
-% fprintf('Using %d of %d rows (Ignoring %d): %s.\n', num_cellROIs, temp.numberOriginal, temp.numberIgnored, temp.excludedCompsStatusString);
-
-% multiSessionCellRoi_CompListIndicies = zeros(cellROIIndexMapper.num_cellROIs, cellROIIndexMapper.numOfSessions); % a list of comp indicies for each CellRoi
 
 %% Pre-Allocate:
 compMasks.Masks = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
@@ -144,9 +116,7 @@ end
 if exist('stimuli_mapper','var')
     clear stimuli_mapper;
 end
-% if exist('final_data_explorer_obj','var')
-%     clear final_data_explorer_obj;
-% end
+
 
 %% Process Each Cell ROI:
 for i = 1:num_cellROIs
@@ -157,6 +127,7 @@ for i = 1:num_cellROIs
 	for j = 1:length(curr_cellROI_compListIndicies)
 		curr_day_linear_comp_index = curr_cellROI_compListIndicies(j); % The linear comp index, not the unique cellROI index
 		[currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(activeCompList, curr_day_linear_comp_index); % TODO: potentially refactor into CellROIIndexMapper?
+        
         [outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp, phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions);
         uniqueAmps = outputs.uniqueAmps;
         uniqueFreqs = outputs.uniqueFreqs; %
@@ -164,6 +135,10 @@ for i = 1:num_cellROIs
         compMasks.Edge(curr_day_linear_comp_index,:,:) = edge(outputs.referenceMask); %sobel by default;
 
         compNeuropilMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMaskNeuropil;
+        
+        % Get timing info for the mean (red) curves for all stimuli.
+%         outputs.timingInfo.Index.startSoundRelative.maxPeakIndex
+        
         
         if ~exist('stimuli_mapper','var')
             % Only allow initialization once, if it doesn't exist.
