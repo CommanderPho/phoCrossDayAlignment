@@ -50,7 +50,7 @@ classdef FinalDataExplorer
         roiComputedProperties
                
         preferredStimulusInfo
-        
+        computedRedTraceLinesAnalyses
         
     end
     methods
@@ -78,6 +78,7 @@ classdef FinalDataExplorer
         uniqueAmps
         uniqueFreqs
         uniqueStimuli
+
     end
     methods
        function dateStrings = get.dateStrings(obj)
@@ -178,7 +179,7 @@ classdef FinalDataExplorer
 			temp.structuring_element = strel('square', 3);
 
 			%% Sort based on tuning score:
-% 			[sortedTuningScores, cellRoiSortIndex] = sort(obj.componentAggregatePropeties.tuningScore, 'descend');
+	 		% [sortedTuningScores, cellRoiSortIndex] = sort(obj.componentAggregatePropeties.tuningScore, 'descend');
 
             % Perform allocations:
             obj = obj.allocateOutputObjects(phoPipelineOptions);
@@ -186,7 +187,7 @@ classdef FinalDataExplorer
             % Iterate through each cellROI:
 			for i = 1:obj.num_cellROIs
 				%% Plot the grid as a test
-% 				temp.cellRoiIndex = cellRoiSortIndex(i); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
+ 				%temp.cellRoiIndex = cellRoiSortIndex(i); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
                 temp.cellRoiIndex = i;
                 
                 temp.currAllSessionCompIndicies = obj.cellROIIndex_mapper.getCompListIndicies(temp.cellRoiIndex); % Gets all sessions for the current ROI
@@ -410,6 +411,15 @@ classdef FinalDataExplorer
 
         end % end function allocateOutputObjects
 
+
+		function [obj] = computeCurveAnalysis(obj)
+			% Computes the derivatives and other meta information from the red line traces objects.
+			zeroPaddingColumn = zeros([size(obj.redTraceLinesForAllStimuli, 1), size(obj.redTraceLinesForAllStimuli, 2)]);
+
+			obj.computedRedTraceLinesAnalyses.first_derivative = cat(3, zeroPaddingColumn, diff(obj.redTraceLinesForAllStimuli, 1, 3));
+			obj.computedRedTraceLinesAnalyses.second_derivative = cat(3, zeroPaddingColumn, diff(obj.computedRedTraceLinesAnalyses.first_derivative, 1, 3));
+			% obj.computedRedTraceLinesAnalyses.second_derivative = diff(obj.redTraceLinesForAllStimuli, 2, 3);
+		end
 
     end % end methods
 end % end class
