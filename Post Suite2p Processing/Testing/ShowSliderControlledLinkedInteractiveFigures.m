@@ -27,6 +27,7 @@ if exist('slider_controller','var')
     clear slider_controller;
 end
 % Build a new slider controller
+iscInfo.slider_identifier = 'ShowSliderControlledLinkedInteractiveFigures';
 iscInfo.curr_i = temp.cellRoiIndex;
 iscInfo.NumberOfSeries = length(final_data_explorer_obj.uniqueComps);
 
