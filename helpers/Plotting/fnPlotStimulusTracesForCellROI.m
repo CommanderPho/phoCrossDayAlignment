@@ -9,16 +9,13 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
     plotting_options.should_plot_all_traces = false; % plotting_options.should_plot_all_traces: if true, line traces for all trials are plotted in addition the mean line
     plotting_options.should_plot_vertical_sound_start_stop_lines = true; % plotting_options.should_plot_vertical_sound_start_stop_lines: if true, vertical start/stop lines are drawn to show when the sound started and stopped.
     plotting_options.should_normalize_to_local_peak = true; % plotting_options.should_normalize_to_local_peak: if true, the y-values are normalized across all stimuli and sessions for a cellRoi to the maximal peak value.
+    plotting_options.should_plot_titles_for_each_subplot = false; % plotting_options.should_plot_titles_for_each_subplot: if true, a title is added to each subplot (although it's redundent)
     
     if ~exist('processingOptions','var')
         processingOptions.startSound = 31;
         processingOptions.endSound = 90;
         processingOptions.startSoundSeconds = traceTimebase_t(processingOptions.startSound);
-        processingOptions.endSoundSeconds = traceTimebase_t(processingOptions.endSound);
-        
-%         processingOptions.sampPeak = 2;
-%         processingOptions.frameRate = 30;
-%         processingOptions.smoothValue = 5;
+        processingOptions.endSoundSeconds = traceTimebase_t(processingOptions.endSound);      
     end
     
     session_colors = {'r','g','b'};
@@ -92,7 +89,8 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
             meanData = squeeze(temp.currRedTraceLinesForAllStimuli(b,:));
 %             axes(ha(numStimuli-b+1));
             
-            subplot(numRows, numCol, numStimuli-b+1);
+            curr_linear_subplot_index = numStimuli-b+1;
+            subplot(numRows, numCol, curr_linear_subplot_index);
             
 			if is_first_session_for_stimuli
 				if plotting_options.should_plot_vertical_sound_start_stop_lines
@@ -128,13 +126,41 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
             set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 2);
 
 			if is_first_session_for_stimuli
-				title(strcat(num2str(uniqueStimuli(b,1)), {' '}, 'Hz', {' '}, 'at', {' '}, num2str(uniqueStimuli(b,2)*100), {' '}, '% Depth'))
+				if plotting_options.should_plot_titles_for_each_subplot
+                    title(strcat(num2str(uniqueStimuli(b,1)), {' '}, 'Hz', {' '}, 'at', {' '}, num2str(uniqueStimuli(b,2)*100), {' '}, '% Depth'))
+                else
+                    [curr_row, curr_col] = ind2subplot(numRows, numCol, curr_linear_subplot_index);
+%                     curr_title_string = sprintf('[row: %d, col: %d]: linear - %d', curr_row, curr_col, curr_linear_subplot_index); % Debugging
+                    curr_title_string = '';
+                    % Include the frequency only along the left hand edge
+                    if (curr_col == 1)
+                        curr_freq_string = strcat(num2str(uniqueStimuli(b,1)), {' '}, 'Hz');
+                        curr_title_string = strcat(curr_title_string, curr_freq_string);
+                        ylabel(curr_title_string,'FontWeight','bold','FontSize',14,'Interpreter','none');
+                    else
+                        ylabel('')
+                        curr_freq_string = '';
+                    end
+                    % Include the depth only along the top edge:
+                    curr_title_string = '';
+                    if (curr_row == 1)
+                        curr_depth_string = strcat(num2str(uniqueStimuli(b,2)*100), {''}, '% Depth');                        
+%                         if ~isempty(curr_freq_string)
+%                             spacing_string = strcat({' '}, 'at', {' '});
+%                             curr_title_string = strcat(curr_title_string, spacing_string);
+%                         end
+                        curr_title_string = strcat(curr_title_string, curr_depth_string);
+                        title(curr_title_string,'FontSize',14,'Interpreter','none');
+                    end
+                    
+                    
+                end
 				xlim([0, 5]);
 				xticks([]);
 				yticks([]);
 
 				if plotting_options.should_normalize_to_local_peak
-				ylim([-0.5, 1]);
+                    ylim([-0.5, 1]);
 				end
 			end
 
