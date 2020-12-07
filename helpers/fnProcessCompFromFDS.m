@@ -122,8 +122,8 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     outputs.default_DFF.AMConditions.peakSignal = zeros(outputs.numStimuli, 1);
     
     % Timing info helpers:
-    outputs.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
-    outputs.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
+    outputs.default_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
+    outputs.default_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
     
     
     
@@ -131,6 +131,10 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         outputs.TracesForAllStimuli.neuroPillCorrected = zeros([outputs.numStimuli, outputs.numStimulusPairTrialRepetitionsPerSession, outputs.numFramesPerTrial]); % raw traces
         outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, outputs.numFramesPerTrial); % The important red lines
         outputs.minusNeuropil_DFF.AMConditions.peakSignal = zeros(outputs.numStimuli, 1);
+        
+         % Timing info helpers:
+        outputs.minusNeuropil_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
+        outputs.minusNeuropil_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
     end
     
 
@@ -154,6 +158,12 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         % Finally, the peakSignal(b): the portion of the fluoresence data surrounding the peak index (by extending +processingOptions.sampPeak and -processingOptions.sampPeak on both sides of the peak index) is extracted and the mean value is used as the peakSignal value.
         outputs.default_DFF.AMConditions.peakSignal(b) = mean(outputs.default_DFF.AMConditions.imgDataToPlot(b, timingInfo.Index.trialStartRelative.peakIndexRange));
         
+        % the relative offset between the start of the sound stimulus and the max peak
+		outputs.default_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex(b) = stimStartRelative_maxInd;
+		% timingInfo.Index.trialStartRelative.maxPeakIndex: the relative offset between the start of the trial (not the stimulus) and the max peak. As close to an absolute index as it gets.
+		outputs.default_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex(b) = maxInd;
+        
+        
         if processingOptions.compute_neuropil_corrected_versions
             outputs.TracesForAllStimuli.neuroPillCorrected(b,:,:) = imagingDataMinusNeuropilDFF(currStimulusTrialIndicies, :); % These are sets of stimuli for this entry.
 
@@ -162,14 +172,14 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
             [~, stimStartRelative_maxInd] = max(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
             maxInd = stimStartRelative_maxInd + processingOptions.startSound - 1; % convert back to a frame index instead of a stimulus start relative index
             outputs.minusNeuropil_DFF.AMConditions.peakSignal(b) = mean(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, maxInd-processingOptions.sampPeak:maxInd+processingOptions.sampPeak));
+             % the relative offset between the start of the sound stimulus and the max peak
+            outputs.minusNeuropil_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex(b) = stimStartRelative_maxInd;
+            % timingInfo.Index.trialStartRelative.maxPeakIndex: the relative offset between the start of the trial (not the stimulus) and the max peak. As close to an absolute index as it gets.
+            outputs.minusNeuropil_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex(b) = maxInd;
             
         end
         
-        %% NOTE: Uses the neuropil corrected version for timingInfo if that option is enabled, as the default_DFF values of (stimStartRelative_maxInd, maxInd) are over-written.
-        % the relative offset between the start of the sound stimulus and the max peak
-		outputs.timingInfo.Index.startSoundRelative.maxPeakIndex(b) = stimStartRelative_maxInd;
-		% timingInfo.Index.trialStartRelative.maxPeakIndex: the relative offset between the start of the trial (not the stimulus) and the max peak. As close to an absolute index as it gets.
-		outputs.timingInfo.Index.trialStartRelative.maxPeakIndex(b) = maxInd;
+
         
     
     end

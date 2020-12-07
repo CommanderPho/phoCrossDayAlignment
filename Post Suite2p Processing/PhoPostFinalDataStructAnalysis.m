@@ -101,6 +101,14 @@ default_DFF.componentAggregatePropeties.maxTuningPeakValue = zeros(cellROIIndexM
 default_DFF.componentAggregatePropeties.sumTuningPeaksValue = zeros(cellROIIndexMapper.numCompListEntries,1);
 
 
+% Timing Info:
+ % the relative offset between the start of the sound stimulus and the max peak
+default_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(cellROIIndexMapper.numCompListEntries, 26);
+% timingInfo.Index.trialStartRelative.maxPeakIndex: the relative offset between the start of the trial (not the stimulus) and the max peak. As close to an absolute index as it gets.
+default_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(cellROIIndexMapper.numCompListEntries, 26);
+        
+
+
 if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
      % Generate similar grids for minusNeuropil outputs
      minusNeuropil.TracesForAllStimuli.imgDataToPlot = default_DFF.TracesForAllStimuli.imgDataToPlot;
@@ -110,6 +118,8 @@ if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_n
      minusNeuropil.cellROI_SatisfiesFirstDayTuning = default_DFF.cellROI_SatisfiesFirstDayTuning; % Just the first day
      minusNeuropil.componentAggregatePropeties.maxTuningPeakValue = default_DFF.componentAggregatePropeties.maxTuningPeakValue;
      minusNeuropil.componentAggregatePropeties.sumTuningPeaksValue = default_DFF.componentAggregatePropeties.sumTuningPeaksValue;
+     minusNeuropil.timingInfo.Index.startSoundRelative.maxPeakIndex = default_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex;
+     minusNeuropil.timingInfo.Index.startSoundRelative.maxPeakIndex = default_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex;
 end
    
 
@@ -136,8 +146,6 @@ for i = 1:num_cellROIs
 
         compNeuropilMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMaskNeuropil;
         
-        % Get timing info for the mean (red) curves for all stimuli.
-%         outputs.timingInfo.Index.startSoundRelative.maxPeakIndex
         
         
         if ~exist('stimuli_mapper','var')
@@ -157,7 +165,9 @@ for i = 1:num_cellROIs
         default_DFF.componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_comp_index) = sum(default_DFF.peakSignals);   
         default_DFF.TracesForAllStimuli.imgDataToPlot(curr_day_linear_comp_index, :, :, :) = outputs.TracesForAllStimuli.imgDataToPlot;
         default_DFF.redTraceLinesForAllStimuli(curr_day_linear_comp_index, :, :) = outputs.default_DFF.AMConditions.imgDataToPlot; % [26   150]
-     
+        % Get timing info for the mean (red) curves for all stimuli.
+        default_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex(curr_day_linear_comp_index,:) = outputs.default_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex;
+        default_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex(curr_day_linear_comp_index,:) = outputs.default_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex;
         
         if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
             % Store the outputs in the grid:
@@ -169,6 +179,8 @@ for i = 1:num_cellROIs
             minusNeuropil.componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_comp_index) = sum(minusNeuropil.peakSignals);
             minusNeuropil.TracesForAllStimuli.imgDataToPlot(curr_day_linear_comp_index, :, :, :) = outputs.TracesForAllStimuli.neuroPillCorrected;
             minusNeuropil.redTraceLinesForAllStimuli(curr_day_linear_comp_index, :, :) = outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot; % [26   150]
+            minusNeuropil.timingInfo.Index.startSoundRelative.maxPeakIndex(curr_day_linear_comp_index,:) = outputs.minusNeuropil_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex;
+            minusNeuropil.timingInfo.Index.trialStartRelative.maxPeakIndex(curr_day_linear_comp_index,:) = outputs.minusNeuropil_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex;
         end
 
         temp.isFirstSessionInCellRoi = (j == 1);
