@@ -1,4 +1,4 @@
-function [figH] = fnPlotTimingHeatMap_AllStimulusStacked(final_data_explorer_obj, curr_cellRoiIndex, extantFigH)
+function [figH] = fnPlotTimingHeatMap_AllStimulusStacked(final_data_explorer_obj, curr_cellRoiIndex, plotting_options, extantFigH)
     %% fnPlotTimingHeatMap_AllStimulusStacked: Plot a heatmap where:
         % each of the trials for each of the stimuli are plotted as a single row (for a particular cellROI and stimulus): 
     if ~exist('extantFigH','var')

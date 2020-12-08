@@ -27,13 +27,17 @@ function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRo
 %     temp.compIndex = currAllSessionCompIndicies(1);
 %     fprintf('cellRoiIndex: %d \n compIndex: %d \n', cellRoiIndex, temp.compIndex);
     
-    
+    plotting_options.should_plot_titles_for_each_subplot
     if ~exist('plotting_options','var')
         plotting_options.should_plot_all_traces = false; % plotting_options.should_plot_all_traces: if true, line traces for all trials are plotted in addition the mean line
         plotting_options.should_plot_vertical_sound_start_stop_lines = true; % plotting_options.should_plot_vertical_sound_start_stop_lines: if true, vertical start/stop lines are drawn to show when the sound started and stopped.
         plotting_options.should_normalize_to_local_peak = true; % plotting_options.should_normalize_to_local_peak: if true, the y-values are normalized across all stimuli and sessions for a cellRoi to the maximal peak value.
+    end
+    
+    if ~isfield(plotting_options, 'should_plot_titles_for_each_subplot')
         plotting_options.should_plot_titles_for_each_subplot = false; % plotting_options.should_plot_titles_for_each_subplot: if true, a title is added to each subplot (although it's redundent)
     end
+    
     
     if ~exist('processingOptions','var')
         processingOptions.startSound = 31;
@@ -106,8 +110,6 @@ function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRo
         %% Loop throught the linear stimuli indicies
         for b = 1:numStimuli
             
-            [~, ~, depthValue, freqValue] = final_data_explorer_obj.stimuli_mapper.getDepthFreqIndicies(b);
-        
             if plotting_options.should_plot_all_traces
                 currAllTraces = squeeze(temp.currTrialTraceLinesForAllStimuli(b,:,:));
             end
@@ -151,36 +153,39 @@ function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRo
             set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 2);
 
 			if is_first_session_for_stimuli
-				if plotting_options.should_plot_titles_for_each_subplot
-                    title(strcat(num2str(uniqueStimuli(b,1)), {' '}, 'Hz', {' '}, 'at', {' '}, num2str(uniqueStimuli(b,2)*100), {' '}, '% Depth'))
-                else
-                    [curr_row, curr_col] = ind2subplot(numRows, numCol, curr_linear_subplot_index);
-%                     curr_title_string = sprintf('[row: %d, col: %d]: linear - %d', curr_row, curr_col, curr_linear_subplot_index); % Debugging
-                    curr_title_string = '';
-                    % Include the frequency only along the left hand edge
-                    if (curr_col == 1) 
-                        curr_freq_string = final_data_explorer_obj.stimuli_mapper.getFormattedString_Freq(freqValue);
-                        curr_title_string = strcat(curr_title_string, curr_freq_string);
-                        ylabel(curr_title_string,'FontWeight','bold','FontSize',14,'Interpreter','none');
-                    else
-                        ylabel('')
-                        curr_freq_string = '';
-                    end
-                    % Include the depth only along the top edge:
-                    curr_title_string = '';
-                    if (curr_row == 1)
-                        curr_depth_string = final_data_explorer_obj.stimuli_mapper.getFormattedString_Depth(depthValue, true);                        
-                        curr_title_string = strcat(curr_title_string, curr_depth_string);
-                        title(curr_title_string,'FontSize',14,'Interpreter','none');
-                    end            
-                end
+                fnPlotHelper_StimulusGridLabels(final_data_explorer_obj, numRows, numCol, b, plotting_options)
+                
+% 				if plotting_options.should_plot_titles_for_each_subplot
+%                     title(strcat(num2str(uniqueStimuli(b,1)), {' '}, 'Hz', {' '}, 'at', {' '}, num2str(uniqueStimuli(b,2)*100), {' '}, '% Depth'))
+%                 else
+%                     [curr_row, curr_col] = ind2subplot(numRows, numCol, curr_linear_subplot_index);
+% %                     curr_title_string = sprintf('[row: %d, col: %d]: linear - %d', curr_row, curr_col, curr_linear_subplot_index); % Debugging
+%                     curr_title_string = '';
+%                     % Include the frequency only along the left hand edge
+%                     if (curr_col == 1) 
+%                         curr_freq_string = final_data_explorer_obj.stimuli_mapper.getFormattedString_Freq(freqValue);
+%                         curr_title_string = strcat(curr_title_string, curr_freq_string);
+%                         ylabel(curr_title_string,'FontWeight','bold','FontSize',14,'Interpreter','none');
+%                     else
+%                         ylabel('')
+%                         curr_freq_string = '';
+%                     end
+%                     % Include the depth only along the top edge:
+%                     curr_title_string = '';
+%                     if (curr_row == 1)
+%                         curr_depth_string = final_data_explorer_obj.stimuli_mapper.getFormattedString_Depth(depthValue, true);                        
+%                         curr_title_string = strcat(curr_title_string, curr_depth_string);
+%                         title(curr_title_string,'FontSize',14,'Interpreter','none');
+%                     end            
+%                 end
 				xlim([0, 5]);
 				xticks([]);
 				yticks([]);
 
-				if plotting_options.should_normalize_to_local_peak
+                if plotting_options.should_normalize_to_local_peak
                     ylim([-0.5, 1]);
-				end
+                end
+                
 			end
 
             hold on;
@@ -191,5 +196,11 @@ function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRo
     end %% end for session
     
     sgtitle(['cellRoi: ' num2str(cellRoiIndex)]);
-end
+ 
+
+end % End outer function
+
+
+
+
 

@@ -175,8 +175,11 @@ function [callbackOutput] = pho_plot_timing_heatmaps(final_data_explorer_obj, ex
     
     % Make Timing Heatmap Plot:
     if isvalid(extantFigH)
-%         [callbackOutput.plotted_figH] = fnPlotTimingHeatMap_AllStimulusStacked(final_data_explorer_obj, curr_cellRoiIndex, extantFigH);
-        [callbackOutput.plotted_figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer_obj, curr_cellRoiIndex, extantFigH);
+        plotting_options.should_use_collapsed_heatmaps = true;
+        plotting_options.subplotLayoutIsGrid = true; % subplotLayoutIsGrid: if true, the subplots are layed out in a 5x5 grid with an additional subplot for the 0 entry.
+        
+%         [callbackOutput.plotted_figH] = fnPlotTimingHeatMap_AllStimulusStacked(final_data_explorer_obj, curr_cellRoiIndex, plotting_options, extantFigH);
+        [callbackOutput.plotted_figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer_obj, curr_cellRoiIndex, plotting_options, extantFigH);
 %         set(callbackOutput.plotted_figH, 'Name', sprintf('Slider Controlled Timing Heatmap Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
     else
         callbackOutput.plotted_figH = extantFigH;

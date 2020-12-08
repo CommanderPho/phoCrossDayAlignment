@@ -1,23 +1,44 @@
-function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer_obj, curr_cellRoiIndex, extantFigH)
+function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer_obj, curr_cellRoiIndex, plotting_options, extantFigH)
     %% fnPlotTimingHeatMap_EachStimulusSeparately: Plot a heatmap where:
         % (for a particular cellROI and stimulus)
         % There are numStimuli vertically stacked subplots, each containing their trials represented as rows.
     
        
-    % Options for tightening up the subplots:
-    plotting_options.should_use_custom_subplots = true;
+    if ~isfield(plotting_options, 'useGlobalColorLims')
+        plotting_options.should_use_custom_subplots = true;
+    end
     
+    if ~isfield(plotting_options, 'should_use_collapsed_heatmaps')
+       plotting_options.should_use_collapsed_heatmaps = false; 
+    end
+    
+    if ~isfield(plotting_options, 'subplotLayoutIsGrid')
+        plotting_options.subplotLayoutIsGrid = false; % subplotLayoutIsGrid: if true, the subplots are layed out in a 5x5 grid with an additional subplot for the 0 entry.
+    end
+    
+    if ~isfield(plotting_options, 'should_plot_titles_for_each_subplot')
+        plotting_options.should_plot_titles_for_each_subplot = false;
+    end
+    
+    % Options for tightening up the subplots:
     if plotting_options.should_use_custom_subplots
-        plotting_options.subtightplot.gap = [0.01/26 0.1]; % [intra_graph_vertical_spacing, intra_graph_horizontal_spacing]
-        plotting_options.subtightplot.width_h = [0.01 0.05]; % Looks like [padding_bottom, padding_top]
-        plotting_options.subtightplot.width_w = [0.12 0.01];
+        if plotting_options.subplotLayoutIsGrid
+            plotting_options.subtightplot.gap = [0.01 0.01]; % [intra_graph_vertical_spacing, intra_graph_horizontal_spacing]
+            plotting_options.subtightplot.width_h = [0.01 0.05]; % Looks like [padding_bottom, padding_top]
+            plotting_options.subtightplot.width_w = [0.025 0.01];
+        else
+            plotting_options.subtightplot.gap = [0.01/26 0.1]; % [intra_graph_vertical_spacing, intra_graph_horizontal_spacing]
+            plotting_options.subtightplot.width_h = [0.01 0.05]; % Looks like [padding_bottom, padding_top]
+            plotting_options.subtightplot.width_w = [0.12 0.01];
+        end
+    
         plotting_options.opt = {plotting_options.subtightplot.gap, plotting_options.subtightplot.width_h, plotting_options.subtightplot.width_w}; % {gap, width_h, width_w}
         subplot_cmd = @(m,n,p) subtightplot(m, n, p, plotting_options.opt{:});
     else
         subplot_cmd = @(m,n,p) subplot(m, n, p);
     end
     
-    
+    plotting_options.useGlobalColorLims = true;
     
     if ~exist('extantFigH','var')
         figH = figure(1337 + cellRoiIndex); % generate a new figure to plot the sessions.
@@ -28,11 +49,27 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
     
     clf(figH);
     
-    plotting_options.useGlobalColorLims = true;
+    %generate the dimensions of the subplots
+    if plotting_options.subplotLayoutIsGrid
+        % A grid
+        numRows = numel(nonzeros(final_data_explorer_obj.uniqueFreqs))+1; %+1 because you have the zero mod condition too
+        numCol = numel(nonzeros(final_data_explorer_obj.uniqueAmps));
+    else
+        % a vertical stack with 26 rows
+        numRows = final_data_explorer_obj.stimuli_mapper.numStimuli; %+1 because you have the zero mod condition too
+        numCol = 1;
+    end
     
-    curr_cellROI_heatMap = squeeze(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot(curr_cellRoiIndex, :, :, :)); % should be [26 20 150]
+    % final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot: [159    26    20   150]
+    % final_data_explorer_obj.active_DFF.redTraceLinesForAllStimuli: [159    26   150]
     
-    
+    if plotting_options.should_use_collapsed_heatmaps
+        % [159 26 150]
+        curr_cellROI_heatMap = squeeze(final_data_explorer_obj.active_DFF.redTraceLinesForAllStimuli(curr_cellRoiIndex, :, :)); % should be [26 150]
+        
+    else
+        curr_cellROI_heatMap = squeeze(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot(curr_cellRoiIndex, :, :, :)); % should be [26 20 150]
+    end
     % Get global color lims
     if plotting_options.useGlobalColorLims
        [maxVals] = max(curr_cellROI_heatMap,[], 'all'); % get max of current cellROI heatmap (for this single day)
@@ -48,8 +85,13 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
     %     curr_maxVals = squeeze(maxVals(cellROIIndex, stimulusIndex, :));
     %     curr_maxInds = squeeze(maxInds(cellROIIndex, stimulusIndex, :));
 
-        subplot_cmd(final_data_explorer_obj.stimuli_mapper.numStimuli, 1, stimulusIndex);
-
+        if plotting_options.subplotLayoutIsGrid
+            curr_linear_subplot_index = final_data_explorer_obj.stimuli_mapper.numStimuli-stimulusIndex+1;
+            subplot_cmd(numRows, numCol, curr_linear_subplot_index);
+        else
+            subplot_cmd(numRows, numCol, stimulusIndex);
+        end
+        
         %% Plot a heatmap where each of the 20 trials is a vertical column within a single row (for a particular cellROI and stimulus):
         curr_heatMap = squeeze(curr_cellROI_heatMap(stimulusIndex, :, :)); % should be [20 150]
     %     size(curr_heatMap)
@@ -66,16 +108,22 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
     %     title('test heat map')
         yticks([]);
         
-        activeStr = [final_data_explorer_obj.stimuli_mapper.getFormattedString_Depth(depthValue) ' ' final_data_explorer_obj.stimuli_mapper.getFormattedString_Freq(freqValue)];
-%         activeStr = sprintf('%d, %d Hz', depthValue, freqValue);
+        if plotting_options.subplotLayoutIsGrid
+            fnPlotHelper_StimulusGridLabels(final_data_explorer_obj, numRows, numCol, stimulusIndex, plotting_options)
         
-%         t_currLabelH = ylabel({sprintf('stim[%d]', stimulusIndex), activeStr});
-        t_currLabelH = ylabel([sprintf('stim[%d] ', stimulusIndex), activeStr]);
-        set(t_currLabelH, 'Rotation', 0, 'VerticalAlignment', 'middle', 'HorizontalAlignment','right'); % 'right' horizontal alignment will position it in the far left margin
-        temp_currTextPosition = get(t_currLabelH, 'Position');
-%         temp_currTextPosition(1) = 0;
-        % Update text position
-%         set(t_currLabelH, 'Position', temp_currTextPosition);
+        else
+            activeStr = [final_data_explorer_obj.stimuli_mapper.getFormattedString_Depth(depthValue) ' ' final_data_explorer_obj.stimuli_mapper.getFormattedString_Freq(freqValue)];
+    %         activeStr = sprintf('%d, %d Hz', depthValue, freqValue);
+
+    %         t_currLabelH = ylabel({sprintf('stim[%d]', stimulusIndex), activeStr});
+            t_currLabelH = ylabel([sprintf('stim[%d] ', stimulusIndex), activeStr]);
+            set(t_currLabelH, 'Rotation', 0, 'VerticalAlignment', 'middle', 'HorizontalAlignment','right'); % 'right' horizontal alignment will position it in the far left margin
+            temp_currTextPosition = get(t_currLabelH, 'Position');
+    %         temp_currTextPosition(1) = 0;
+            % Update text position
+    %         set(t_currLabelH, 'Position', temp_currTextPosition);
+
+        end
         
         is_last_stimulus = (final_data_explorer_obj.stimuli_mapper.numStimuli == stimulusIndex);
         if is_last_stimulus
