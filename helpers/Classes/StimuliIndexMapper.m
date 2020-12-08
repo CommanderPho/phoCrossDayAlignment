@@ -46,8 +46,45 @@ classdef StimuliIndexMapper
 
 			% depthFreqsValues = [depthValues, freqValues];
         end
-		
 
-    end
+
+    end % ends methods block
+
+
+	methods %% formatting methods block
+		% function [formattedString] = getFormattedString_Depth(obj, linearStimulusIndex)
+        %     %getFormattedString_Depth Returns the correct Depth string with units corresponding to the linearStimulusIndex
+		% 	[depthIndex, freqIndex, depthValues, freqValues] = getDepthFreqIndicies(obj, linearStimulusIndex)
+		% 	formattedString = sprintf('%d % Depth', depthValues);
+        % end
+
+		% function [formattedString] = getFormattedString_Freq(obj, linearStimulusIndex)
+        %     %getFormattedString_Freq Converts a linear stimulus index into a 1-6 depth or freq index
+        %     %   Detailed explanation goes here
+		% 	[depthIndex, freqIndex, depthValues, freqValues] = getDepthFreqIndicies(obj, linearStimulusIndex)
+		% 	formattedString = sprintf('%d % Depth', depthValues);
+        % end
+
+
+		function [formattedString] = getFormattedString_Depth(obj, depthValue, shouldPrintLiteralDepthSuffix)
+            %getFormattedString_Depth Returns the correct depth string with units (like '80% Depth') for the provided depthValue
+			if ~exist('shouldPrintLiteralDepthSuffix','var')
+				shouldPrintLiteralDepthSuffix = false;
+			end
+
+			formattedString = sprintf('%d%%', (depthValue * 100)); % Note the double percent (%%) in the string is required to escape the % command of sprintf
+			if shouldPrintLiteralDepthSuffix
+				formattedString = [formattedString ' Depth'];
+			end
+        end
+
+		function [formattedString] = getFormattedString_Freq(obj, freqValue)
+            %getFormattedString_Freq Converts a linear stimulus index into a 1-6 depth or freq index
+			formattedString = sprintf('%dHz', freqValue);
+        end
+
+
+	end % end formatting methods block
+
 end
 

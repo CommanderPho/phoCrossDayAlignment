@@ -3,6 +3,15 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
         % (for a particular cellROI and stimulus)
         % There are numStimuli vertically stacked subplots, each containing their trials represented as rows.
     
+%     subplot = @(m,n,p) subtightplot (m, n, p, [0.01 0.05], [0.1 0.01], [0.1 0.01]);
+        
+    plotting_options.subtightplot.gap = [0.01/26 0.1]; % [intra_graph_vertical_spacing, intra_graph_horizontal_spacing]
+    plotting_options.subtightplot.width_h = [0.01 0.05]; % Looks like [padding_bottom, padding_top]
+    plotting_options.subtightplot.width_w = [0.12 0.01];
+    plotting_options.opt = {plotting_options.subtightplot.gap, plotting_options.subtightplot.width_h, plotting_options.subtightplot.width_w}; % {gap, width_h, width_w}
+    subplot = @(m,n,p) subtightplot(m, n, p, plotting_options.opt{:}); 
+        
+    
     if ~exist('extantFigH','var')
         figH = figure(1337 + cellRoiIndex); % generate a new figure to plot the sessions.
     else
@@ -27,7 +36,7 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
     
     %% Loop through all stimuli:
     for stimulusIndex = 1:final_data_explorer_obj.stimuli_mapper.numStimuli
-        [depthIndex, freqIndex, depthValue, freqValue] = final_data_explorer_obj.stimuli_mapper.getDepthFreqIndicies(stimulusIndex);
+        [~, ~, depthValue, freqValue] = final_data_explorer_obj.stimuli_mapper.getDepthFreqIndicies(stimulusIndex);
         
     %     curr_maxVals = squeeze(maxVals(cellROIIndex, stimulusIndex, :));
     %     curr_maxInds = squeeze(maxInds(cellROIIndex, stimulusIndex, :));
@@ -49,8 +58,18 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
         end
     %     title('test heat map')
         yticks([]);
-        ylabel({sprintf('stim[%d]', stimulusIndex), sprintf('%d, %d Hz', depthValue, freqValue)});
-
+        
+        activeStr = [final_data_explorer_obj.stimuli_mapper.getFormattedString_Depth(depthValue) ' ' final_data_explorer_obj.stimuli_mapper.getFormattedString_Freq(freqValue)];
+%         activeStr = sprintf('%d, %d Hz', depthValue, freqValue);
+        
+%         t_currLabelH = ylabel({sprintf('stim[%d]', stimulusIndex), activeStr});
+        t_currLabelH = ylabel([sprintf('stim[%d] ', stimulusIndex), activeStr]);
+        set(t_currLabelH, 'Rotation', 0, 'VerticalAlignment', 'middle', 'HorizontalAlignment','right'); % 'right' horizontal alignment will position it in the far left margin
+        temp_currTextPosition = get(t_currLabelH, 'Position');
+%         temp_currTextPosition(1) = 0;
+        % Update text position
+%         set(t_currLabelH, 'Position', temp_currTextPosition);
+        
         is_last_stimulus = (final_data_explorer_obj.stimuli_mapper.numStimuli == stimulusIndex);
         if is_last_stimulus
             xticks([0 31 90 150]);
