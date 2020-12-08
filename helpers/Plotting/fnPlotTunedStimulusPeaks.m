@@ -24,7 +24,6 @@ function [figH, curr_ax] = fnPlotTunedStimulusPeaks(dateStrings, uniqueAmps, uni
     
     plottingOptions.singleLegendForAllSessions = true;
     
-
     curr_linear_subplot_index = 1;
     % For each session in this cell ROI
     for i = 1:temp.numSessions

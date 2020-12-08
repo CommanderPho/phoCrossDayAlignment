@@ -16,7 +16,8 @@ should_show_2d_plot = true;
 should_show_3d_mesh_plot = false;
 should_show_masking_plot = false;
 should_show_stimulus_traces_plot = true;
-should_show_stimulus_traces_custom_data_plot = true;
+should_show_stimulus_traces_custom_data_plot = false;
+should_show_stimulus_heatmaps_plot = true;
 
 temp.cellRoiIndex = 1;
 
@@ -71,16 +72,12 @@ if should_show_stimulus_traces_custom_data_plot
 end
 
 
-% if should_show_stimulus_traces_plot
-%     stimulus_traces_plot_callback = @(curr_i) (pho_plot_stimulus_traces(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, final_data_explorer_obj.uniqueStimuli, final_data_explorer_obj.traceTimebase_t, final_data_explorer_obj.active_DFF.TracesForAllStimuli, final_data_explorer_obj.redTraceLinesForAllStimuli, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, extantFigH_plot_stimulus_traces, curr_i));
-%     plot_callbacks{end+1} = stimulus_traces_plot_callback;
-% end
-
-% if should_show_stimulus_traces_custom_data_plot
-%     stimulus_traces_extras_plot_callback = @(curr_i) (pho_plot_stimulus_traces(final_data_explorer_obj.dateStrings, final_data_explorer_obj.uniqueAmps, final_data_explorer_obj.uniqueFreqs, final_data_explorer_obj.uniqueStimuli, final_data_explorer_obj.traceTimebase_t, final_data_explorer_obj.active_DFF.TracesForAllStimuli, final_data_explorer_obj.computedRedTraceLinesAnalyses.second_derivative, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, extantFigH_plot_stimulus_traces_extra, curr_i));
-%     plot_callbacks{end+1} = stimulus_traces_extras_plot_callback;
-% end
-
+if should_show_stimulus_heatmaps_plot
+    extantFigH_plot_stimulus_traces_timing_heatmaps = createFigureWithTagIfNeeded('iscStimulusTracesTimingHeatmapsPlot');
+    linkedFigureHandles(end+1) = extantFigH_plot_stimulus_traces_timing_heatmaps;
+	stimulus_traces_timing_heatmaps_plot_callback = @(curr_i) (pho_plot_timing_heatmaps(final_data_explorer_obj, extantFigH_plot_stimulus_traces_timing_heatmaps, curr_i));
+    plot_callbacks{end+1} = stimulus_traces_timing_heatmaps_plot_callback;
+end
 
 slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, plot_callbacks);
 % PhoBuildSpatialTuning;
@@ -108,19 +105,6 @@ fig_layout_manager_obj.bindAlignedTopTargetEdgeToBottomReferenceEdge(relative_fi
 
 %% Plot Helper Functions:
 %% Plot function called as a callback on update
-% function pho_plot_interactive_all(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH_2d, extantFigH_3d, curr_cellRoiIndex)
-%     if isvalid(extantFigH_2d)
-%         pho_plot_2d(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH_2d, curr_cellRoiIndex);
-%     end
-
-%     if isvalid(extantFigH_3d)
-%         pho_plot_3d_mesh(dateStrings, uniqueAmps, uniqueFreqs, finalOutPeaksGrid, multiSessionCellRoi_CompListIndicies, extantFigH_3d, curr_cellRoiIndex);
-%     end
-% end
-
-% function pho_plot_interactive_masking_all(dateStrings, compMasks, multiSessionCellRoi_CompListIndicies, extantFigH_masking, curr_cellRoiIndex)
-%     pho_plot_cell_mask(dateStrings, compMasks, multiSessionCellRoi_CompListIndicies, extantFigH_masking, curr_cellRoiIndex);
-% end
 
 function [callbackOutput] = pho_plot_cell_mask(dateStrings, compMasks, multiSessionCellRoi_CompListIndicies, extantFigH, curr_cellRoiIndex)
     % COMPUTED
@@ -185,5 +169,18 @@ function [callbackOutput] = pho_plot_3d_mesh(dateStrings, uniqueAmps, uniqueFreq
     end
 end
 
-
+function [callbackOutput] = pho_plot_timing_heatmaps(final_data_explorer_obj, extantFigH, curr_cellRoiIndex)
+    % COMPUTED
+    callbackOutput.shouldRemoveCallback = false;
+    
+    % Make Timing Heatmap Plot:
+    if isvalid(extantFigH)
+        [callbackOutput.plotted_figH] = fnPlotTimingHeatMap_AllStimulusStacked(final_data_explorer_obj, curr_cellRoiIndex, extantFigH);
+    %     zlim([-0.2, 1])
+        set(callbackOutput.plotted_figH, 'Name', sprintf('Slider Controlled Timing Heatmap Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+    else
+        callbackOutput.plotted_figH = extantFigH;
+        callbackOutput.shouldRemoveCallback = true;
+    end
+end
 
