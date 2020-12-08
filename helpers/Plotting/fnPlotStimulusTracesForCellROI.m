@@ -1,7 +1,10 @@
-function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, uniqueFreqs, uniqueStimuli, currAllSessionCompIndicies, cellRoiIndex, traceTimebase_t, tracesForAllStimuli, redTraceLinesForAllStimuli, plotting_options, extantFigH)
+function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRoiIndex, plotting_options, extantFigH)
 %FNPLOTSTIMULUSTRACESFORCELLROI plots the array of traces for each stimulus pair for each session for a single cellRoi
 %   Detailed explanation goes here
 
+    % Need: traceTimebase_t, tracesForAllStimuli, redTraceLinesForAllStimuli
+    %% final_data_explorer_obj.traceTimebase_t, final_data_explorer_obj.active_DFF.TracesForAllStimuli, final_data_explorer_obj.redTraceLinesForAllStimuli
+    
     % Options for tightening up the subplots:
     plotting_options.should_use_custom_subplots = true;
     
@@ -15,10 +18,15 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
         subplot_cmd = @(m,n,p) subplot(m, n, p);
     end
     
-    
+    currAllSessionCompIndicies = final_data_explorer_obj.cellROIIndex_mapper.getCompListIndicies(cellRoiIndex); % Gets all sessions for the current ROI
     % currAllSessionCompIndicies: all sessions for the current ROI
     %% Options:
-    temp.numSessions = length(currAllSessionCompIndicies);
+    
+    
+%     
+%     temp.compIndex = currAllSessionCompIndicies(1);
+%     fprintf('cellRoiIndex: %d \n compIndex: %d \n', cellRoiIndex, temp.compIndex);
+    
     
     if ~exist('plotting_options','var')
         plotting_options.should_plot_all_traces = false; % plotting_options.should_plot_all_traces: if true, line traces for all trials are plotted in addition the mean line
@@ -30,8 +38,8 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
     if ~exist('processingOptions','var')
         processingOptions.startSound = 31;
         processingOptions.endSound = 90;
-        processingOptions.startSoundSeconds = traceTimebase_t(processingOptions.startSound);
-        processingOptions.endSoundSeconds = traceTimebase_t(processingOptions.endSound);      
+        processingOptions.startSoundSeconds = final_data_explorer_obj.traceTimebase_t(processingOptions.startSound);
+        processingOptions.endSoundSeconds = final_data_explorer_obj.traceTimebase_t(processingOptions.endSound);      
     end
     
     session_colors = {'r','g','b'};
@@ -47,12 +55,12 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
     % TODO: May want to factor these out for both computational efficiency and to be able to access them elsewhere.
  
     if plotting_options.should_normalize_to_local_peak
-       redTraceLinesExtrema.local_max_peaks = max(redTraceLinesForAllStimuli, [], [2 3]);
-       redTraceLinesExtrema.local_min_extrema = min(redTraceLinesForAllStimuli, [], [2 3]);
+       redTraceLinesExtrema.local_max_peaks = max(final_data_explorer_obj.redTraceLinesForAllStimuli, [], [2 3]);
+       redTraceLinesExtrema.local_min_extrema = min(final_data_explorer_obj.redTraceLinesForAllStimuli, [], [2 3]);
      
         if plotting_options.should_plot_all_traces
-            tracesForAllStimuliExtrema.local_max_peaks = max(tracesForAllStimuli.imgDataToPlot, [], [2 3 4]);
-            tracesForAllStimuliExtrema.local_min_extrema = min(tracesForAllStimuli.imgDataToPlot, [], [2 3 4]);
+            tracesForAllStimuliExtrema.local_max_peaks = max(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot, [], [2 3 4]);
+            tracesForAllStimuliExtrema.local_min_extrema = min(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot, [], [2 3 4]);
         end    
     end
     
@@ -66,15 +74,15 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
     
     
     %generate the dimensions of the subplots
-    numRows = numel(nonzeros(uniqueFreqs))+1; %+1 because you have the zero mod condition too
-    numCol = numel(nonzeros(uniqueAmps));
+    numRows = numel(nonzeros(final_data_explorer_obj.uniqueFreqs))+1; %+1 because you have the zero mod condition too
+    numCol = numel(nonzeros(final_data_explorer_obj.uniqueAmps));
 
     % For each session in this cell ROI
-    for i = 1:temp.numSessions
+    for i = 1:final_data_explorer_obj.numOfSessions
         % Get the index for this session of this cell ROI
         temp.compIndex = currAllSessionCompIndicies(i); 
         % Gets the grid for this session of this cell ROI
-        temp.currRedTraceLinesForAllStimuli = squeeze(redTraceLinesForAllStimuli(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x26x150)
+        temp.currRedTraceLinesForAllStimuli = squeeze(final_data_explorer_obj.redTraceLinesForAllStimuli(temp.compIndex,:,:)); % "squeeze(...)" removes the singleton dimension (otherwise the output would be 1x26x150)
         
         if plotting_options.should_normalize_to_local_peak
 %            temp.local_max_peak = max(temp.currRedTraceLinesForAllStimuli, [], 'all');
@@ -84,7 +92,7 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
         
         
         if plotting_options.should_plot_all_traces
-            temp.currTrialTraceLinesForAllStimuli = squeeze(tracesForAllStimuli.imgDataToPlot(temp.compIndex,:,:,:));
+            temp.currTrialTraceLinesForAllStimuli = squeeze(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot(temp.compIndex,:,:,:));
             if plotting_options.should_normalize_to_local_peak
 %                temp.local_max_peak_trial_traces = max(temp.currTrialTraceLinesForAllStimuli, [], 'all');
 %                temp.local_min_extrema_trial_traces = min(temp.currTrialTraceLinesForAllStimuli, [], 'all');
@@ -92,25 +100,26 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
             end
         end
         
-        temp.currDateString = dateStrings{i};
-        
         numStimuli = size(temp.currRedTraceLinesForAllStimuli,1);
         is_first_session_for_stimuli = (i == 1); % used to perform first-plot-only setup
 
+        %% Loop throught the linear stimuli indicies
         for b = 1:numStimuli
+            
+            [~, ~, depthValue, freqValue] = final_data_explorer_obj.stimuli_mapper.getDepthFreqIndicies(b);
+        
             if plotting_options.should_plot_all_traces
                 currAllTraces = squeeze(temp.currTrialTraceLinesForAllStimuli(b,:,:));
             end
             
             meanData = squeeze(temp.currRedTraceLinesForAllStimuli(b,:));
-%             axes(ha(numStimuli-b+1));
             
             curr_linear_subplot_index = numStimuli-b+1;
             subplot_cmd(numRows, numCol, curr_linear_subplot_index);
             
 			if is_first_session_for_stimuli
 				if plotting_options.should_plot_vertical_sound_start_stop_lines
-					% Plot the stimulus indicator lines:
+					%% Plot the stimulus indicator lines:
 					if plotting_options.should_normalize_to_local_peak
 						y = [-0.5 1.0];
 					else
@@ -133,12 +142,12 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
             % plot the traces for all trials:
             if plotting_options.should_plot_all_traces
                 curr_session_traces_color = session_traces_colors{i};
-                h_PlotObj_allTraces = plot(traceTimebase_t, currAllTraces, 'color', curr_session_traces_color);
+                h_PlotObj_allTraces = plot(final_data_explorer_obj.traceTimebase_t, currAllTraces, 'color', curr_session_traces_color);
                 hold on;
             end
             
             % plot the average (red) line:
-            h_PlotObj = plot(traceTimebase_t, meanData);
+            h_PlotObj = plot(final_data_explorer_obj.traceTimebase_t, meanData);
             set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 2);
 
 			if is_first_session_for_stimuli
@@ -149,8 +158,8 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
 %                     curr_title_string = sprintf('[row: %d, col: %d]: linear - %d', curr_row, curr_col, curr_linear_subplot_index); % Debugging
                     curr_title_string = '';
                     % Include the frequency only along the left hand edge
-                    if (curr_col == 1)
-                        curr_freq_string = strcat(num2str(uniqueStimuli(b,1)), {' '}, 'Hz');
+                    if (curr_col == 1) 
+                        curr_freq_string = final_data_explorer_obj.stimuli_mapper.getFormattedString_Freq(freqValue);
                         curr_title_string = strcat(curr_title_string, curr_freq_string);
                         ylabel(curr_title_string,'FontWeight','bold','FontSize',14,'Interpreter','none');
                     else
@@ -160,16 +169,10 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
                     % Include the depth only along the top edge:
                     curr_title_string = '';
                     if (curr_row == 1)
-                        curr_depth_string = strcat(num2str(uniqueStimuli(b,2)*100), {''}, '% Depth');                        
-%                         if ~isempty(curr_freq_string)
-%                             spacing_string = strcat({' '}, 'at', {' '});
-%                             curr_title_string = strcat(curr_title_string, spacing_string);
-%                         end
+                        curr_depth_string = final_data_explorer_obj.stimuli_mapper.getFormattedString_Depth(depthValue, true);                        
                         curr_title_string = strcat(curr_title_string, curr_depth_string);
                         title(curr_title_string,'FontSize',14,'Interpreter','none');
-                    end
-                    
-                    
+                    end            
                 end
 				xlim([0, 5]);
 				xticks([]);

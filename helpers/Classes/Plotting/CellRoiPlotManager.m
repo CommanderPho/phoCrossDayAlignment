@@ -315,13 +315,14 @@ classdef CellRoiPlotManager < PlotManager
             obj.extantFigH_plot_stimulus_traces = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_StimulusTraces'); % generate a new figure to plot the sessions.
 			clf(obj.extantFigH_plot_stimulus_traces);
 
-			temp.currAllSessionCompIndicies = obj.final_data_explorer_obj.multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
+			% temp.currAllSessionCompIndicies = obj.final_data_explorer_obj.multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
 			% Make Stimuli Traces Plot:  
-			[plotted_figH] = fnPlotStimulusTracesForCellROI(obj.final_data_explorer_obj.dateStrings, obj.final_data_explorer_obj.uniqueAmps, obj.final_data_explorer_obj.uniqueFreqs, obj.final_data_explorer_obj.uniqueStimuli, ...
-				temp.currAllSessionCompIndicies, curr_cellRoiIndex, ...
-				obj.final_data_explorer_obj.traceTimebase_t, obj.final_data_explorer_obj.active_DFF.TracesForAllStimuli, obj.final_data_explorer_obj.redTraceLinesForAllStimuli, ...
-				obj.extantFigH_plot_stimulus_traces);
-			
+			% [plotted_figH] = fnPlotStimulusTracesForCellROI(obj.final_data_explorer_obj.dateStrings, obj.final_data_explorer_obj.uniqueAmps, obj.final_data_explorer_obj.uniqueFreqs, obj.final_data_explorer_obj.uniqueStimuli, ...
+			% 	temp.currAllSessionCompIndicies, curr_cellRoiIndex, ...
+			% 	obj.final_data_explorer_obj.traceTimebase_t, obj.final_data_explorer_obj.active_DFF.TracesForAllStimuli, obj.final_data_explorer_obj.redTraceLinesForAllStimuli, ...
+			% 	obj.extantFigH_plot_stimulus_traces);
+
+			[plotted_figH] = fnPlotStimulusTracesForCellROI(obj.final_data_explorer_obj, curr_cellRoiIndex, obj.extantFigH_plot_stimulus_traces);
 			set(plotted_figH, 'Name', sprintf('CellROI Stimuli Traces Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
 		end
 
