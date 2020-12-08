@@ -40,8 +40,8 @@ function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRo
     
     
     if ~exist('processingOptions','var')
-        processingOptions.startSound = 31;
-        processingOptions.endSound = 90;
+        processingOptions.startSound = final_data_explorer_obj.active_DFF.timingInfo.Index.trialStartRelative.startSound;
+        processingOptions.endSound = final_data_explorer_obj.active_DFF.timingInfo.Index.trialStartRelative.endSound;
         processingOptions.startSoundSeconds = final_data_explorer_obj.traceTimebase_t(processingOptions.startSound);
         processingOptions.endSoundSeconds = final_data_explorer_obj.traceTimebase_t(processingOptions.endSound);      
     end

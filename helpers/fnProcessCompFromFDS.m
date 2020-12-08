@@ -112,7 +112,6 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 %     outputs.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
     outputs.traceTimebase_t = linspace(0, outputs.numFramesPerTrial/processingOptions.frameRate, outputs.numFramesPerTrial); % make a timebase to plot as xAxis for traces
 	
-	%% timingInfo: an object containing information about the timing of the trials and the peaks within the trials:
 	outputs.timingInfo.Index.startSound = processingOptions.startSound;
 	outputs.timingInfo.Index.endSound = processingOptions.endSound;
     outputs.timingInfo.Index.sampPeak = processingOptions.sampPeak;
@@ -121,9 +120,13 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     outputs.default_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, outputs.numFramesPerTrial); % The important red lines
     outputs.default_DFF.AMConditions.peakSignal = zeros(outputs.numStimuli, 1);
     
-    % Timing info helpers:
+    %% timingInfo: an object containing information about the timing of the trials and the peaks within the trials:
     outputs.default_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
     outputs.default_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
+    outputs.default_DFF.timingInfo.Index.trialStartRelative.startSound = processingOptions.startSound;
+	outputs.default_DFF.timingInfo.Index.trialStartRelative.endSound = processingOptions.endSound;
+    outputs.default_DFF.timingInfo.Index.sampPeak = processingOptions.sampPeak;
+    
     
     if processingOptions.compute_neuropil_corrected_versions
         outputs.TracesForAllStimuli.neuroPillCorrected = zeros([outputs.numStimuli, outputs.numStimulusPairTrialRepetitionsPerSession, outputs.numFramesPerTrial]); % raw traces
@@ -131,8 +134,9 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         outputs.minusNeuropil_DFF.AMConditions.peakSignal = zeros(outputs.numStimuli, 1);
         
          % Timing info helpers:
-        outputs.minusNeuropil_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
-        outputs.minusNeuropil_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
+%         outputs.minusNeuropil_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
+%         outputs.minusNeuropil_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
+        outputs.minusNeuropil_DFF.timingInfo = outputs.default_DFF.timingInfo; % That should work, right?
     end
     
 

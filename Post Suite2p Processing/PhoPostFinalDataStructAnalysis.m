@@ -22,7 +22,7 @@ if ~exist('phoPipelineOptions','var')
 
     phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions = true;
     phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.startSound = 31;
-	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.endSound = 90;
+	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.endSound = 60;
 	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.sampPeak = 2;
 	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.frameRate = 30;
 	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.smoothValue = 5;
@@ -146,8 +146,6 @@ for i = 1:num_cellROIs
 
         compNeuropilMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMaskNeuropil;
         
-        
-        
         if ~exist('stimuli_mapper','var')
             % Only allow initialization once, if it doesn't exist.
             stimuli_mapper = StimuliIndexMapper(outputs.uniqueStimuli,...
@@ -169,6 +167,11 @@ for i = 1:num_cellROIs
         default_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex(curr_day_linear_comp_index,:) = outputs.default_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex;
         default_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex(curr_day_linear_comp_index,:) = outputs.default_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex;
         
+        % These are the same each time.
+        default_DFF.timingInfo.Index.trialStartRelative.startSound = outputs.default_DFF.timingInfo.Index.trialStartRelative.startSound;
+        default_DFF.timingInfo.Index.trialStartRelative.endSound = outputs.default_DFF.timingInfo.Index.trialStartRelative.endSound;
+        default_DFF.timingInfo.Index.sampPeak = outputs.default_DFF.timingInfo.Index.sampPeak;
+    
         if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
             % Store the outputs in the grid:
             minusNeuropil.finalOutPeaksGrid(curr_day_linear_comp_index,:,:) = outputs.minusNeuropil_DFF.finalOutGrid;
@@ -181,6 +184,9 @@ for i = 1:num_cellROIs
             minusNeuropil.redTraceLinesForAllStimuli(curr_day_linear_comp_index, :, :) = outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot; % [26   150]
             minusNeuropil.timingInfo.Index.startSoundRelative.maxPeakIndex(curr_day_linear_comp_index,:) = outputs.minusNeuropil_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex;
             minusNeuropil.timingInfo.Index.trialStartRelative.maxPeakIndex(curr_day_linear_comp_index,:) = outputs.minusNeuropil_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex;
+            minusNeuropil.timingInfo.Index.trialStartRelative.startSound = outputs.minusNeuropil_DFF.timingInfo.Index.trialStartRelative.startSound;
+            minusNeuropil.timingInfo.Index.trialStartRelative.endSound = outputs.minusNeuropil_DFF.timingInfo.Index.trialStartRelative.endSound;
+            minusNeuropil.timingInfo.Index.sampPeak = outputs.minusNeuropil_DFF.timingInfo.Index.sampPeak;
         end
 
         temp.isFirstSessionInCellRoi = (j == 1);

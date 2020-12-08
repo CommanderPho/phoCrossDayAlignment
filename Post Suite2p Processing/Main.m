@@ -13,8 +13,6 @@ phoPipelineOptions.default_interactionManager_backingStorePath = '/Users/pho/rep
 phoPipelineOptions.imageDimensions = [512 512];
 
 
-
-
 % % phoPipelineOptions.ignoredCellROIs = [];
 % % phoPipelineOptions.ignoredCellROI_Indicies = [3, 50, 132, 157, 116];
 % phoPipelineOptions.ignoredCellROI_CompNames = {'comp4','comp123','comp625','comp677','comp480'};
@@ -50,7 +48,8 @@ phoPipelineOptions.loadedFilteringData.curr_animal = 'anm265';
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria = 0.1;
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions = true;
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.startSound = 31;
-phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.endSound = 90;
+phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.endSound = 60;
+% phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.endSound = 90;
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.sampPeak = 2;
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.frameRate = 30;
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.smoothValue = 5;
