@@ -3,14 +3,22 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
         % (for a particular cellROI and stimulus)
         % There are numStimuli vertically stacked subplots, each containing their trials represented as rows.
     
-%     subplot = @(m,n,p) subtightplot (m, n, p, [0.01 0.05], [0.1 0.01], [0.1 0.01]);
-        
-    plotting_options.subtightplot.gap = [0.01/26 0.1]; % [intra_graph_vertical_spacing, intra_graph_horizontal_spacing]
-    plotting_options.subtightplot.width_h = [0.01 0.05]; % Looks like [padding_bottom, padding_top]
-    plotting_options.subtightplot.width_w = [0.12 0.01];
-    plotting_options.opt = {plotting_options.subtightplot.gap, plotting_options.subtightplot.width_h, plotting_options.subtightplot.width_w}; % {gap, width_h, width_w}
-    subplot = @(m,n,p) subtightplot(m, n, p, plotting_options.opt{:}); 
-        
+       
+    % Options for tightening up the subplots:
+    plotting_options.should_use_custom_subplots = true;
+    
+    if plotting_options.should_use_custom_subplots
+        plotting_options.subtightplot.gap = [0.01/26 0.1]; % [intra_graph_vertical_spacing, intra_graph_horizontal_spacing]
+        plotting_options.subtightplot.width_h = [0.01 0.05]; % Looks like [padding_bottom, padding_top]
+        plotting_options.subtightplot.width_w = [0.12 0.01];
+        plotting_options.opt = {plotting_options.subtightplot.gap, plotting_options.subtightplot.width_h, plotting_options.subtightplot.width_w}; % {gap, width_h, width_w}
+        subplot_cmd = @(m,n,p) subtightplot(m, n, p, plotting_options.opt{:});
+%         SetupCustomSubplots
+    else
+        subplot_cmd = @(m,n,p) subplot(m, n, p);
+    end
+    
+    
     
     if ~exist('extantFigH','var')
         figH = figure(1337 + cellRoiIndex); % generate a new figure to plot the sessions.
@@ -41,7 +49,7 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
     %     curr_maxVals = squeeze(maxVals(cellROIIndex, stimulusIndex, :));
     %     curr_maxInds = squeeze(maxInds(cellROIIndex, stimulusIndex, :));
 
-        subplot(final_data_explorer_obj.stimuli_mapper.numStimuli, 1, stimulusIndex);
+        subplot_cmd(final_data_explorer_obj.stimuli_mapper.numStimuli, 1, stimulusIndex);
 
         %% Plot a heatmap where each of the 20 trials is a vertical column within a single row (for a particular cellROI and stimulus):
         curr_heatMap = squeeze(curr_cellROI_heatMap(stimulusIndex, :, :)); % should be [20 150]
