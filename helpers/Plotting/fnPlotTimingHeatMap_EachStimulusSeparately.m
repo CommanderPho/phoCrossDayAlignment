@@ -13,7 +13,6 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
         plotting_options.subtightplot.width_w = [0.12 0.01];
         plotting_options.opt = {plotting_options.subtightplot.gap, plotting_options.subtightplot.width_h, plotting_options.subtightplot.width_w}; % {gap, width_h, width_w}
         subplot_cmd = @(m,n,p) subtightplot(m, n, p, plotting_options.opt{:});
-%         SetupCustomSubplots
     else
         subplot_cmd = @(m,n,p) subplot(m, n, p);
     end

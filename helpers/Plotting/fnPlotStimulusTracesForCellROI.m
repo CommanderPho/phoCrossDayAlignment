@@ -2,6 +2,20 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
 %FNPLOTSTIMULUSTRACESFORCELLROI plots the array of traces for each stimulus pair for each session for a single cellRoi
 %   Detailed explanation goes here
 
+    % Options for tightening up the subplots:
+    plotting_options.should_use_custom_subplots = true;
+    
+    if plotting_options.should_use_custom_subplots
+        plotting_options.subtightplot.gap = [0.01 0.01]; % [intra_graph_vertical_spacing, intra_graph_horizontal_spacing]
+        plotting_options.subtightplot.width_h = [0.01 0.05]; % Looks like [padding_bottom, padding_top]
+        plotting_options.subtightplot.width_w = [0.025 0.01];
+        plotting_options.opt = {plotting_options.subtightplot.gap, plotting_options.subtightplot.width_h, plotting_options.subtightplot.width_w}; % {gap, width_h, width_w}
+        subplot_cmd = @(m,n,p) subtightplot(m, n, p, plotting_options.opt{:});
+    else
+        subplot_cmd = @(m,n,p) subplot(m, n, p);
+    end
+    
+    
     % currAllSessionCompIndicies: all sessions for the current ROI
     %% Options:
     temp.numSessions = length(currAllSessionCompIndicies);
@@ -92,7 +106,7 @@ function [figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, unique
 %             axes(ha(numStimuli-b+1));
             
             curr_linear_subplot_index = numStimuli-b+1;
-            subplot(numRows, numCol, curr_linear_subplot_index);
+            subplot_cmd(numRows, numCol, curr_linear_subplot_index);
             
 			if is_first_session_for_stimuli
 				if plotting_options.should_plot_vertical_sound_start_stop_lines
