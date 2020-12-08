@@ -12,7 +12,7 @@ addpath(genpath('../../helpers'));
 
 
 %% Options:
-should_show_2d_plot = true;
+should_show_2d_plot = false;
 should_show_3d_mesh_plot = false;
 should_show_masking_plot = false;
 should_show_stimulus_traces_plot = true;

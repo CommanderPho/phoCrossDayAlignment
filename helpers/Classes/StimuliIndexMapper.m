@@ -30,12 +30,23 @@ classdef StimuliIndexMapper
 %             obj.uniqueFreqs = uniqueFreqs;
             
         end
-        
-%         function outputArg = method1(obj,inputArg)
-%             %METHOD1 Summary of this method goes here
-%             %   Detailed explanation goes here
-%             outputArg = obj.Property1 + inputArg;
-%         end
+
+
+
+
+        function [depthIndex, freqIndex, depthValues, freqValues] = getDepthFreqIndicies(obj, linearStimulusIndex)
+            %getDepthFreqIndicies Converts a linear stimulus index into a 1-6 depth or freq index
+            %   Detailed explanation goes here
+			depthFreqIndexTuple = obj.indexMap_StimulusLinear2AmpsFreqsArray(linearStimulusIndex,:);
+			depthIndex = depthFreqIndexTuple(:,1);
+			freqIndex = depthFreqIndexTuple(:,2);
+
+			depthValues = obj.uniqueAmps(depthIndex);
+			freqValues = obj.uniqueFreqs(freqIndex);
+
+			% depthFreqsValues = [depthValues, freqValues];
+        end
+		
 
     end
 end

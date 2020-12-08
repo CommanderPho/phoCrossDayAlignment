@@ -27,7 +27,8 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
     
     %% Loop through all stimuli:
     for stimulusIndex = 1:final_data_explorer_obj.stimuli_mapper.numStimuli
-
+        [depthIndex, freqIndex, depthValue, freqValue] = final_data_explorer_obj.stimuli_mapper.getDepthFreqIndicies(stimulusIndex);
+        
     %     curr_maxVals = squeeze(maxVals(cellROIIndex, stimulusIndex, :));
     %     curr_maxInds = squeeze(maxInds(cellROIIndex, stimulusIndex, :));
 
@@ -48,7 +49,7 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
         end
     %     title('test heat map')
         yticks([]);
-        ylabel(sprintf('stim[%d]', stimulusIndex));
+        ylabel({sprintf('stim[%d]', stimulusIndex), sprintf('%d, %d Hz', depthValue, freqValue)});
 
         is_last_stimulus = (final_data_explorer_obj.stimuli_mapper.numStimuli == stimulusIndex);
         if is_last_stimulus
