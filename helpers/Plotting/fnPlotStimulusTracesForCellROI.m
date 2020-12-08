@@ -59,13 +59,18 @@ function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRo
     % TODO: May want to factor these out for both computational efficiency and to be able to access them elsewhere.
  
     if plotting_options.should_normalize_to_local_peak
-       redTraceLinesExtrema.local_max_peaks = max(final_data_explorer_obj.redTraceLinesForAllStimuli, [], [2 3]);
-       redTraceLinesExtrema.local_min_extrema = min(final_data_explorer_obj.redTraceLinesForAllStimuli, [], [2 3]);
+       redTraceLinesExtrema.local_max_peaks = max(final_data_explorer_obj.redTraceLinesForAllStimuli, [], [2 3]); % [159 x 1]
+       redTraceLinesExtrema.local_min_extrema = min(final_data_explorer_obj.redTraceLinesForAllStimuli, [], [2 3]); % [159 x 1]
      
         if plotting_options.should_plot_all_traces
-            tracesForAllStimuliExtrema.local_max_peaks = max(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot, [], [2 3 4]);
-            tracesForAllStimuliExtrema.local_min_extrema = min(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot, [], [2 3 4]);
-        end    
+            tracesForAllStimuliExtrema.local_max_peaks = max(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot, [], [2 3 4]); % [159 x 1]
+            tracesForAllStimuliExtrema.local_min_extrema = min(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot, [], [2 3 4]); % [159 x 1]
+            
+            activePlotExtrema.local_max_peaks = max([redTraceLinesExtrema.local_max_peaks, tracesForAllStimuliExtrema.local_max_peaks], [], 2); % For each cellROI, get the maximum value (whether it is on the average or the traces themsevles).
+            activePlotExtrema.local_min_extrema = min([redTraceLinesExtrema.local_min_extrema, tracesForAllStimuliExtrema.local_min_extrema], [], 2);
+        else
+            activePlotExtrema = redTraceLinesExtrema;
+        end
     end
     
     if ~exist('extantFigH','var')
@@ -91,7 +96,7 @@ function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRo
         if plotting_options.should_normalize_to_local_peak
 %            temp.local_max_peak = max(temp.currRedTraceLinesForAllStimuli, [], 'all');
 %            temp.local_min_extrema = min(temp.currRedTraceLinesForAllStimuli, [], 'all');
-           temp.currRedTraceLinesForAllStimuli = temp.currRedTraceLinesForAllStimuli ./ redTraceLinesExtrema.local_max_peaks(temp.compIndex);
+           temp.currRedTraceLinesForAllStimuli = temp.currRedTraceLinesForAllStimuli ./ activePlotExtrema.local_max_peaks(temp.compIndex); %% TODO: Make sure using the temp.compIndex is correct
         end
         
         
@@ -100,7 +105,7 @@ function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRo
             if plotting_options.should_normalize_to_local_peak
 %                temp.local_max_peak_trial_traces = max(temp.currTrialTraceLinesForAllStimuli, [], 'all');
 %                temp.local_min_extrema_trial_traces = min(temp.currTrialTraceLinesForAllStimuli, [], 'all');
-               temp.currTrialTraceLinesForAllStimuli = temp.currTrialTraceLinesForAllStimuli ./ tracesForAllStimuliExtrema.local_max_peaks(temp.compIndex);
+               temp.currTrialTraceLinesForAllStimuli = temp.currTrialTraceLinesForAllStimuli ./ activePlotExtrema.local_max_peaks(temp.compIndex);
             end
         end
         
@@ -154,33 +159,10 @@ function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRo
 
 			if is_first_session_for_stimuli
                 fnPlotHelper_StimulusGridLabels(final_data_explorer_obj, numRows, numCol, b, plotting_options)
-                
-% 				if plotting_options.should_plot_titles_for_each_subplot
-%                     title(strcat(num2str(uniqueStimuli(b,1)), {' '}, 'Hz', {' '}, 'at', {' '}, num2str(uniqueStimuli(b,2)*100), {' '}, '% Depth'))
-%                 else
-%                     [curr_row, curr_col] = ind2subplot(numRows, numCol, curr_linear_subplot_index);
-% %                     curr_title_string = sprintf('[row: %d, col: %d]: linear - %d', curr_row, curr_col, curr_linear_subplot_index); % Debugging
-%                     curr_title_string = '';
-%                     % Include the frequency only along the left hand edge
-%                     if (curr_col == 1) 
-%                         curr_freq_string = final_data_explorer_obj.stimuli_mapper.getFormattedString_Freq(freqValue);
-%                         curr_title_string = strcat(curr_title_string, curr_freq_string);
-%                         ylabel(curr_title_string,'FontWeight','bold','FontSize',14,'Interpreter','none');
-%                     else
-%                         ylabel('')
-%                         curr_freq_string = '';
-%                     end
-%                     % Include the depth only along the top edge:
-%                     curr_title_string = '';
-%                     if (curr_row == 1)
-%                         curr_depth_string = final_data_explorer_obj.stimuli_mapper.getFormattedString_Depth(depthValue, true);                        
-%                         curr_title_string = strcat(curr_title_string, curr_depth_string);
-%                         title(curr_title_string,'FontSize',14,'Interpreter','none');
-%                     end            
-%                 end
+
 				xlim([0, 5]);
 				xticks([]);
-				yticks([]);
+% 				yticks([]);
 
                 if plotting_options.should_normalize_to_local_peak
                     ylim([-0.5, 1]);

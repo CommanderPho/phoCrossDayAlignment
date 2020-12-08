@@ -125,7 +125,7 @@ function [callbackOutput] = pho_plot_stimulus_traces(final_data_explorer_obj, ex
 
     if isvalid(extantFigH)
         % Cell Mask Plots:
-        plotting_options.should_plot_all_traces = true; % plotting_options.should_plot_all_traces: if true, line traces for all trials are plotted in addition the mean line
+        plotting_options.should_plot_all_traces = false; % plotting_options.should_plot_all_traces: if true, line traces for all trials are plotted in addition the mean line
         plotting_options.should_plot_vertical_sound_start_stop_lines = true; % plotting_options.should_plot_vertical_sound_start_stop_lines: if true, vertical start/stop lines are drawn to show when the sound started and stopped.
         plotting_options.should_normalize_to_local_peak = true; % plotting_options.should_normalize_to_local_peak: if true, the y-values are normalized across all stimuli and sessions for a cellRoi to the maximal peak value.
         plotting_options.should_plot_titles_for_each_subplot = false; % plotting_options.should_plot_titles_for_each_subplot: if true, a title is added to each subplot (although it's redundent)
@@ -173,14 +173,16 @@ function [callbackOutput] = pho_plot_timing_heatmaps(final_data_explorer_obj, ex
     % COMPUTED
     callbackOutput.shouldRemoveCallback = false;
     
-    % Make Timing Heatmap Plot:
-    if isvalid(extantFigH)
-        plotting_options.should_use_collapsed_heatmaps = true;
-        plotting_options.subplotLayoutIsGrid = true; % subplotLayoutIsGrid: if true, the subplots are layed out in a 5x5 grid with an additional subplot for the 0 entry.
+    plotting_options.should_use_collapsed_heatmaps = true;
+    plotting_options.subplotLayoutIsGrid = true; % subplotLayoutIsGrid: if true, the subplots are layed out in a 5x5 grid with an additional subplot for the 0 entry.
         
+    plotting_options.debugIncludeColorbars = true;
+    
+    % Make Timing Heatmap Plot:
+    if isvalid(extantFigH)    
 %         [callbackOutput.plotted_figH] = fnPlotTimingHeatMap_AllStimulusStacked(final_data_explorer_obj, curr_cellRoiIndex, plotting_options, extantFigH);
         [callbackOutput.plotted_figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer_obj, curr_cellRoiIndex, plotting_options, extantFigH);
-%         set(callbackOutput.plotted_figH, 'Name', sprintf('Slider Controlled Timing Heatmap Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+        set(callbackOutput.plotted_figH, 'Name', sprintf('Slider Controlled Timing Heatmap Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
     else
         callbackOutput.plotted_figH = extantFigH;
         callbackOutput.shouldRemoveCallback = true;
