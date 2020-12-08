@@ -46,9 +46,7 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
         else
             h = imagesc(xx, yy, curr_heatMap);
         end
-%         fnPhoMatrixPlot(curr_heatMap);
     %     title('test heat map')
-
         yticks([]);
         ylabel(sprintf('stim[%d]', stimulusIndex));
 
@@ -60,6 +58,5 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
         end
     end % end for loop
 
-%     outputs.heatmap_h = fnPhoMatrixPlot(curr_heatMap');
     sgtitle(['cellRoi: ' num2str(curr_cellRoiIndex)]);
 end
