@@ -27,13 +27,21 @@ function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRo
 %     temp.compIndex = currAllSessionCompIndicies(1);
 %     fprintf('cellRoiIndex: %d \n compIndex: %d \n', cellRoiIndex, temp.compIndex);
     
-    plotting_options.should_plot_titles_for_each_subplot
     if ~exist('plotting_options','var')
         plotting_options.should_plot_all_traces = false; % plotting_options.should_plot_all_traces: if true, line traces for all trials are plotted in addition the mean line
         plotting_options.should_plot_vertical_sound_start_stop_lines = true; % plotting_options.should_plot_vertical_sound_start_stop_lines: if true, vertical start/stop lines are drawn to show when the sound started and stopped.
         plotting_options.should_normalize_to_local_peak = true; % plotting_options.should_normalize_to_local_peak: if true, the y-values are normalized across all stimuli and sessions for a cellRoi to the maximal peak value.
     end
     
+    if ~isfield(plotting_options, 'should_plot_all_traces')
+        plotting_options.should_plot_all_traces = false; % plotting_options.should_plot_all_traces: if true, line traces for all trials are plotted in addition the mean line
+    end
+    if ~isfield(plotting_options, 'should_plot_vertical_sound_start_stop_lines')
+        plotting_options.should_plot_vertical_sound_start_stop_lines = true; % plotting_options.should_plot_vertical_sound_start_stop_lines: if true, vertical start/stop lines are drawn to show when the sound started and stopped.
+    end
+    if ~isfield(plotting_options, 'should_normalize_to_local_peak')
+        plotting_options.should_normalize_to_local_peak = false; % plotting_options.should_normalize_to_local_peak: if true, the y-values are normalized across all stimuli and sessions for a cellRoi to the maximal peak value.
+    end
     if ~isfield(plotting_options, 'should_plot_titles_for_each_subplot')
         plotting_options.should_plot_titles_for_each_subplot = false; % plotting_options.should_plot_titles_for_each_subplot: if true, a title is added to each subplot (although it's redundent)
     end

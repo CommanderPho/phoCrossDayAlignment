@@ -9,7 +9,7 @@ classdef CellRoiPlotManager < PlotManager
         %% Graphical:
         Colors
 		GraphicalSelection
-		plottingSettings
+		plotting_options
         
         testCellROIBlob_Plot_figH
 		activeOffsetInsetIndicies = []; % activeOffsetInsetIndicies: the insets to display
@@ -18,6 +18,7 @@ classdef CellRoiPlotManager < PlotManager
         extantFigH_plot_2d
         extantFigH_plot_3d
         extantFigH_plot_stimulus_traces
+		extantFigH_plot_heatmap_traces
 
     end
     
@@ -34,7 +35,7 @@ classdef CellRoiPlotManager < PlotManager
        end
        function number_of_cellROI_plotSubGraphics = get.number_of_cellROI_plotSubGraphics(obj)
           number_of_cellROI_plotSubGraphics = length(obj.activeOffsetInsetIndicies);
-		  if obj.plottingSettings.should_plot_neuropil_masks
+		  if obj.plotting_options.should_plot_neuropil_masks
 			number_of_cellROI_plotSubGraphics = number_of_cellROI_plotSubGraphics + 1;
 		  end
        end
@@ -63,8 +64,9 @@ classdef CellRoiPlotManager < PlotManager
             obj.interaction_helper_obj = InteractionHelper(final_data_explorer_obj, 'Pho', active_selections_backingFile_path);
 %             active_selections_backingFile_path = obj.interaction_helper_obj.BackingFile.fullPath;
 
-			obj.plottingSettings.should_plot_neuropil_masks = true;
+			obj.plotting_options.should_plot_neuropil_masks = true;
 
+            obj.plotting_options.desiredSize = [512 512];
             % Build Colors Arrays:
 			obj = obj.SetupColors();
             
@@ -72,7 +74,7 @@ classdef CellRoiPlotManager < PlotManager
         
         function obj = SetupColors(obj)
 			% SetupColors: Build Color Matricies
-			desiredSize = [512 512];
+			desiredSize = obj.plotting_options.desiredSize;
 			obj.Colors.black3DArray = fnBuildCDataFromConstantColor([0.0 0.0 0.0], desiredSize);
 			obj.Colors.darkgrey3DArray = fnBuildCDataFromConstantColor([0.3 0.3 0.3], desiredSize);
 			obj.Colors.lightgrey3DArray = fnBuildCDataFromConstantColor([0.6 0.6 0.6], desiredSize);
@@ -170,7 +172,7 @@ classdef CellRoiPlotManager < PlotManager
 
 			graphicalAppearance.is_visible = true;
 
-			is_neuropil_layer = (obj.plottingSettings.should_plot_neuropil_masks && (obj.number_of_cellROI_plotSubGraphics == plotImageIndex));
+			is_neuropil_layer = (obj.plotting_options.should_plot_neuropil_masks && (obj.number_of_cellROI_plotSubGraphics == plotImageIndex));
 			if is_neuropil_layer
 				
 				updated_color_data = obj.Colors.darkgrey3DArray;
@@ -232,7 +234,7 @@ classdef CellRoiPlotManager < PlotManager
 				for plotImageIndex = 1:obj.number_of_cellROI_plotSubGraphics
 					currPlotSubGraphicsIdentifier.cellROIIdentifier = cellROIIdentifier;
 					
-					is_neuropil_index = (obj.plottingSettings.should_plot_neuropil_masks && (obj.number_of_cellROI_plotSubGraphics == plotImageIndex));
+					is_neuropil_index = (obj.plotting_options.should_plot_neuropil_masks && (obj.number_of_cellROI_plotSubGraphics == plotImageIndex));
 					if is_neuropil_index
 						% Neuropil Mask Plotting (optional):
 						currPlotSubGraphicsIdentifier.edgeOffsetIndex = nan;
@@ -314,17 +316,27 @@ classdef CellRoiPlotManager < PlotManager
 		function [obj] = pho_plot_stimulus_traces(obj, curr_cellRoiIndex)
             obj.extantFigH_plot_stimulus_traces = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_StimulusTraces'); % generate a new figure to plot the sessions.
 			clf(obj.extantFigH_plot_stimulus_traces);
-
-			% temp.currAllSessionCompIndicies = obj.final_data_explorer_obj.multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
-			% Make Stimuli Traces Plot:  
-			% [plotted_figH] = fnPlotStimulusTracesForCellROI(obj.final_data_explorer_obj.dateStrings, obj.final_data_explorer_obj.uniqueAmps, obj.final_data_explorer_obj.uniqueFreqs, obj.final_data_explorer_obj.uniqueStimuli, ...
-			% 	temp.currAllSessionCompIndicies, curr_cellRoiIndex, ...
-			% 	obj.final_data_explorer_obj.traceTimebase_t, obj.final_data_explorer_obj.active_DFF.TracesForAllStimuli, obj.final_data_explorer_obj.redTraceLinesForAllStimuli, ...
-			% 	obj.extantFigH_plot_stimulus_traces);
-
-			[plotted_figH] = fnPlotStimulusTracesForCellROI(obj.final_data_explorer_obj, curr_cellRoiIndex, obj.extantFigH_plot_stimulus_traces);
+			[plotted_figH] = fnPlotStimulusTracesForCellROI(obj.final_data_explorer_obj, curr_cellRoiIndex, obj.plotting_options, obj.extantFigH_plot_stimulus_traces);
 			set(plotted_figH, 'Name', sprintf('CellROI Stimuli Traces Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
 		end
+
+
+		function [obj] = pho_plot_timing_heatmaps(obj, curr_cellRoiIndex)
+			obj.plotting_options.should_use_collapsed_heatmaps = true;
+			obj.plotting_options.subplotLayoutIsGrid = true; % subplotLayoutIsGrid: if true, the subplots are layed out in a 5x5 grid with an additional subplot for the 0 entry.
+				
+			obj.plotting_options.debugIncludeColorbars = true;
+			obj.extantFigH_plot_heatmap_traces = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_TraceHeatmaps'); % generate a new figure to plot the sessions.
+			clf(obj.extantFigH_plot_heatmap_traces);
+			% Make Timing Heatmap Plot:
+		%         [callbackOutput.plotted_figH] = fnPlotTimingHeatMap_AllStimulusStacked(final_data_explorer_obj, curr_cellRoiIndex, plotting_options, extantFigH);
+			[obj.extantFigH_plot_heatmap_traces] = fnPlotTimingHeatMap_EachStimulusSeparately(obj.final_data_explorer_obj, curr_cellRoiIndex, obj.plotting_options, obj.extantFigH_plot_heatmap_traces);
+			set(obj.extantFigH_plot_heatmap_traces, 'Name', sprintf('Slider Controlled Timing Heatmap Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+		end
+
+
+
+
 
 	end % end graphical methods block
 

@@ -8,6 +8,10 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
         plotting_options.should_use_custom_subplots = true;
     end
     
+    if ~isfield(plotting_options, 'useSingleSharedColorbar')
+        plotting_options.useSingleSharedColorbar = true;
+    end
+    
     if ~isfield(plotting_options, 'should_use_collapsed_heatmaps')
        plotting_options.should_use_collapsed_heatmaps = false; 
     end
@@ -18,6 +22,10 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
     
     if ~isfield(plotting_options, 'should_plot_titles_for_each_subplot')
         plotting_options.should_plot_titles_for_each_subplot = false;
+    end
+    
+    if ~isfield(plotting_options, 'debugIncludeColorbars')
+       plotting_options.debugIncludeColorbars = false; 
     end
     
     % Options for tightening up the subplots:
@@ -40,11 +48,12 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
     
     plotting_options.useGlobalColorLims = true;
     
-    if ~exist('extantFigH','var')
+    if (~exist('extantFigH','var') || isempty(extantFigH))
         figH = figure(1337 + cellRoiIndex); % generate a new figure to plot the sessions.
     else
         figH = extantFigH; % use the existing provided figure    
         figure(figH);
+%         set(groot,'CurrentFigure',figNumber);
     end
     
     clf(figH);
@@ -108,6 +117,8 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
     %     title('test heat map')
         yticks([]);
         
+        
+        
         if plotting_options.subplotLayoutIsGrid
             fnPlotHelper_StimulusGridLabels(final_data_explorer_obj, numRows, numCol, stimulusIndex, plotting_options)
         
@@ -131,7 +142,30 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
         else
             xticks([]);
         end
+        
+        if plotting_options.debugIncludeColorbars
+            if ~plotting_options.useSingleSharedColorbar
+                % Only add the subplot colorbar if we're not using the shared global one
+                colorbar(); 
+            end
+        end
+        
     end % end for loop
+    
+    if (plotting_options.debugIncludeColorbars && plotting_options.useSingleSharedColorbar)
+        %% Plot the single large colorbar at the bottom if those options are checked
+        last_subplot_position = get(gca,'Position');
+        
+        colorbar_h_offset = 0.01;
+        desired_colorbar_position = last_subplot_position;
+        desired_colorbar_position(1) = desired_colorbar_position(1) + last_subplot_position(3) + colorbar_h_offset; % Offset by its width
+        desired_colorbar_position(3) = 0.758208955223879; % Width
+        desired_colorbar_position(4) = 0.019511860929457; % Height
+        desired_colorbar_position(2) = -desired_colorbar_position(4) + last_subplot_position(4); % y-position
+                
+        c = colorbar('Location','south','Position', desired_colorbar_position);
+
+    end
 
     sgtitle(['cellRoi: ' num2str(curr_cellRoiIndex)]);
 end
