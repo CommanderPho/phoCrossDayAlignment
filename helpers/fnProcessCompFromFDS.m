@@ -2,10 +2,10 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     %TODO: Figure out how the 26 different stimuli (numStimuli) map to the uniqueAmps/uniqueFreqs points.
     
     if ~exist('processingOptions','var')
-        processingOptions.startSound=31;
-        processingOptions.endSound=90;
+        processingOptions.startSound = 31;
+        processingOptions.endSound = 90;
         processingOptions.sampPeak = 2;
-        processingOptions.frameRate=30;
+        processingOptions.frameRate = 30;
         processingOptions.smoothValue = 5;
         processingOptions.compute_neuropil_corrected_versions = true;
     end
@@ -14,6 +14,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     %%%+S- fnProcessCompFromFDS outputs
     %= imgDataNeuropil - the neuropil data for this component. 520 x 150 double
     %= referenceMask - the reference mask for this component
+    %= referenceMaskNeuropil - the reference mask for the neuropil mask for this component
     %= stimList - 
     %= uniqueStimuli - 26x2 double - contains each unique pair of stimuli, with first column being freq and second column being depth
     %= tracesForEachStimulus - 
@@ -23,7 +24,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     %= indexMap_AmpsFreqs2StimulusArray - a map from each unique stimuli to a linear stimulus index. Each row contains a fixed amplitude, each column a fixed freq
     %= indexMap_StimulusLinear2AmpsFreqsArray - each row contains a fixed linear stimulus, and the two entries in the adjacent columns contain the uniqueAmps index and the uniqueFreqs index.
     %= imgDataToPlot - 
-    %= tbImg - make a timebase to plot as xAxis for traces
+    %= traceTimebase_t - make a timebase to plot as xAxis for traces
     %= TracesForAllStimuli.meanData - The important red lines
     %= TracesForAllStimuli.imgDataToPlot - 
     %= TracesForAllStimuli.finalSeriesAmps - 2D projections of the plots
@@ -42,12 +43,11 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
        outputs.imgDataNeuropil = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataNeuropil; % 520x150 double
     
     end
-%     
-    
-    
+
     outputs.referenceMask = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).segmentLabelMatrix; % get the reference mask for this component
-    
-    [numTrials, numFrames] = size(imgDataDFF);
+    outputs.referenceMaskNeuropil = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).neuropilMaskLabelMatrix; % get the reference mask for the neuropil mask of this component
+
+    [numTrials, outputs.numFramesPerTrial] = size(imgDataDFF);
     
     if processingOptions.smoothValue>0
         for i = 1:numTrials
@@ -55,11 +55,10 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
             if processingOptions.compute_neuropil_corrected_versions
                 imagingDataMinusNeuropilDFF(i,:) = smooth(imagingDataMinusNeuropilDFF(i,:), processingOptions.smoothValue);
             end
-    
         end
     end
     
-    [~, numFrames] = size(imgDataDFF);
+    [~, outputs.numFramesPerTrial] = size(imgDataDFF);
     
     % outputs.stimList: starts as a 520x2 double
 	outputs.stimList(:,1) = fStruct.(currentAnm).(currentSesh).behData.amFrequency;
@@ -69,10 +68,19 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     zeroValIndicies = find(outputs.stimList(:,2)==0); % In the stimList list, several entries should be found.
     outputs.stimList(zeroValIndicies, 1) = 0; % Set the invalid '10' entry to a zero.
     
-    [outputs.uniqueStimuli, ~, ib] = unique(outputs.stimList, 'rows');
+    [outputs.uniqueStimuli, ~, ib] = unique(outputs.stimList, 'rows'); % Find all unique combinations of [freq, ampl] stimuli-pairs
+    % I think ib will contain all the repeated indicies in outputs.stimList for each outputs.uniqueStimuli
+    % ib: 520x1 double
+    % outputs.uniqueStimuli: 26x2
     
-    outputs.tracesForEachStimulus = accumarray(ib, find(ib), [], @(rows){rows});
-    
+    % What is this doing?
+    % Using the 'ib' indexes found corresponding to each unique [freq, amp] stimuli-pair, find all rows corresponding to each stimulus:
+    outputs.linearStimulusPairIndexToTrialIndicies = accumarray(ib, find(ib), [], @(rows){rows}); % a outputs.numStimuli x outputs.numStimulusPairTrialRepetitionsPerSession (e.g. 26 x 20) map
+    outputs.numStimulusPairTrialRepetitionsPerSession = 20;
+    % outputs.linearStimulusPairIndexToTrialIndicies: 26x1 cell
+        % each entry is a 20x1 double of indicies into the original stimulus array
+        % '20' reflects the fact that there's 20 repetitions of each unique stimulus-pair across the session.
+        
     [outputs.numStimuli, ~] = size(outputs.uniqueStimuli);
     outputs.uniqueAmps = unique(outputs.uniqueStimuli(:,2));
     outputs.uniqueFreqs = unique(outputs.uniqueStimuli(:,1));
@@ -102,87 +110,79 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 
 	%pre-allocate
 %     outputs.imgDataToPlot = zeros(outputs.numStimuli, numFrames);
-    outputs.tbImg = linspace(0,numFrames/processingOptions.frameRate, numFrames); % make a timebase to plot as xAxis for traces
-    
-    % The important red lines:
-%     outputs.TracesForAllStimuli.meanData = zeros(outputs.numStimuli, numFrames);
-    
-    outputs.default_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, numFrames); % The important red lines:
+    outputs.traceTimebase_t = linspace(0, outputs.numFramesPerTrial/processingOptions.frameRate, outputs.numFramesPerTrial); % make a timebase to plot as xAxis for traces
+	
+	%% timingInfo: an object containing information about the timing of the trials and the peaks within the trials:
+	outputs.timingInfo.Index.startSound = processingOptions.startSound;
+	outputs.timingInfo.Index.endSound = processingOptions.endSound;
+    outputs.timingInfo.Index.sampPeak = processingOptions.sampPeak;
+
+    outputs.TracesForAllStimuli.imgDataToPlot = zeros([outputs.numStimuli, outputs.numStimulusPairTrialRepetitionsPerSession, outputs.numFramesPerTrial]); % raw traces
+    outputs.default_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, outputs.numFramesPerTrial); % The important red lines
     outputs.default_DFF.AMConditions.peakSignal = zeros(outputs.numStimuli, 1);
     
+    % Timing info helpers:
+    outputs.default_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
+    outputs.default_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
+    
     if processingOptions.compute_neuropil_corrected_versions
-        outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, numFrames); % The important red lines:
+        outputs.TracesForAllStimuli.neuroPillCorrected = zeros([outputs.numStimuli, outputs.numStimulusPairTrialRepetitionsPerSession, outputs.numFramesPerTrial]); % raw traces
+        outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot = zeros(outputs.numStimuli, outputs.numFramesPerTrial); % The important red lines
         outputs.minusNeuropil_DFF.AMConditions.peakSignal = zeros(outputs.numStimuli, 1);
+        
+         % Timing info helpers:
+        outputs.minusNeuropil_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
+        outputs.minusNeuropil_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(outputs.numStimuli, 1);
     end
     
+
     %% Loop through all stimuli:
     for b = 1:outputs.numStimuli
-        tracesToPlot = outputs.tracesForEachStimulus{b};
-        %% plotTracesForAllStimuli_FDS Style
-%          %get the raw data that you're gonna plot
-%         outputs.TracesForAllStimuli.imgDataToPlot = imgDataDFF(tracesToPlot, :); % These are sets of stimuli for this entry.
-%         %make an average
-%         outputs.TracesForAllStimuli.meanData(b,:) = mean(outputs.TracesForAllStimuli.imgDataToPlot, 1); % this is that main red line that we care about, it contains 1x150 double
+        currStimulusTrialIndicies = outputs.linearStimulusPairIndexToTrialIndicies{b}; % The 20x1 repetitions of this specific stimulus
         
+        %% plotTracesForAllStimuli_FDS Style
+        %get the raw data that you're gonna plot
+        outputs.TracesForAllStimuli.imgDataToPlot(b,:,:) = imgDataDFF(currStimulusTrialIndicies, :); % These are sets of stimuli for this entry.
+
         %% plotAMConditions_FDS Style
-        outputs.default_DFF.AMConditions.imgDataToPlot(b,:) = mean(imgDataDFF(tracesToPlot,:));
-        [~,maxInd] = max(outputs.default_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
-        maxInd = maxInd+processingOptions.startSound-1;
-        outputs.default_DFF.AMConditions.peakSignal(b) = mean(outputs.default_DFF.AMConditions.imgDataToPlot(b, maxInd-processingOptions.sampPeak:maxInd+processingOptions.sampPeak));
+        outputs.default_DFF.AMConditions.imgDataToPlot(b,:) = mean(imgDataDFF(currStimulusTrialIndicies,:)); % This gets the particular red line for this stimulus
+        
+        [~, stimStartRelative_maxInd] = max(outputs.default_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
+		maxInd = stimStartRelative_maxInd + processingOptions.startSound - 1; % convert back to a frame index instead of a stimulus start relative index
+
+		% timingInfo.Index.trialStartRelative.peakIndexRange: range surrounding the peak index (by extending +processingOptions.sampPeak and -processingOptions.sampPeak on both sides of the peak index)
+		timingInfo.Index.trialStartRelative.peakIndexRange = (maxInd-processingOptions.sampPeak):(maxInd+processingOptions.sampPeak);
+
+        % Finally, the peakSignal(b): the portion of the fluoresence data surrounding the peak index (by extending +processingOptions.sampPeak and -processingOptions.sampPeak on both sides of the peak index) is extracted and the mean value is used as the peakSignal value.
+        outputs.default_DFF.AMConditions.peakSignal(b) = mean(outputs.default_DFF.AMConditions.imgDataToPlot(b, timingInfo.Index.trialStartRelative.peakIndexRange));
+        
+        % the relative offset between the start of the sound stimulus and the max peak
+		outputs.default_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex(b) = stimStartRelative_maxInd;
+		% timingInfo.Index.trialStartRelative.maxPeakIndex: the relative offset between the start of the trial (not the stimulus) and the max peak. As close to an absolute index as it gets.
+		outputs.default_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex(b) = maxInd;
         
         
         if processingOptions.compute_neuropil_corrected_versions
-%             outputs.TracesForAllStimuli.neuroPillCorrected = imagingDataMinusNeuropilDFF(tracesToPlot, :); % These are sets of stimuli for this entry.
-%             %make an average
-%             outputs.TracesForAllStimuli.neuroPillCorrected_meanData(b,:) = mean(outputs.TracesForAllStimuli.neuroPillCorrected, 1); % this is that main red line that we care about, it contains 1x150 double
+            outputs.TracesForAllStimuli.neuroPillCorrected(b,:,:) = imagingDataMinusNeuropilDFF(currStimulusTrialIndicies, :); % These are sets of stimuli for this entry.
 
             %% plotAMConditions_FDS Style
-            outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b,:) = mean(imagingDataMinusNeuropilDFF(tracesToPlot,:));
-            [~, maxInd] = max(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
-            maxInd = maxInd + processingOptions.startSound - 1;
+            outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b,:) = mean(imagingDataMinusNeuropilDFF(currStimulusTrialIndicies,:));
+            [~, stimStartRelative_maxInd] = max(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
+            maxInd = stimStartRelative_maxInd + processingOptions.startSound - 1; % convert back to a frame index instead of a stimulus start relative index
             outputs.minusNeuropil_DFF.AMConditions.peakSignal(b) = mean(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, maxInd-processingOptions.sampPeak:maxInd+processingOptions.sampPeak));
+             % the relative offset between the start of the sound stimulus and the max peak
+            outputs.minusNeuropil_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex(b) = stimStartRelative_maxInd;
+            % timingInfo.Index.trialStartRelative.maxPeakIndex: the relative offset between the start of the trial (not the stimulus) and the max peak. As close to an absolute index as it gets.
+            outputs.minusNeuropil_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex(b) = maxInd;
+            
         end
+        
+
+        
     
     end
 
     % 2D projections of the plots:
-%     outputs.TracesForAllStimuli.finalSeriesAmps = {};
-%  % uniqueAmps: the [0%, 20%, 40%, 60%, 80%, 100%] data series
-%     for c = 1:numUniqueAmps
-%         activeUniqueAmp = outputs.uniqueAmps(c);
-%         currentAmpIdx = find(outputs.uniqueStimuli(:,2)==activeUniqueAmp); % this varies in size. for the 0 element it's 1x1, but for index 2 for example it's 5x1
-%         theseFreqs = outputs.uniqueStimuli(currentAmpIdx,1); % AM Depth (%)
-%         thesePeaks = outputs.default_DFF.AMConditions.peakSignal(currentAmpIdx); % 'Peak DF/F'
-%         
-%         tempCurrOutput = struct;
-%         tempCurrOutput.ampIdx = currentAmpIdx;
-%         tempCurrOutput.ampValue = activeUniqueAmp;
-%         tempCurrOutput.freqs = theseFreqs;
-%         tempCurrOutput.peaks = thesePeaks;
-% 
-%         outputs.TracesForAllStimuli.finalSeriesAmps{end+1} = tempCurrOutput;
-%     end
-     
-%     outputs.TracesForAllStimuli.finalSeriesFreqs = {};
-%     % uniqueFreqs: the [0, 10, 20, 50, 100, 200 Hz] data series
-%     for d=1:numUniqueFreqs
-%         activeUniqueFreq = outputs.uniqueFreqs(d);
-%         currentFreqIdx = find(outputs.uniqueStimuli(:,1)==activeUniqueFreq);
-%         theseAmps = outputs.uniqueStimuli(currentFreqIdx,2);
-%         thesePeaks = outputs.default_DFF.AMConditions.peakSignal(currentFreqIdx); % 'Peak DF/F'
-%         
-%         tempCurrOutput = struct;
-%         tempCurrOutput.freqIdx = currentFreqIdx;
-%         tempCurrOutput.freqValue = activeUniqueFreq;
-%         tempCurrOutput.amps = theseAmps;
-%         tempCurrOutput.peaks = thesePeaks;
-% 
-%         outputs.TracesForAllStimuli.finalSeriesFreqs{end+1} = tempCurrOutput;
-%         
-%     end
-    
-    
-    
     %% Loop through all amplitudes and frequencies:
     % Build 2D Mesh for each component
     outputs.default_DFF.finalOutGrid = zeros(numUniqueAmps, numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
@@ -206,26 +206,26 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
             activeUniqueFreq = outputs.uniqueFreqs(j);
             % Get the appropriate linear index from the map
             linearStimulusIndex = outputs.indexMap_AmpsFreqs2StimulusArray(i, j);
-            currPeaks = outputs.default_DFF.AMConditions.peakSignal(linearStimulusIndex); % 'Peak DF/F'
-            outputs.default_DFF.finalOutGrid(i,j) = currPeaks;
+            currPeakValue = outputs.default_DFF.AMConditions.peakSignal(linearStimulusIndex); % 'Peak DF/F'
+            outputs.default_DFF.finalOutGrid(i,j) = currPeakValue;
             % Check if this new peak value exceeds the previous maximum, and if it does, keep track of the new value and index.
-            if currPeaks > outputs.default_DFF.maximallyPreferredStimulus.Value 
+            if currPeakValue > outputs.default_DFF.maximallyPreferredStimulus.Value 
                 outputs.default_DFF.maximallyPreferredStimulus.LinearIndex = linearStimulusIndex; % Set this linear index as the maximum one.
                 outputs.default_DFF.maximallyPreferredStimulus.AmpFreqIndexTuple = [i, j];
                 outputs.default_DFF.maximallyPreferredStimulus.AmpFreqValuesTuple = [activeUniqueAmp, activeUniqueFreq];
-                outputs.default_DFF.maximallyPreferredStimulus.Value = currPeaks;
+                outputs.default_DFF.maximallyPreferredStimulus.Value = currPeakValue;
             end
             
             % neuropil-corrected version
             if processingOptions.compute_neuropil_corrected_versions
-                currPeaks = outputs.minusNeuropil_DFF.AMConditions.peakSignal(linearStimulusIndex); % 'Peak DF/F'
-                outputs.minusNeuropil_DFF.finalOutGrid(i,j) = currPeaks;
+                currPeakValue = outputs.minusNeuropil_DFF.AMConditions.peakSignal(linearStimulusIndex); % 'Peak DF/F'
+                outputs.minusNeuropil_DFF.finalOutGrid(i,j) = currPeakValue;
                 % Check if this new peak value exceeds the previous maximum, and if it does, keep track of the new value and index.
-                if currPeaks > outputs.minusNeuropil_DFF.maximallyPreferredStimulus.Value 
+                if currPeakValue > outputs.minusNeuropil_DFF.maximallyPreferredStimulus.Value 
                     outputs.minusNeuropil_DFF.maximallyPreferredStimulus.LinearIndex = linearStimulusIndex; % Set this linear index as the maximum one.
                     outputs.minusNeuropil_DFF.maximallyPreferredStimulus.AmpFreqIndexTuple = [i, j];
                     outputs.minusNeuropil_DFF.maximallyPreferredStimulus.AmpFreqValuesTuple = [activeUniqueAmp, activeUniqueFreq];
-                    outputs.minusNeuropil_DFF.maximallyPreferredStimulus.Value = currPeaks;
+                    outputs.minusNeuropil_DFF.maximallyPreferredStimulus.Value = currPeakValue;
                 end
             end
     

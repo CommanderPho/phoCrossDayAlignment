@@ -1,2 +1,11 @@
-﻿*.asv
+*.asv
 output.mat
+Post Suite2p Processing/Testing/UAnnotations-CellROI-0.mat
+**/.DS_Store
+UAnnotations-dev_testing.mat
+data/manualRoiFilteringResults-12_04_2020_backup.mat
+helpers/External/subtightplot/subtightplot_demo.m
+helpers/External/subtightplot/subtightplot_demo.png
+helpers/External/subtightplot/subtightplot_demo.ppt
+helpers/External/suplabel/suplabel_test.m
+helpers/External/suplabel/license.txt

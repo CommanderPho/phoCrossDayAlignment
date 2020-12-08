@@ -26,6 +26,7 @@
 %                   - imagingData: 520x150 double
 %                   - imagingDataNeuropil: 520x150 double
 %                   - segmentLabelMatrix: 512x512 double
+%                   - neuropilMaskLabelMatrix: 512x512 double
 %                   - imagingDataDFF: 520x150 double
 
 %% SPEC: sessionList
@@ -42,6 +43,7 @@
 
  %%%+S- fnProcessCompFromFDS outputs
     %= referenceMask - the reference mask for this component
+    %= referenceMaskNeuropil - the reference mask for the neuropil mask for this component
     %= stimList - 
     %= uniqueStimuli - 
     %= tracesForEachStimulus - 
@@ -51,7 +53,7 @@
     %= indexMap_AmpsFreqs2StimulusArray - a map from each unique stimuli to a linear stimulus index. Each row contains a fixed amplitude, each column a fixed freq
     %= indexMap_StimulusLinear2AmpsFreqsArray - each row contains a fixed linear stimulus, and the two entries in the adjacent columns contain the uniqueAmps index and the uniqueFreqs index.
     %= imgDataToPlot - 
-    %= tbImg - make a timebase to plot as xAxis for traces
+    %= traceTimebase_t - make a timebase to plot as xAxis for traces
     %= TracesForAllStimuli.meanData - The important red lines
     %= TracesForAllStimuli.imgDataToPlot - 
     %= TracesForAllStimuli.finalSeriesAmps - 2D projections of the plots
@@ -78,7 +80,38 @@
     %= Value - The actual Peak DF/F value
 %
 
-%%%+S- finalOutComponentSegment
+%%%+S- compMasks
     %= Masks - the binary mask for each component. zeros(numCompListEntries, 512, 512)
     %= Edge - the binary edge corresponding to each component in Masks
 %
+
+
+    %% Used in FinalDataExplorer:
+    %%%+S- preferredStimulusInfo
+        %- DidPreferredStimulusChange - keeps track of whether the preferredStimulus amplitude or frequency changed for a cellROI between sessions.
+        %- PreferredStimulus - 
+        %- PreferredStimulus_LinearStimulusIndex - 
+        %- PreferredStimulusAmplitude - 
+        %- PreferredStimulusFreq - 
+		%- ChangeScores: the number of changes in preferred tuning between sessions
+		%- InterSessionConsistencyScores: the number of consistently tuned sessions
+    %
+
+    %%%+S- roiComputedProperties
+        %- areas - 
+        %- boundingBoxes - 
+        %- centroids - 
+    %
+
+    %%%+S- roiMasks
+        %- Fill - 
+        %- Edge - 
+        %- OutsetEdge0 - 
+        %- OutsetEdge1 - 
+        %- OutsetEdge2 - 
+        %- InsetEdge0 - 
+        %- InsetEdge1 - 
+        %- InsetEdge2 - 
+    %
+    
+    

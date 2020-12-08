@@ -1,7 +1,7 @@
 %% testCellROIBlob_AlignmentAcrossSessions.m
 % Using this, I've confirmed that the cellROIs are identical for all three sessions.
 
-result = fnTestCellROIBlob_AlignmentAcrossSessions(cellRoiSortIndex, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment);
+result = fnTestCellROIBlob_AlignmentAcrossSessions(cellRoiSortIndex, multiSessionCellRoi_CompListIndicies, compMasks);
 
 
 % test.numDiffs = result.totalDifferences;
@@ -19,7 +19,7 @@ result = fnTestCellROIBlob_AlignmentAcrossSessions(cellRoiSortIndex, multiSessio
 % h = imshowpair(A,B);
 
 
-function result = fnTestCellROIBlob_AlignmentAcrossSessions(cellRoiSortIndex, multiSessionCellRoi_CompListIndicies, finalOutComponentSegment)
+function result = fnTestCellROIBlob_AlignmentAcrossSessions(cellRoiSortIndex, multiSessionCellRoi_CompListIndicies, compMasks)
     num_cellROIs = length(cellRoiSortIndex);
     numSessions = size(multiSessionCellRoi_CompListIndicies,2);
     numDifferences = numSessions-1;
@@ -31,7 +31,7 @@ function result = fnTestCellROIBlob_AlignmentAcrossSessions(cellRoiSortIndex, mu
         %% Plot the grid as a test
         temp.cellRoiIndex = cellRoiSortIndex(i);
         temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(temp.cellRoiIndex,:); % Gets all sessions for the current ROI
-        temp.cellROI_allSessionMasks = finalOutComponentSegment.Masks(temp.currAllSessionCompIndicies,:,:);
+        temp.cellROI_allSessionMasks = compMasks.Masks(temp.currAllSessionCompIndicies,:,:);
         temp.numSessions = length(temp.currAllSessionCompIndicies);
         temp.numDifferences = temp.numSessions-1;
 %         temp.diffMasks = zeros([temp.numDifferences, size(temp.cellROI_allSessionMasks,2), size(temp.cellROI_allSessionMasks, 3)]);

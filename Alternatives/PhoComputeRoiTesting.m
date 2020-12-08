@@ -1,6 +1,6 @@
 % Pho Compute ROI Testing
 % Pho Hale, November 10, 2020
-% Tries to compute cell ROIs in MATLAB using a custom algorithm
+% Tries to compute cell ROIs in MATLAB (without Suite2p) using a custom algorithm
 addpath(genpath('helpers'));
 
 clear aacTifOutputOptions;

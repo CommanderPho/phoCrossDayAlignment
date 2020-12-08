@@ -58,7 +58,7 @@ for a = 1:numel(compList)
     uniqueFreqs = unique(uniqueStimuli(:,1));
     
     %pre-allocate
-    tbImg = linspace(0,numFrames/frameRate,numFrames); % make a timebase to plot as xAxis for traces    
+    traceTimebase_t = linspace(0,numFrames/frameRate,numFrames); % make a timebase to plot as xAxis for traces    
     
 
     
@@ -80,9 +80,9 @@ for a = 1:numel(compList)
         meanData=mean(imgDataToPlot,1);
         
         subplot(numRows,numCol,numStimuli-b+1);
-        plot(tbImg,imgDataToPlot,'color','black')
+        plot(traceTimebase_t,imgDataToPlot,'color','black')
         hold on
-        plot(tbImg,meanData,'color','red','linewidth',2);
+        plot(traceTimebase_t,meanData,'color','red','linewidth',2);
         title(strcat(currentComp, {' '}, num2str(uniqueStimuli(b,1)),{' '},'Hz',{' '},'at',{' '},num2str(uniqueStimuli(b,2)*100),{' '},'% Depth'))
         
         

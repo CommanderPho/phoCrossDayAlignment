@@ -1,4 +1,4 @@
-function ephysData=pfaAppendSuite2p_v2(ephysData,F,Fneu,iscell,stat,trialLength)
+function ephysData=pfaAppendSuite2p_v2(ephysData, F, Fneu, iscell, neuropil_masks, stat, trialLength)
 
 %this script takes the output of your Suite2p registration (and manual
 %curation...you gotta manually curate the ROIs before running this) and
@@ -17,7 +17,7 @@ sweepNames=fieldnames(ephysData); %pull out the sweep names
 idxOfTrueCells = find(iscell(:,1)==1); %find the index of ROIs are true neurons that you want to analyze and what is garbage.
 trueF = F(idxOfTrueCells,:); %discard things that aren't cells
 trueNeu = Fneu(idxOfTrueCells,:);
-
+trueNeuropil_masks = neuropil_masks(idxOfTrueCells,:,:);
 %initialize this field
 ephysData.componentData = [];
 
@@ -29,7 +29,7 @@ for b = 1:length(idxOfTrueCells)
     disp(strcat('now processing','_',thisComp)); %tell the end user you haven't forgotten about them
     
     %these are the pixel locations for the roi
-    xLabels=stat{1,idxOfTrueCells(b)}.xpix+1; %also lmao another python/matlab conversion error need to do +1
+    xLabels = stat{1,idxOfTrueCells(b)}.xpix+1; %also lmao another python/matlab conversion error need to do +1
     yLabels = stat{1,idxOfTrueCells(b)}.ypix+1;
     
     %initialize these and save some stuff so that you can use the
@@ -37,6 +37,8 @@ for b = 1:length(idxOfTrueCells)
     ephysData.componentData.(thisComp).componentStack = zeros(imSize);
     ephysData.componentData.(thisComp).componentStackBinarized = zeros(imSize);
     ephysData.componentData.(thisComp).segmentLabelMatrix = zeros(imSize);
+    
+    ephysData.componentData.(thisComp).neuropilMaskLabelMatrix = squeeze(trueNeuropil_masks(b,:,:)); % Make sure this works, see how segmentLabelMatrix is done differently?
     
     %there has got to be a better way to do this than a for loop. but
     %at the moment I am having trouble with this.
@@ -58,10 +60,11 @@ for b = 1:length(idxOfTrueCells)
     lastFrame = trialLength; %initialize the last frame of first trial
     
     %loop through each trial
-    for a =1:numel(sweepNames)
+    for a = 1:numel(sweepNames)
         currentSweep=sweepNames{a}; %pull out the trial name
         ephysData.(currentSweep).imagingData.(thisComp) = trueF(b,firstFrame:lastFrame); %save the fluorescence data for this cell on this trial
         ephysData.(currentSweep).imagingDataNeuropil.(thisComp) = trueNeu(b,firstFrame:lastFrame); %save the neuropil data for this cell on this trial
+        
         %now set the frame numbers for the next trial and do it all over
         %again.
         firstFrame = firstFrame + trialLength;

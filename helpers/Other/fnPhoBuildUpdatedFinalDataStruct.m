@@ -38,6 +38,7 @@ function [finalDataStruct] = fnPhoBuildUpdatedFinalDataStruct(anmID, dateString,
         finalDataStruct.(anmID).(dateString).imgData.(currentComp).imagingDataNeuropil = zeros(numTrials,numFrames);
         %save the component info
         finalDataStruct.(anmID).(dateString).imgData.(currentComp).segmentLabelMatrix = ephysData.componentData.(currentComp).segmentLabelMatrix;
+        finalDataStruct.(anmID).(dateString).imgData.(currentComp).neuropilMaskLabelMatrix = ephysData.componentData.(currentComp).neuropilMaskLabelMatrix;
         
         %now save the raw traces and event time stamps for all comps in
         %all sessions from all animals

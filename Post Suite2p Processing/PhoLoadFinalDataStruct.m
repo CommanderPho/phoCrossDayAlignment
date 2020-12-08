@@ -12,8 +12,9 @@
 %           - imgData:  1x1 struct - has one field for each ROI (referred to as a "component" or "comp") named "comp%d" in printf format
 %               - comp1:    1x1 struct
 %                   - imagingData: 520x150 double
-%                   - imagingDataNeuropil: 520x150 double
+%                   - imagingDataNeuropil: 520x150 double  %% TODO: make sure this is a DFF, not the raw neuropil fluoresence
 %                   - segmentLabelMatrix: 512x512 double
+%                   - neuropilMaskLabelMatrix: 512x512 double
 %                   - imagingDataDFF: 520x150 double
 
 %% SPEC: sessionList
@@ -37,19 +38,12 @@ if ~exist('finalDataStruct','var')
     finalDataStruct = [];
 end
 
-[finalDataStruct, sessionList, compList] = fnPhoLoadFinalDataStruct(finalDataStruct, phoPipelineOptions);
-
+%% Load the finalDataStruct:
+[finalDataStruct, activeSessionList, activeCompList] = fnPhoLoadFinalDataStruct(finalDataStruct, phoPipelineOptions);
 fprintf('\t done.\n');
-% %plotting
-% disp('Plotting finalDataStruct...')
-% % plotTracesForAllStimuli_FDS(finalDataStruct, compList(4))
-% plotTracesForAllStimuli_FDS(finalDataStruct, compList(162))
-% plotTracesForAllStimuli_FDS(finalDataStruct, compList(320))
-% plotAMConditions_FDS(finalDataStruct, compList(2:8))
 
-% plotAMConditions_FDS(finalDataStruct, compList(4))
 
-function [finalDataStruct, sessionList, compList] = fnPhoLoadFinalDataStruct(finalDataStruct, phoPipelineOptions)
+function [finalDataStruct, activeSessionList, activeCompList] = fnPhoLoadFinalDataStruct(finalDataStruct, phoPipelineOptions)
     fprintf('> Running PhoLoadFinalDataStruct...\n');
 
     %% Options:
@@ -69,31 +63,49 @@ function [finalDataStruct, sessionList, compList] = fnPhoLoadFinalDataStruct(fin
     FDPath = '';
     
     if ~exist('finalDataStruct','var') || isempty(finalDataStruct)
-        if isempty(phoPipelineOptions.default_FD_file_path)
-            [filename, path] = uigetfile('*.mat', 'Select a finalDataStruct .mat file');
-        else
-            [filename, path] = uigetfile(phoPipelineOptions.default_FD_file_path, 'Select a finalDataStruct .mat file');
-        end
+        
+		if ~isempty(phoPipelineOptions.default_FD_file_path) && exist(phoPipelineOptions.default_FD_file_path,'file')
+			% If the default isn't empty AND exists on disk, just load it without any prompt.
+			FDPath = phoPipelineOptions.default_FD_file_path;
+		else
+			if isempty(phoPipelineOptions.default_FD_file_path)
+				[filename, parentPath] = uigetfile('*.mat', 'Select a finalDataStruct .mat file');
+			else
+				% If the default_FD_file_path isn't empty, but doesn't exist on disk, use it as the starting dir for the getfile prompt
+				[filename, parentPath] = uigetfile(phoPipelineOptions.default_FD_file_path, 'Select a finalDataStruct .mat file');
+			end
+			% Check if the user selected a valid path or chose cancel
+			if isequal(filename,0)
+				error('User selected Cancel');
+			else
+				FDPath = fullfile(parentPath, filename);
+			end
+		end
 
-        if isequal(filename,0)
-            error('User selected Cancel');
-        else
-            FDPath = fullfile(path, filename);
-            fprintf('\t Loading %s...',FDPath);
-            load(FDPath);
-            fprintf('done.\n');
-        end
+		fprintf('\t Loading %s...',FDPath);
+        load(FDPath,'finalDataStruct');
+        fprintf('done.\n');
     end
 
     % TODO: Check if the fields exist (DFF already computed):
     fprintf('\t Running makeSessionList_FDS on finalDataStruct...\n');
-    [sessionList, compList] = makeSessionList_FDS(finalDataStruct); %make a list of sessions and comps in FDS
+%     [sessionList, compList] = makeSessionList_FDS(finalDataStruct); %make a list of sessions and comps in FDS
+    [finalDataStruct, activeSessionList, activeCompList] = makeFiltered_FDS(finalDataStruct, phoPipelineOptions); % filter the FDS and get the filtered sessionList, compList as well  
     fprintf('\t\t done.\n');
+
+    % TODO: print the exclusion/inclusion information for the cellROIs
+    % temp.excludedCompsStatusString = join(excludedCompsList,', ');
+    % temp.excludedCompsStatusString = temp.excludedCompsStatusString{1};
+    % temp.numberOriginal = length(backup.uniqueComps);
+    % temp.numberIgnored = (temp.numberOriginal - num_cellROIs);
+    % 
+    % fprintf('Using %d of %d rows (Ignoring %d): %s.\n', num_cellROIs, temp.numberOriginal, temp.numberIgnored, temp.excludedCompsStatusString);
+
 
     %% "FD (final data)" file output:
     if phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave
         fprintf('\t Running baselineDFF_fds on finalDataStruct...\n')
-        finalDataStruct = baselineDFF_fds(finalDataStruct, sessionList, phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames, phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions); % Adds the DFF baseline to the finalDataStruct
+        finalDataStruct = baselineDFF_fds(finalDataStruct, activeSessionList, phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames, phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions); % Adds the DFF baseline to the finalDataStruct
         isValidExtantPathFile = (~isempty(FDPath) & exist(FDPath, 'file'));
         if ~isValidExtantPathFile
             % Prompt the user to select a file if the path isn't valid
