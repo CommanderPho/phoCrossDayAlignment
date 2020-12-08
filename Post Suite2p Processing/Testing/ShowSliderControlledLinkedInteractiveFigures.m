@@ -128,9 +128,14 @@ function [callbackOutput] = pho_plot_stimulus_traces(dateStrings, uniqueAmps, un
 
     if isvalid(extantFigH)
         % Cell Mask Plots:
+        plotting_options.should_plot_all_traces = true; % plotting_options.should_plot_all_traces: if true, line traces for all trials are plotted in addition the mean line
+        plotting_options.should_plot_vertical_sound_start_stop_lines = true; % plotting_options.should_plot_vertical_sound_start_stop_lines: if true, vertical start/stop lines are drawn to show when the sound started and stopped.
+        plotting_options.should_normalize_to_local_peak = true; % plotting_options.should_normalize_to_local_peak: if true, the y-values are normalized across all stimuli and sessions for a cellRoi to the maximal peak value.
+        plotting_options.should_plot_titles_for_each_subplot = false; % plotting_options.should_plot_titles_for_each_subplot: if true, a title is added to each subplot (although it's redundent)
+        
         [callbackOutput.plotted_figH] = fnPlotStimulusTracesForCellROI(dateStrings, uniqueAmps, uniqueFreqs, uniqueStimuli, ...
             temp.currAllSessionCompIndicies, curr_cellRoiIndex, ...
-            traceTimebase_t, tracesForAllStimuli, redTraceLinesForAllStimuli, extantFigH);
+            traceTimebase_t, tracesForAllStimuli, redTraceLinesForAllStimuli, plotting_options, extantFigH);
         set(callbackOutput.plotted_figH, 'Name', sprintf('Slider Controlled Stimuli Traces Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted 
     else
         callbackOutput.plotted_figH = extantFigH;
@@ -175,9 +180,9 @@ function [callbackOutput] = pho_plot_timing_heatmaps(final_data_explorer_obj, ex
     
     % Make Timing Heatmap Plot:
     if isvalid(extantFigH)
-        [callbackOutput.plotted_figH] = fnPlotTimingHeatMap_AllStimulusStacked(final_data_explorer_obj, curr_cellRoiIndex, extantFigH);
-    %     zlim([-0.2, 1])
-        set(callbackOutput.plotted_figH, 'Name', sprintf('Slider Controlled Timing Heatmap Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+%         [callbackOutput.plotted_figH] = fnPlotTimingHeatMap_AllStimulusStacked(final_data_explorer_obj, curr_cellRoiIndex, extantFigH);
+        [callbackOutput.plotted_figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer_obj, curr_cellRoiIndex, extantFigH);
+%         set(callbackOutput.plotted_figH, 'Name', sprintf('Slider Controlled Timing Heatmap Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
     else
         callbackOutput.plotted_figH = extantFigH;
         callbackOutput.shouldRemoveCallback = true;

@@ -12,9 +12,15 @@ function [figH] = fnPlotTimingHeatMap_AllStimulusStacked(final_data_explorer_obj
     
     %% 
     curr_heatMap = squeeze(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot(curr_cellRoiIndex, :, :, :)); % should be [26 20 150]
+%     curr_heatMap = cat(curr_heatMap, 1);
+    
     curr_heatMap = reshape(curr_heatMap, (26*20), 150);
     % size(curr_heatMap) % [520 150]
-    fnPhoMatrixPlot(curr_heatMap');
+%     flat_heatMap = zeros(520, 150);
+%     for i = 1:size(curr_heatMap, 1)
+%         flat_heatMap(i
+%     end
+    fnPhoMatrixPlot(curr_heatMap);
     ylabel('Stimulus x Trial Index')
     xlabel('Trial Time')
     
