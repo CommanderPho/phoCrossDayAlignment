@@ -315,9 +315,10 @@ classdef CellRoiPlotManager < PlotManager
 
 		function [obj] = pho_plot_stimulus_traces(obj, curr_cellRoiIndex)
             obj.extantFigH_plot_stimulus_traces = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_StimulusTraces'); % generate a new figure to plot the sessions.
-			clf(obj.extantFigH_plot_stimulus_traces);
-			[plotted_figH] = fnPlotStimulusTracesForCellROI(obj.final_data_explorer_obj, curr_cellRoiIndex, obj.plotting_options, obj.extantFigH_plot_stimulus_traces);
-			set(plotted_figH, 'Name', sprintf('CellROI Stimuli Traces Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+			% clf(obj.extantFigH_plot_stimulus_traces);
+			[obj.extantFigH_plot_stimulus_traces] = fnPlotStimulusTracesForCellROI(obj.final_data_explorer_obj, curr_cellRoiIndex, obj.plotting_options, obj.extantFigH_plot_stimulus_traces);
+			set(obj.extantFigH_plot_stimulus_traces, 'Name', sprintf('CellROI Stimuli Traces Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+			% hold(obj.extantFigH_plot_stimulus_traces, 'off');
 		end
 
 
@@ -327,11 +328,12 @@ classdef CellRoiPlotManager < PlotManager
 				
 			obj.plotting_options.debugIncludeColorbars = true;
 			obj.extantFigH_plot_heatmap_traces = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_TraceHeatmaps'); % generate a new figure to plot the sessions.
-			clf(obj.extantFigH_plot_heatmap_traces);
+			% clf(obj.extantFigH_plot_heatmap_traces);
 			% Make Timing Heatmap Plot:
 		%         [callbackOutput.plotted_figH] = fnPlotTimingHeatMap_AllStimulusStacked(final_data_explorer_obj, curr_cellRoiIndex, plotting_options, extantFigH);
 			[obj.extantFigH_plot_heatmap_traces] = fnPlotTimingHeatMap_EachStimulusSeparately(obj.final_data_explorer_obj, curr_cellRoiIndex, obj.plotting_options, obj.extantFigH_plot_heatmap_traces);
 			set(obj.extantFigH_plot_heatmap_traces, 'Name', sprintf('Slider Controlled Timing Heatmap Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+			% hold(obj.extantFigH_plot_heatmap_traces, 'off');
 		end
 
 

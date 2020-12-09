@@ -21,9 +21,11 @@ combinedOffsetInsetIndicies = [nan, 0];
   
 phoPipelineOptions.shouldSaveFiguresToDisk = true;
 % export_extension = 'fig';
-export_extension = 'png';
+% export_extension = 'png';
+export_extension = 'pdf';
         
 %% Export All:
+set(groot, 'DefaultFigureVisible', 'off');
 num_rois_to_plot = plot_manager_cellRoiPlot.final_data_explorer_obj.num_cellROIs;
 for i = 1:num_rois_to_plot
     
@@ -42,17 +44,19 @@ for i = 1:num_rois_to_plot
     figH_StimulusTraces = plot_manager_cellRoiPlot.extantFigH_plot_stimulus_traces;
 
     plot_manager_cellRoiPlot.pho_plot_timing_heatmaps(i);
-    figH_StimulusHeatmaps = plot_manager_cellRoiPlot.extantFigH_plot_stimulus_traces;
+    figH_StimulusHeatmaps = plot_manager_cellRoiPlot.extantFigH_plot_heatmap_traces;
     
     
     %% Optional Export to disk:
     if phoPipelineOptions.shouldSaveFiguresToDisk
 
         %% Export plots:
-        fig_name = sprintf('cellROI_%d_%s_2d.%s', i, temp.currRoiName, export_extension);
-        [~] = performExportFigure(figH_2d, fig_name, export_extension, phoPipelineOptions);
-        %         close(figH_2d);
-
+        if exist('figH_2d','var')
+            fig_name = sprintf('cellROI_%d_%s_2d.%s', i, temp.currRoiName, export_extension);
+            [~] = performExportFigure(figH_2d, fig_name, export_extension, phoPipelineOptions);
+            %         close(figH_2d);
+        end
+        
         fig_name = sprintf('cellROI_%d_%s_StimulusTraces_Tuning.%s', i, temp.currRoiName, export_extension);
         [~] = performExportFigure(figH_StimulusTraces, fig_name, export_extension, phoPipelineOptions);
         
@@ -67,7 +71,7 @@ for i = 1:num_rois_to_plot
     end
     
     fprintf('\t done.\n')
-
+    set(groot, 'DefaultFigureVisible', 'on');
     
 
     
@@ -81,7 +85,9 @@ function [curr_fig_export_path] = performExportFigure(figH, fig_name, export_ext
     if strcmpi(export_extension, 'fig')
         savefig(figH, curr_fig_export_path, 'compact');
     else
-        exportgraphics(figH, curr_fig_export_path);
+%         exportgraphics(figH, curr_fig_export_path);
+        exportgraphics(figH, curr_fig_export_path,'BackgroundColor','none','ContentType','vector');
+        
     end
      
 end

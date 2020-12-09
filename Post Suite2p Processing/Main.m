@@ -58,7 +58,10 @@ phoPipelineOptions.PhoPostFinalDataStructAnalysis.should_use_neuropil_corrected_
     
     
 %%% PhoTuningMeshExplorer Options:
-phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures';
+% phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures';
+phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures/New';
+
+
 % phoPipelineOptions.PhoTuningMeshExplorer.should_show_neuropil_corrected_version = true;
 phoPipelineOptions.PhoTuningMeshExplorer.numToCompare = 0;
 
@@ -66,7 +69,8 @@ phoPipelineOptions.PhoTuningMeshExplorer.numToCompare = 0;
 
 
 %%% PhoBuildSpatialTuning Options:
-phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures/cellROI_General';
+% phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures/cellROI_General';
+phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures/New';
 phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityWeightedByDaysMeetingCriteria = false; % If true, the cell region will be rendered with an opacity proporitional to the number of days it met the threshold critiera    
 phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.opacityFilteredByInterSessionConsistencyCriteria = false; % If true, only plots cellROIs that are consistent across a specified number of the session days. 
 phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode = true; % If true, colorful borders are drawn around each cellROI to represent its preferred stimuli for each day.
@@ -85,6 +89,12 @@ if ~phoPipelineOptions.shouldShowPlots
     end
 end
 
+% [hPropsPane, phoPipelineOptions] = propertiesGUI(0, phoPipelineOptions);
+% 
+% %% Main Status Widget:
+% [figObj] = fnMakeMainWindow();
+
+
 %% 
 % PhoPostSuite2pSessionSplitting; %% This script is used to create split sessions from the fAll.mat file output by Suite2p
 PhoLoadFinalDataStruct %% If the PhoPostSuite2pSessionSplitting script has already been ran and produced a combined data struct, you can load this from disk.
@@ -92,3 +102,6 @@ PhoPostFinalDataStructAnalysis
 PhoBuildSpatialTuning
 
 fprintf('Pipeline execution complete!\n')
+
+
+
