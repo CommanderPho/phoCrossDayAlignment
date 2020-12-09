@@ -1,5 +1,5 @@
-%% testCellROIBlob_Plot.m
-% Plots the cell ROIs using the new CellRoiPlotManager class.
+%% plotAllAndSaveToDisk.m
+% Plots several customizable figures related to the cell ROIs using the new CellRoiPlotManager class and optionally saves them to disk.
 
 addpath(genpath('../helpers'));
 
