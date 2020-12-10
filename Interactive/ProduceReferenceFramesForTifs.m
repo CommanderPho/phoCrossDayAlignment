@@ -47,7 +47,7 @@ if ~exist(outputs.stackSessionCombinedTifFolderPath, 'dir')
 end
 
 outputs.stackSessionPartialCombinedTifFolderName = 'session_partials';
-outputs.stackSessionPartialCombinedTifFolderPath = fullfile(outputs.stackSessionCombinedTifFolderName, outputs.stackSessionPartialCombinedTifFolderName);
+outputs.stackSessionPartialCombinedTifFolderPath = fullfile(outputs.stackSessionCombinedTifFolderPath, outputs.stackSessionPartialCombinedTifFolderName);
 
 if ~exist(outputs.stackSessionPartialCombinedTifFolderPath, 'dir')
    fprintf('Directory %s does not exist... creating it\n', outputs.stackSessionPartialCombinedTifFolderPath);
@@ -94,14 +94,38 @@ leftOverFrames = rem(sessionSplit.numFramesPerSession, framesPerTiff);
 [sessionSplit.frames_first_index_array, sessionSplit.frames_last_index_array] = fnGetBlockIndexArrays(sessionSplit.numFramesPerSession, sessionSplit.numSessions);
 % Build a map that specifies which session a specific tiff file belongs in:
 
-sessionSplit.doesTifFileContainSessionSplit = zeros([numTifFiles 1], 'logical');
+%% TODO: need to re-enable this when not testing:
+% sessionSplit.doesTifFileContainSessionSplit = zeros([numTifFiles 1], 'logical');
 
 % 20 and 39 must be excluded
 splittingSessions = {};
 
+outputs.tiffFilePaths = cell([numTifFiles, 1]);
+
+outputs.sessions = cell([sessionSplit.numSessions 1]);
+
+% Include all Tiffs:
+% is_tiff_included = ones([numTifFiles, 1], 'logical');
+
+% Include only those files with session splits:
+is_tiff_included = sessionSplit.doesTifFileContainSessionSplit;
+
 % Loop through:
-for i = registered_imageInfo.first_index:registered_imageInfo.last_index
-    curr_tifFileName = imds.registered.Files{i};
+for tiffFileIndex = registered_imageInfo.first_index:registered_imageInfo.last_index
+    
+    curr_tifFileName = imds.registered.Files{tiffFileIndex};
+    inputs.tiffFilePaths{tiffFileIndex} = curr_tifFileName;
+    
+    curr_max_intensity_filename = sprintf('max_tif_%d.tif', tiffFileIndex);
+    curr_output_path.max_intensity = fullfile(outputs.stackFileCombinedTifFolderPath, curr_max_intensity_filename);
+    outputs.tiffFilePaths{tiffFileIndex} = curr_output_path.max_intensity;
+    
+    
+    if ~is_tiff_included(tiffFileIndex)
+        fprintf('Skipping excluded Tiff with index %d\n', tiffFileIndex);
+       continue 
+    end
+    
     [currMovieFrames, ~] = fnLoadTifToMovieFrames(curr_tifFileName); % [512x512x4096]
     
     % Check to see if a give tiff file contains multiple sessions by
@@ -144,14 +168,15 @@ for i = registered_imageInfo.first_index:registered_imageInfo.last_index
         currSplittingSession.startingSession.output_path.max_intensity = fullfile(outputs.stackSessionPartialCombinedTifFolderPath, currSplittingSession.startingSession.max_intensity_filename);
         
         %% Save a session split files:
+        
         tif_max_intensity = max(currSplittingSession.endingSession.MovieFrames,[],[3]);        
         fprintf('exporting max intensity image to %s...\n', currSplittingSession.endingSession.output_path.max_intensity);
-        saveastiff(tif_max_intensity, currSplittingSession.endingSession.output_path.max_intensity);
+        saveastiff_IfNotExists(tif_max_intensity, currSplittingSession.endingSession.output_path.max_intensity);
         fprintf('\t done.');
         
         tif_max_intensity = max(currSplittingSession.startingSession.MovieFrames,[],[3]);
         fprintf('exporting max intensity image to %s...\n', currSplittingSession.startingSession.output_path.max_intensity);
-        saveastiff(tif_max_intensity, currSplittingSession.startingSession.output_path.max_intensity);
+        saveastiff_IfNotExists(tif_max_intensity, currSplittingSession.startingSession.output_path.max_intensity);
         fprintf('\t done.');
         
         splittingSessions{end+1} = currSplittingSession;
@@ -159,16 +184,19 @@ for i = registered_imageInfo.first_index:registered_imageInfo.last_index
     end
     
    
-    % Compute the block output
-    tif_max_intensity = max(currMovieFrames,[],[3]);
-%     tif_mean_intensity = mean(currMovieFrames, 3);
+    
     
     %% Save out the file:
-    curr_max_intensity_filename = sprintf('max_tif_%d.tif', i);
-    curr_output_path.max_intensity = fullfile(outputs.stackFileCombinedTifFolderPath, curr_max_intensity_filename);
-    fprintf('exporting max intensity image to %s...\n', curr_output_path.max_intensity);
-    saveastiff(tif_max_intensity, curr_output_path.max_intensity);
-    fprintf('\t done.');
+    if ~exist(curr_output_path.max_intensity, 'file')
+        % Compute the block output
+        tif_max_intensity = max(currMovieFrames,[],[3]);
+%     tif_mean_intensity = mean(currMovieFrames, 3);
+        fprintf('exporting max intensity image to %s...\n', curr_output_path.max_intensity);
+        saveastiff(tif_max_intensity, curr_output_path.max_intensity);
+        fprintf('\t done.');
+    else
+        fprintf('%s exists, skipping.\n', curr_output_path.max_intensity);
+    end
 
 end
 
@@ -183,10 +211,10 @@ output_totalCombinedNumFrames = numTifFiles;
 currMovieFrames = zeros([output_totalCombinedNumFrames 512 512], 'int16');
 
 % Loop through outputs:
-for i = output_registered_imageInfo.first_index:output_registered_imageInfo.last_index
-    curr_tifFileName = output_imds.registered.Files{i};
+for tiffFileIndex = output_registered_imageInfo.first_index:output_registered_imageInfo.last_index
+    curr_tifFileName = output_imds.registered.Files{tiffFileIndex};
     % Each tif now is a single 512x512 image instead of a stack
-    [currMovieFrames(i,:,:), ~] = fnLoadTifToMovieFrames(curr_tifFileName); % [512x512]
+    [currMovieFrames(tiffFileIndex,:,:), ~] = fnLoadTifToMovieFrames(curr_tifFileName); % [512x512]
 end
 
 
@@ -195,11 +223,28 @@ tif_max_intensity = squeeze(max(currMovieFrames,[],1));
 %% Save out the file:
 curr_max_intensity_filename = 'max_tif_all.tif';
 curr_output_path.max_intensity = fullfile(outputs.stackAllCombinedTifFolderPath, curr_max_intensity_filename);
-fprintf('exporting max intensity image to %s...\n', curr_output_path.max_intensity);
-saveastiff(tif_max_intensity, curr_output_path.max_intensity);
-fprintf('\t done.');
+if ~exist(curr_output_path.max_intensity, 'file')
+    fprintf('exporting max intensity image to %s...\n', curr_output_path.max_intensity);
+    saveastiff(tif_max_intensity, curr_output_path.max_intensity);
+    fprintf('\t done.');
+else
+    fprintf('%s exists, skipping.\n', curr_output_path.max_intensity);
+end
+    
 
 
 
+function [didSave] = saveastiff_IfNotExists(img, savePath)
+    if ~exist(savePath, 'file')
+        fprintf('exporting image to %s...\n', savePath);
+        saveastiff(img, savePath);
+        fprintf('\t done.');
+        didSave = true;
+    else
+        didSave = false;
+        fprintf('%s exists, skipping.\n', savePath);
+    end
+    
+end
 
 
