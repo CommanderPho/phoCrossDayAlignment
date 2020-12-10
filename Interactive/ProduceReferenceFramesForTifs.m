@@ -46,6 +46,16 @@ if ~exist(outputs.stackSessionCombinedTifFolderPath, 'dir')
    mkdir(outputs.stackSessionCombinedTifFolderPath);   
 end
 
+outputs.stackSessionPartialCombinedTifFolderName = 'session_partials';
+outputs.stackSessionPartialCombinedTifFolderPath = fullfile(outputs.stackSessionCombinedTifFolderName, outputs.stackSessionPartialCombinedTifFolderName);
+
+if ~exist(outputs.stackSessionPartialCombinedTifFolderPath, 'dir')
+   fprintf('Directory %s does not exist... creating it\n', outputs.stackSessionPartialCombinedTifFolderPath);
+   mkdir(outputs.stackSessionPartialCombinedTifFolderPath);   
+end
+
+
+
 
 %% Build the Output directory for the 3rd-level all aggregated max intensity images:
 outputs.stackAllCombinedTifFolderName = 'all_level';
@@ -78,13 +88,6 @@ sessionSplit.numFramesPerSession = 78000;
 numFullTiffFilesPerSession = floor(sessionSplit.numFramesPerSession / framesPerTiff);
 leftOverFrames = rem(sessionSplit.numFramesPerSession, framesPerTiff);
 
-
-% for sessionIndex = 1:sessionSplit.numSessions
-%     curr_boundaryTiffFileIndex = numFullTiffFilesPerSession + 1;
-%     boundaryTiffFiles(sessionIndex) = curr_boundaryTiffFileIndex; 
-%     numFramesSplit = 
-%     78000 / 4096
-% end
 % Get the frame indicies corresponding to each Tiff file
 [tiff_frames_first_index_array, tiff_frames_last_index_array] = fnGetBlockIndexArrays(framesPerTiff, numTifFiles);
 % Get the frame indicies corresponding to each session
@@ -93,36 +96,70 @@ leftOverFrames = rem(sessionSplit.numFramesPerSession, framesPerTiff);
 
 sessionSplit.doesTifFileContainSessionSplit = zeros([numTifFiles 1], 'logical');
 
-for tiffFileIndex = 1:numTifFiles
+% 20 and 39 must be excluded
+splittingSessions = {};
+
+% Loop through:
+for i = registered_imageInfo.first_index:registered_imageInfo.last_index
+    curr_tifFileName = imds.registered.Files{i};
+    [currMovieFrames, ~] = fnLoadTifToMovieFrames(curr_tifFileName); % [512x512x4096]
+    
     % Check to see if a give tiff file contains multiple sessions by
     % checking whether there's a session split that falls within its frame
     % indicies.
     curr_tiff_first_index = tiff_frames_first_index_array(tiffFileIndex);
     curr_tiff_last_index = tiff_frames_last_index_array(tiffFileIndex);
     contains_session_split = false;
+    currSplittingSession.endingSession.Index = -1;
+    currSplittingSession.startingSession.Index = -1;
+    
     for sessionIndex = 1:sessionSplit.numSessions
         curr_sessionChangeIndex = sessionSplit.frames_first_index_array(sessionIndex);
        if (curr_tiff_first_index < curr_sessionChangeIndex) && (curr_sessionChangeIndex < curr_tiff_last_index)
            contains_session_split = true;
+           currSplittingSession.endingSession.Index = sessionIndex - 1;
+           currSplittingSession.startingSession.Index = sessionIndex;
+           fprintf('sessionSplitting: fileIndex %d; sessionIndex %d\n', tiffFileIndex, sessionIndex);
            break
        end
     end
     
     if contains_session_split
         sessionSplit.doesTifFileContainSessionSplit(tiffFileIndex) = contains_session_split;
+        % Get the frames that were part of the previous session
+        sessionStartFrameTiffRelativeOffset = sessionSplit.frames_first_index_array(currSplittingSession.startingSession.Index) - curr_tiff_first_index;
+%         prevSessionRelativeRange = 1:sessionStartFrameTiffRelativeOffset;
+%         nextSessionRelativeRange = (sessionStartFrameTiffRelativeOffset+1):framesPerTiff;
+%         fprintf('\t sessionStartFrameTiffRelativeOffset: %d \n', sessionStartFrameTiffRelativeOffset);
+%         fprintf('\t prev_session: 1:%d \n\t next_session: %d:%d \n', sessionStartFrameTiffRelativeOffset, (sessionStartFrameTiffRelativeOffset+1), framesPerTiff);
+        
+        currSplittingSession.endingSession.MovieFrames = currMovieFrames(:,:,1:sessionStartFrameTiffRelativeOffset);
+        currSplittingSession.startingSession.MovieFrames = currMovieFrames(:,:,(sessionStartFrameTiffRelativeOffset+1):framesPerTiff);
+
+        %% Save out the file:
+        currSplittingSession.endingSession.max_intensity_filename = sprintf('max_tif_session_%d_ending.tif', currSplittingSession.endingSession.Index);
+        currSplittingSession.startingSession.max_intensity_filename = sprintf('max_tif_session_%d_starting.tif', currSplittingSession.startingSession.Index);
+        
+        currSplittingSession.endingSession.output_path.max_intensity = fullfile(outputs.stackSessionPartialCombinedTifFolderPath, currSplittingSession.endingSession.max_intensity_filename);
+        currSplittingSession.startingSession.output_path.max_intensity = fullfile(outputs.stackSessionPartialCombinedTifFolderPath, currSplittingSession.startingSession.max_intensity_filename);
+        
+        %% Save a session split files:
+        tif_max_intensity = max(currSplittingSession.endingSession.MovieFrames,[],[3]);        
+        fprintf('exporting max intensity image to %s...\n', currSplittingSession.endingSession.output_path.max_intensity);
+        saveastiff(tif_max_intensity, currSplittingSession.endingSession.output_path.max_intensity);
+        fprintf('\t done.');
+        
+        tif_max_intensity = max(currSplittingSession.startingSession.MovieFrames,[],[3]);
+        fprintf('exporting max intensity image to %s...\n', currSplittingSession.startingSession.output_path.max_intensity);
+        saveastiff(tif_max_intensity, currSplittingSession.startingSession.output_path.max_intensity);
+        fprintf('\t done.');
+        
+        splittingSessions{end+1} = currSplittingSession;
+        
     end
-       
-end
-
-% 20 and 39 must be excluded
-
-% Loop through:
-for i = registered_imageInfo.first_index:registered_imageInfo.last_index
-    curr_tifFileName = imds.registered.Files{i};
-    currStartIndex = (framesPerTiff * i) + 1;
-    currEndIndex = (currStartIndex + framesPerTiff)-1;
-    [currMovieFrames, ~] = fnLoadTifToMovieFrames(curr_tifFileName); % [512x512x4096]
     
+   
+    % Compute the block output
     tif_max_intensity = max(currMovieFrames,[],[3]);
 %     tif_mean_intensity = mean(currMovieFrames, 3);
     
@@ -134,6 +171,8 @@ for i = registered_imageInfo.first_index:registered_imageInfo.last_index
     fprintf('\t done.');
 
 end
+
+
 
 %% Once Each Individual Tif is processed and saved, create a new imageDatastore from the output path to process them further
 [output_imds, output_registered_imageInfo] = fnLoadTifFolderToDatastore(outputs.stackFileCombinedTifFolderPath);
