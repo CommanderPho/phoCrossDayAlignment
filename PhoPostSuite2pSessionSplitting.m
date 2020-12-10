@@ -12,7 +12,7 @@ animalID = 'anm265';
 outputFolder = 'E:\PhoHaleScratchFolder\202001_17-20-24_PassiveStim_Registered\suite2p';
 % outputFolder = 'Z:\ICPassiveStim\anm265\20200117_PassiveStim_Registered\FoV1Lateral\suite2p';
 enable_session_fAll_writes = false; % If true, a Fall.mat file is generated for each day, as if they had been processed separately by Suite2p.
-force_session_fAll_overwrites = true; % If true, extant session_fAll files are overwritten instead of loaded. Only has an effect if enable_session_fAll_writes is true
+force_session_fAll_overwrites = false; % If true, extant session_fAll files are overwritten instead of loaded. Only has an effect if enable_session_fAll_writes is true
 
 enable_session_TO_LOAD_INTERMEDIATES_writes = false; % If true, "TO_LOAD" intermediate files are saved for each session. These contain the ephysdata
 finalDataStruct_DFF_baselineFrames = [1, 30];
@@ -44,8 +44,8 @@ disp('done.')
 
 folders_count = length(fAll.ops.frames_per_folder); % Number of input folders, corresponding to the number of recording days
 
-frames_per_folder = fAll.ops.frames_per_folder;
-total_number_frames = fAll.ops.nframes;
+frames_per_folder = fAll.ops.frames_per_folder; % [78000, 78000, 78000]
+total_number_frames = fAll.ops.nframes; % 234000
 
 % see also in fAll.ops:
 % frames_per_file;

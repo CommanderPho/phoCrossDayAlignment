@@ -37,7 +37,17 @@ if ~exist(outputs.stackFileCombinedTifFolderPath, 'dir')
    mkdir(outputs.stackFileCombinedTifFolderPath);   
 end
 
-%% Build the Output directory for the 2nd-level aggregated max intensity images:
+%% Build the Output directory for the 2nd-level session aggregated max intensity images:
+outputs.stackSessionCombinedTifFolderName = 'session_level';
+outputs.stackSessionCombinedTifFolderPath = fullfile(outputs.TifRootFolderPath, outputs.stackSessionCombinedTifFolderName);
+
+if ~exist(outputs.stackSessionCombinedTifFolderPath, 'dir')
+   fprintf('Directory %s does not exist... creating it\n', outputs.stackSessionCombinedTifFolderPath);
+   mkdir(outputs.stackSessionCombinedTifFolderPath);   
+end
+
+
+%% Build the Output directory for the 3rd-level all aggregated max intensity images:
 outputs.stackAllCombinedTifFolderName = 'all_level';
 outputs.stackAllCombinedTifFolderPath = fullfile(outputs.TifRootFolderPath, outputs.stackAllCombinedTifFolderName);
 
@@ -49,12 +59,62 @@ end
 framesPerTiff = 4096;
 tiffFrameSize = [512 512];
 
+
+
+
 %% Folder Loading Version:
 [imds, registered_imageInfo] = fnLoadTifFolderToDatastore(inputs.tifFolder);
 % movieFrames = registered_imageInfo.currLoadedImgStack;
 
 numTifFiles = registered_imageInfo.count;
 totalCombinedNumFrames = framesPerTiff * numTifFiles;
+
+%% Figure out how the Tiff files align with the sessions.
+% There's 78000 frames in each session
+% rem(78000, framesPerTiff) is 176
+sessionSplit.numSessions = 3;
+sessionSplit.numFramesPerSession = 78000;
+
+numFullTiffFilesPerSession = floor(sessionSplit.numFramesPerSession / framesPerTiff);
+leftOverFrames = rem(sessionSplit.numFramesPerSession, framesPerTiff);
+
+
+% for sessionIndex = 1:sessionSplit.numSessions
+%     curr_boundaryTiffFileIndex = numFullTiffFilesPerSession + 1;
+%     boundaryTiffFiles(sessionIndex) = curr_boundaryTiffFileIndex; 
+%     numFramesSplit = 
+%     78000 / 4096
+% end
+% Get the frame indicies corresponding to each Tiff file
+[tiff_frames_first_index_array, tiff_frames_last_index_array] = fnGetBlockIndexArrays(framesPerTiff, numTifFiles);
+% Get the frame indicies corresponding to each session
+[sessionSplit.frames_first_index_array, sessionSplit.frames_last_index_array] = fnGetBlockIndexArrays(sessionSplit.numFramesPerSession, sessionSplit.numSessions);
+% Build a map that specifies which session a specific tiff file belongs in:
+
+sessionSplit.doesTifFileContainSessionSplit = zeros([numTifFiles 1], 'logical');
+
+for tiffFileIndex = 1:numTifFiles
+    % Check to see if a give tiff file contains multiple sessions by
+    % checking whether there's a session split that falls within its frame
+    % indicies.
+    curr_tiff_first_index = tiff_frames_first_index_array(tiffFileIndex);
+    curr_tiff_last_index = tiff_frames_last_index_array(tiffFileIndex);
+    contains_session_split = false;
+    for sessionIndex = 1:sessionSplit.numSessions
+        curr_sessionChangeIndex = sessionSplit.frames_first_index_array(sessionIndex);
+       if (curr_tiff_first_index < curr_sessionChangeIndex) && (curr_sessionChangeIndex < curr_tiff_last_index)
+           contains_session_split = true;
+           break
+       end
+    end
+    
+    if contains_session_split
+        sessionSplit.doesTifFileContainSessionSplit(tiffFileIndex) = contains_session_split;
+    end
+       
+end
+
+% 20 and 39 must be excluded
 
 % Loop through:
 for i = registered_imageInfo.first_index:registered_imageInfo.last_index
