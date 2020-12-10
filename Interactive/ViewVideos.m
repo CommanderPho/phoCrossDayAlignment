@@ -17,31 +17,42 @@
 
 addpath(genpath('helpers'));
 
-tifFolder = '/Volumes/Storage/Databases/PierreSecondRotation/202001_17-20-24_PassiveStim_Registered/suite2p/plane0/reg_tif';
+% tifFolder = '/Volumes/Storage/Databases/PierreSecondRotation/202001_17-20-24_PassiveStim_Registered/suite2p/plane0/reg_tif';
 % tifFilePath = '/Volumes/Storage/Databases/PierreSecondRotation/202001_17-20-24_PassiveStim_Registered/suite2p/plane0/reg_tif/file000_chan0.tif';
+tifFolder = 'E:\PhoHaleScratchFolder\202001_17-20-24_PassiveStim_Registered\suite2p\plane0\reg_tif';
+
 
 framesPerTiff = 4096;
 tiffFrameSize = [512 512];
 
-shouldShowVideoPlayer = true;
+shouldShowVideoPlayer = false;
 
 %% Folder Loading Version:
 [imds, registered_imageInfo] = fnLoadTifFolderToMovieFrames(tifFolder);
 % movieFrames = registered_imageInfo.currLoadedImgStack;
 
 numTifFiles = registered_imageInfo.count;
+clear 'movieFrames';
+totalCombinedNumFrames = framesPerTiff * numTifFiles;
 
+% movieFrames = zeros([totalCombinedNumFrames, 512, 512]);
+firstTifFrameIndicies = 1:framesPerTiff;
+nextTifFrameIndicies = firstTifFrameIndicies + framesPerTiff;
+
+% Loop through:
 for i = registered_imageInfo.first_index:registered_imageInfo.last_index
-    curr_tifFileName = imds.registered_prev.Files{i};
-    temp.currStartIndex = (framesPerTiff * i) + 1;
-    temp.currEndIndex = (temp.currStartIndex + framesPerTiff)-1;
+    curr_tifFileName = imds.registered.Files{i};
+    currStartIndex = (framesPerTiff * i) + 1;
+    currEndIndex = (currStartIndex + framesPerTiff)-1;
     [currMovieFrames, ~] = fnLoadTifToMovieFrames(curr_tifFileName);
-    if (i == registered_imageInfo.first_index)
-        movieFrames = currMovieFrames;
-    else
-        movieFrames = cat(3, movieFrames, currMovieFrames);
-%         movieFrames = [movieFrames; currMovieFrames];
-    end
+    
+%     movieFrames(
+%     if (i == registered_imageInfo.first_index)
+%         movieFrames = currMovieFrames;
+%     else
+%         movieFrames = cat(3, movieFrames, currMovieFrames);
+% %         movieFrames = [movieFrames; currMovieFrames];
+%     end
 end
 
 %% Single tifFile version:
@@ -58,20 +69,20 @@ end
 function [imds, registered_imageInfo] = fnLoadTifFolderToMovieFrames(tifFolder)
     %  fnLoadTifFolderToMovieFrames: loads an entire tifFolder
     % Set the datasources
-    imds.registered_prev.ReadFcn = @fnCustomTifStackReader;
+    imds.registered.ReadFcn = @fnCustomTifStackReader;
     
     % Load the datasources
-    imds.registered_prev = imageDatastore(tifFolder,'IncludeSubfolders',false,'FileExtensions','.tif','LabelSource','foldernames');
+    imds.registered = imageDatastore(tifFolder,'IncludeSubfolders',false,'FileExtensions','.tif','LabelSource','foldernames');
     
     % Extract information from the loaded datastores
-    registered_imageInfo.count = size(imds.registered_prev.Files, 1);
+    registered_imageInfo.count = size(imds.registered.Files, 1);
     
     % Get prev/next index:
     registered_imageInfo.first_index = 1;
     registered_imageInfo.last_index = registered_imageInfo.count;
     
 %     % Load the current data:
-%     registered_imageInfo.fileName = imds.registered_prev.Files{registered_imageInfo.first_index};
+%     registered_imageInfo.fileName = imds.registered.Files{registered_imageInfo.first_index};
 % 
 %     [registered_imageInfo.currLoadedImgStack, registered_imageInfo.imgStackSize] = fnLoadTifToMovieFrames(registered_imageInfo.fileName);
 end
