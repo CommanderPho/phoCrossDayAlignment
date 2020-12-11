@@ -51,6 +51,8 @@ classdef FinalDataExplorer
                
         preferredStimulusInfo
         computedRedTraceLinesAnalyses
+
+		autoTuningDetection % Used to auto-determine the tuning for a given cellROI
         
     end
     methods
@@ -420,6 +422,27 @@ classdef FinalDataExplorer
 			obj.computedRedTraceLinesAnalyses.second_derivative = cat(3, zeroPaddingColumn, diff(obj.computedRedTraceLinesAnalyses.first_derivative, 1, 3));
 			% obj.computedRedTraceLinesAnalyses.second_derivative = diff(obj.redTraceLinesForAllStimuli, 2, 3);
 		end
+
+
+		function [obj] = setupAutotuningDetection(obj, autoTuningDetection)
+			% setupAutotuningDetection: auto-determine the tuning for a given cellROI
+			obj.autoTuningDetection = autoTuningDetection;
+
+			% obj.redTraceLinesForAllStimuli is [159 26 150]
+
+			% D = dot(obj.redTraceLinesForAllStimuli, repmat(obj.autoTuningDetection.detectionCurve, [size(obj.redTraceLinesForAllStimuli, 1) size(obj.redTraceLinesForAllStimuli, 2)]), 3);
+
+			obj.computedRedTraceLinesAnalyses.autotuningValue = zeros([size(obj.redTraceLinesForAllStimuli, 1), size(obj.redTraceLinesForAllStimuli, 2)]);
+
+			for i = 1:size(obj.redTraceLinesForAllStimuli, 1)
+				for j = 1:size(obj.redTraceLinesForAllStimuli, 2)
+					obj.computedRedTraceLinesAnalyses.autotuningValue(i, j) = dot(obj.autoTuningDetection.detectionCurve, squeeze(obj.redTraceLinesForAllStimuli(i, j, :)));
+				end
+			end
+
+		end
+
+
 
     end % end methods
 end % end class

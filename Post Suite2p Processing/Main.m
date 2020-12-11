@@ -44,6 +44,7 @@ phoPipelineOptions.loadedFilteringData.curr_animal = 'anm265';
 
 
 %%% PhoPostFinalDataStructAnalysis Options:
+phoPipelineOptions.PhoPostFinalDataStructAnalysis.numFramesPerTrial = 150; % the trial length in number of frames
 % tuning_max_threshold_criteria: the threshold value for peakDFF
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria = 0.1;
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions = true;
@@ -56,7 +57,48 @@ phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.smoothValue 
 
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.should_use_neuropil_corrected_version = false;
     
+
+%% Build Autotuning Detection:
+autoTuningDetection.period.pre.startIndex = 1;
+autoTuningDetection.period.pre.endIndex = phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.startSound - 1;
+
+autoTuningDetection.period.during.startIndex = phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.startSound;
+autoTuningDetection.period.during.endIndex = phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.endSound;
+
+autoTuningDetection.period.post.startIndex = autoTuningDetection.period.during.endIndex + 1;
+autoTuningDetection.period.post.endIndex = phoPipelineOptions.PhoPostFinalDataStructAnalysis.numFramesPerTrial;
+
+detectionCurvePath = '../data/detection_curve.mat';
+% save(detectionCurvePath, 'detectionCurve');
+temp.S = load(detectionCurvePath, 'detectionCurve');
+autoTuningDetection.detectionCurve = temp.S.detectionCurve;
+
+
+%% Plot the detectionCurve with the stimulus indicator lines:
+figure(99);
+
+% horizontal origin line:
+x = [0 150];
+y = [0 0];
+line(x, y,'Color','black','LineStyle','-')
+hold on;
+
+startSoundFrame = phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.startSound;
+endSoundFrame = phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.endSound;
+
+y = [-1 1]; % the same y-values are used for both lines (as they are the same height)
+% sound start/on line:
+x = [startSoundFrame startSoundFrame];
+line(x, y,'Color','green','LineStyle','-')
+hold on;
+% sound end/off line:
+x = [endSoundFrame endSoundFrame];
+line(x, y,'Color','red','LineStyle','-')
+hold on;
+plot(autoTuningDetection.detectionCurve);
+
     
+
 %%% PhoTuningMeshExplorer Options:
 % phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures';
 phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures/New';

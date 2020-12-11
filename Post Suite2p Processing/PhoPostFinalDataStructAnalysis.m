@@ -264,6 +264,8 @@ else
     final_data_explorer_obj.active_DFF = default_DFF;
 end
 
+
+final_data_explorer_obj.setupAutotuningDetection(autoTuningDetection);
 final_data_explorer_obj = final_data_explorer_obj.computeCurveAnalysis();
 
 fprintf('\t done.\n');
