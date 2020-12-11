@@ -102,15 +102,21 @@ splittingSessions = {};
 
 outputs.tiffFilePaths = cell([numTifFiles, 1]);
 
-outputs.sessions = cell([sessionSplit.numSessions 1]);
+% outputs.sessions = cell([sessionSplit.numSessions 1]);
+% outputs.sessions.outPaths = {};
+outputs.sessions = struct('files_list',{{}});
 
 % Include all Tiffs:
-% is_tiff_included = ones([numTifFiles, 1], 'logical');
+is_tiff_included = ones([numTifFiles, 1], 'logical');
 
 % Include only those files with session splits:
-is_tiff_included = sessionSplit.doesTifFileContainSessionSplit;
+% is_tiff_included = sessionSplit.doesTifFileContainSessionSplit;
 
 % Loop through:
+curr_active_file_session.sessionIndex = 1;
+curr_active_session.files_list = {};
+% outputs.sessions(curr_active_file_session.sessionIndex).files_list = 0.0;
+
 for tiffFileIndex = registered_imageInfo.first_index:registered_imageInfo.last_index
     
     curr_tifFileName = imds.registered.Files{tiffFileIndex};
@@ -126,7 +132,7 @@ for tiffFileIndex = registered_imageInfo.first_index:registered_imageInfo.last_i
        continue 
     end
     
-    [currMovieFrames, ~] = fnLoadTifToMovieFrames(curr_tifFileName); % [512x512x4096]
+    
     
     % Check to see if a give tiff file contains multiple sessions by
     % checking whether there's a session split that falls within its frame
@@ -152,15 +158,8 @@ for tiffFileIndex = registered_imageInfo.first_index:registered_imageInfo.last_i
         sessionSplit.doesTifFileContainSessionSplit(tiffFileIndex) = contains_session_split;
         % Get the frames that were part of the previous session
         sessionStartFrameTiffRelativeOffset = sessionSplit.frames_first_index_array(currSplittingSession.startingSession.Index) - curr_tiff_first_index;
-%         prevSessionRelativeRange = 1:sessionStartFrameTiffRelativeOffset;
-%         nextSessionRelativeRange = (sessionStartFrameTiffRelativeOffset+1):framesPerTiff;
-%         fprintf('\t sessionStartFrameTiffRelativeOffset: %d \n', sessionStartFrameTiffRelativeOffset);
-%         fprintf('\t prev_session: 1:%d \n\t next_session: %d:%d \n', sessionStartFrameTiffRelativeOffset, (sessionStartFrameTiffRelativeOffset+1), framesPerTiff);
         
-        currSplittingSession.endingSession.MovieFrames = currMovieFrames(:,:,1:sessionStartFrameTiffRelativeOffset);
-        currSplittingSession.startingSession.MovieFrames = currMovieFrames(:,:,(sessionStartFrameTiffRelativeOffset+1):framesPerTiff);
-
-        %% Save out the file:
+        %% Information about saving out the file:
         currSplittingSession.endingSession.max_intensity_filename = sprintf('max_tif_session_%d_ending.tif', currSplittingSession.endingSession.Index);
         currSplittingSession.startingSession.max_intensity_filename = sprintf('max_tif_session_%d_starting.tif', currSplittingSession.startingSession.Index);
         
@@ -168,6 +167,9 @@ for tiffFileIndex = registered_imageInfo.first_index:registered_imageInfo.last_i
         currSplittingSession.startingSession.output_path.max_intensity = fullfile(outputs.stackSessionPartialCombinedTifFolderPath, currSplittingSession.startingSession.max_intensity_filename);
         
         %% Save a session split files:
+        [currMovieFrames, ~] = fnLoadTifToMovieFrames(curr_tifFileName); % [512x512x4096]
+        currSplittingSession.endingSession.MovieFrames = currMovieFrames(:,:,1:sessionStartFrameTiffRelativeOffset);
+        currSplittingSession.startingSession.MovieFrames = currMovieFrames(:,:,(sessionStartFrameTiffRelativeOffset+1):framesPerTiff);
         
         tif_max_intensity = max(currSplittingSession.endingSession.MovieFrames,[],[3]);        
         fprintf('exporting max intensity image to %s...\n', currSplittingSession.endingSession.output_path.max_intensity);
@@ -181,6 +183,18 @@ for tiffFileIndex = registered_imageInfo.first_index:registered_imageInfo.last_i
         
         splittingSessions{end+1} = currSplittingSession;
         
+        % Add the split file index for the ending and starting sessions to
+        % that sessions' file paths array
+        outputs.sessions(curr_active_file_session.sessionIndex).files_list = [outputs.sessions(curr_active_file_session.sessionIndex).files_list; currSplittingSession.endingSession.output_path.max_intensity];
+                
+        % Start a new session:
+        curr_active_file_session.sessionIndex = curr_active_file_session.sessionIndex + 1; % Update the active session index so we know the next Tif files belong to the next session
+        outputs.sessions(curr_active_file_session.sessionIndex).files_list = { currSplittingSession.startingSession.output_path.max_intensity };
+        
+    else
+        
+        outputs.sessions(curr_active_file_session.sessionIndex).files_list = [outputs.sessions(curr_active_file_session.sessionIndex).files_list; curr_output_path.max_intensity];
+        
     end
     
    
@@ -188,6 +202,8 @@ for tiffFileIndex = registered_imageInfo.first_index:registered_imageInfo.last_i
     
     %% Save out the file:
     if ~exist(curr_output_path.max_intensity, 'file')
+        % Get the frames:
+        [currMovieFrames, ~] = fnLoadTifToMovieFrames(curr_tifFileName); % [512x512x4096]
         % Compute the block output
         tif_max_intensity = max(currMovieFrames,[],[3]);
 %     tif_mean_intensity = mean(currMovieFrames, 3);
