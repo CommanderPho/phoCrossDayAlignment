@@ -3,8 +3,8 @@
 
 % result = fnTestCellROIBlob_AlignmentAcrossSessions(cellRoiSortIndex, multiSessionCellRoi_CompListIndicies, compMasks);
 
-
-result = fnTestCellROIIntensity_AlignmentAcrossSessions(final_data_explorer_obj);
+curr_roiIndex = 5;
+result = fnTestCellROIIntensity_AlignmentAcrossSessions(final_data_explorer_obj, curr_roiIndex);
 
 % final_data_explorer_obj.getFillRoiMask(1);
 % imshow(final_data_explorer_obj.getEdgeOffsetRoiMasks(0, 1));
@@ -77,6 +77,16 @@ function result = fnTestCellROIIntensity_AlignmentAcrossSessions(final_data_expl
        
     end
     
+    numMasks = size(curr_roiMaxIntensities, 1);
+    maskSize = [size(curr_roiMaxIntensities, 2) size(curr_roiMaxIntensities, 3)]; % All masks should be the same size
+    
+    conjunction_min = squeeze(min(curr_roiMaxIntensities,[],1));
+    
+    
+    
+    
+    
+    %% Build Figure
     result.figH = figure(4);
     clf(result.figH);
     
@@ -84,6 +94,8 @@ function result = fnTestCellROIIntensity_AlignmentAcrossSessions(final_data_expl
         result.axes(sessionIndex) = subplot_cmd(1,3,sessionIndex);
         result.tempImH = imshow(result.imageFrames{sessionIndex}, 'Parent', result.axes(sessionIndex));
         set(result.tempImH, 'AlphaData', squeeze(curr_roiMaxIntensities(sessionIndex,:,:)));
+        
+%         fnPhoMatrixPlot
 %         result.tempImH = imshow(squeeze(curr_roiMaxIntensities(sessionIndex,:,:)), 'Parent', result.axes(sessionIndex));
 %         set(result.tempImH, 'AlphaData', curr_roiFillMask);
 
@@ -139,4 +151,19 @@ end
 
 function [diffMask] = fnTestCellROIBlob_ComputeDifferenceBetweenTwoMasks(maskA, maskB)
     diffMask = imabsdiff(maskA, maskB);
+end
+
+
+
+
+function [results] = fnAnalyzeOverlapBetweenMasks(masksMatrix)
+    % masksMatrix: a i * n * m matrix
+    numMasks = size(masksMatrix, 1);
+    maskSize = [size(masksMatrix, 2) size(masksMatrix, 3)]; % All masks should be the same size
+    
+    conjunction_min = min(masksMatrix,[],1);
+    
+    
+    
+
 end
