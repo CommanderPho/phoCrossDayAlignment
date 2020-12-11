@@ -24,7 +24,7 @@ result = fnTestCellROIIntensity_AlignmentAcrossSessions(final_data_explorer_obj)
 % h = imshowpair(A,B);
 
 
-function result = fnTestCellROIIntensity_AlignmentAcrossSessions(final_data_explorer_obj, plotting_options)
+function result = fnTestCellROIIntensity_AlignmentAcrossSessions(final_data_explorer_obj, curr_roiIndex, plotting_options)
     %% fnTestCellROIIntensity_AlignmentAcrossSessions: loads the exported session max intensity tifs from disk
     
     if ~exist('plotting_options','var')
@@ -47,12 +47,10 @@ function result = fnTestCellROIIntensity_AlignmentAcrossSessions(final_data_expl
         subplot_cmd = @(m,n,p) subplot(m, n, p);
     end
     
-    
     exported_sessions_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/reg_tif_aggregates/session_level';
     [result.imds, result.registered_imageInfo] = fnLoadTifFolderToDatastore(exported_sessions_path);
     result.imageFrames = readall(result.imds.registered);
     
-    curr_roiIndex = 5;
     curr_roiFillMask = logical(final_data_explorer_obj.getFillRoiMask(curr_roiIndex));
     curr_roiEdgeMask = logical(final_data_explorer_obj.getEdgeOffsetRoiMasks(0, curr_roiIndex));
     
@@ -72,8 +70,7 @@ function result = fnTestCellROIIntensity_AlignmentAcrossSessions(final_data_expl
        
        % Do this for the previous session:
        curr_roiMaxIntensities(sessionIndex, curr_roiFillMask) = curr_frame(curr_roiFillMask);
-       
-       
+
        %% Draw the highlight on the image for comparison:
 %        figure(sessionIndex-1);
 %        imshowpair(prev_frame, curr_frame, 'falsecolor')
