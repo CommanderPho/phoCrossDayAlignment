@@ -3,9 +3,12 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
         % (for a particular cellROI and stimulus)
         % There are numStimuli vertically stacked subplots, each containing their trials represented as rows.
     
-       
-    if ~isfield(plotting_options, 'useGlobalColorLims')
+    if ~isfield(plotting_options, 'should_use_custom_subplots')
         plotting_options.should_use_custom_subplots = true;
+    end
+        
+    if ~isfield(plotting_options, 'useGlobalColorLims')
+        plotting_options.useGlobalColorLims = true;
     end
     
     if ~isfield(plotting_options, 'useSingleSharedColorbar')
