@@ -71,8 +71,8 @@ function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRo
        redTraceLinesExtrema.local_min_extrema = min(final_data_explorer_obj.redTraceLinesForAllStimuli, [], [2 3]); % [159 x 1]
      
         if plotting_options.should_plot_all_traces
-            tracesForAllStimuliExtrema.local_max_peaks = max(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot, [], [2 3 4]); % [159 x 1]
-            tracesForAllStimuliExtrema.local_min_extrema = min(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot, [], [2 3 4]); % [159 x 1]
+            tracesForAllStimuliExtrema.local_max_peaks = max(final_data_explorer_obj.tracesForAllStimuli, [], [2 3 4]); % [159 x 1]
+            tracesForAllStimuliExtrema.local_min_extrema = min(final_data_explorer_obj.tracesForAllStimuli, [], [2 3 4]); % [159 x 1]
             
             activePlotExtrema.local_max_peaks = max([redTraceLinesExtrema.local_max_peaks, tracesForAllStimuliExtrema.local_max_peaks], [], 2); % For each cellROI, get the maximum value (whether it is on the average or the traces themsevles).
             activePlotExtrema.local_min_extrema = min([redTraceLinesExtrema.local_min_extrema, tracesForAllStimuliExtrema.local_min_extrema], [], 2);
@@ -109,7 +109,7 @@ function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRo
         
         
         if plotting_options.should_plot_all_traces
-            temp.currTrialTraceLinesForAllStimuli = squeeze(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot(temp.compIndex,:,:,:));
+            temp.currTrialTraceLinesForAllStimuli = squeeze(final_data_explorer_obj.tracesForAllStimuli(temp.compIndex,:,:,:));
             if plotting_options.should_normalize_to_local_peak
 %                temp.local_max_peak_trial_traces = max(temp.currTrialTraceLinesForAllStimuli, [], 'all');
 %                temp.local_min_extrema_trial_traces = min(temp.currTrialTraceLinesForAllStimuli, [], 'all');

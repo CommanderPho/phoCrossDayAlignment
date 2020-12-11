@@ -11,7 +11,7 @@ function [figH] = fnPlotTimingHeatMap_AllStimulusStacked(final_data_explorer_obj
     clf(figH);
     
     %% 
-    curr_heatMap = squeeze(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot(curr_cellRoiIndex, :, :, :)); % should be [26 20 150]
+    curr_heatMap = squeeze(final_data_explorer_obj.tracesForAllStimuli(curr_cellRoiIndex, :, :, :)); % should be [26 20 150]
 %     curr_heatMap = cat(curr_heatMap, 1);
     
     curr_heatMap = reshape(curr_heatMap, (26*20), 150);

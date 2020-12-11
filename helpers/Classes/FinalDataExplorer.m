@@ -50,7 +50,10 @@ classdef FinalDataExplorer
         roiComputedProperties
                
         preferredStimulusInfo
-        computedRedTraceLinesAnalyses
+        computedRedTraceLinesAnalyses = struct; % Analysis done for the red mean tracelines
+		computedAllTraceLinesAnalyses % Analyses done for all trace lines
+		
+		
 
 		autoTuningDetection % Used to auto-determine the tuning for a given cellROI
         
@@ -77,6 +80,7 @@ classdef FinalDataExplorer
         componentAggregatePropeties
         finalOutPeaksGrid
         redTraceLinesForAllStimuli
+		tracesForAllStimuli
         uniqueAmps
         uniqueFreqs
         uniqueStimuli
@@ -107,6 +111,10 @@ classdef FinalDataExplorer
        function redTraceLinesForAllStimuli = get.redTraceLinesForAllStimuli(obj)
           redTraceLinesForAllStimuli = obj.active_DFF.redTraceLinesForAllStimuli;
        end
+       function tracesForAllStimuli = get.tracesForAllStimuli(obj)
+          tracesForAllStimuli = obj.active_DFF.TracesForAllStimuli.imgDataToPlot;
+       end
+
        function uniqueAmps = get.uniqueAmps(obj)
           uniqueAmps = obj.stimuli_mapper.uniqueAmps;
        end
@@ -421,6 +429,29 @@ classdef FinalDataExplorer
 			obj.computedRedTraceLinesAnalyses.first_derivative = cat(3, zeroPaddingColumn, diff(obj.redTraceLinesForAllStimuli, 1, 3));
 			obj.computedRedTraceLinesAnalyses.second_derivative = cat(3, zeroPaddingColumn, diff(obj.computedRedTraceLinesAnalyses.first_derivative, 1, 3));
 			% obj.computedRedTraceLinesAnalyses.second_derivative = diff(obj.redTraceLinesForAllStimuli, 2, 3);
+
+			%% Normalized Curves
+			%% Get Information about the ranges and extrema:
+			obj.computedRedTraceLinesAnalyses.Extrema.local_max_peaks = max(obj.redTraceLinesForAllStimuli, [], [2 3]); % [159 x 1]
+			obj.computedRedTraceLinesAnalyses.Extrema.local_min_extrema = min(obj.redTraceLinesForAllStimuli, [], [2 3]); % [159 x 1]
+			obj.computedRedTraceLinesAnalyses.Range = obj.computedRedTraceLinesAnalyses.Extrema.local_max_peaks - obj.computedRedTraceLinesAnalyses.Extrema.local_min_extrema;
+
+			% LargestMagnitudeExtrema: The extrema with the largest abs(magnitude), used to normalize to a range [-1 1]
+			obj.computedRedTraceLinesAnalyses.Extrema.LargestMagnitudeExtrema = max([abs(obj.computedRedTraceLinesAnalyses.Extrema.local_max_peaks), abs(obj.computedRedTraceLinesAnalyses.Extrema.local_min_extrema)], [], 2);
+
+			obj.computedRedTraceLinesAnalyses.Normalized = obj.redTraceLinesForAllStimuli ./ obj.computedRedTraceLinesAnalyses.Extrema.LargestMagnitudeExtrema; % Normalize each one by its highest extrema.
+
+			
+
+
+			obj.computedAllTraceLinesAnalyses.Extrema.local_max_peaks = max(obj.tracesForAllStimuli, [], [2 3 4]); % [159 x 1]
+			obj.computedAllTraceLinesAnalyses.Extrema.local_min_extrema = min(obj.tracesForAllStimuli, [], [2 3 4]); % [159 x 1]
+			obj.computedAllTraceLinesAnalyses.Range = obj.computedAllTraceLinesAnalyses.Extrema.local_max_peaks - obj.computedAllTraceLinesAnalyses.Extrema.local_min_extrema;
+					
+
+			% activePlotExtrema.local_max_peaks = max([obj.computedRedTraceLinesAnalyses.Extrema.local_max_peaks, obj.computedAllTraceLinesAnalyses.Extrema.local_max_peaks], [], 2); % For each cellROI, get the maximum value (whether it is on the average or the traces themsevles).
+			% activePlotExtrema.local_min_extrema = min([obj.computedRedTraceLinesAnalyses.Extrema.local_min_extrema, obj.computedAllTraceLinesAnalyses.Extrema.local_min_extrema], [], 2);
+
 		end
 
 
@@ -436,7 +467,9 @@ classdef FinalDataExplorer
 
 			for i = 1:size(obj.redTraceLinesForAllStimuli, 1)
 				for j = 1:size(obj.redTraceLinesForAllStimuli, 2)
-					obj.computedRedTraceLinesAnalyses.autotuningValue(i, j) = dot(obj.autoTuningDetection.detectionCurve, squeeze(obj.redTraceLinesForAllStimuli(i, j, :)));
+					% obj.computedRedTraceLinesAnalyses.autotuningValue(i, j) = dot(obj.autoTuningDetection.detectionCurve, squeeze(obj.redTraceLinesForAllStimuli(i, j, :)));
+					% Need to use the normalized value so the outputs are comparible:
+					obj.computedRedTraceLinesAnalyses.autotuningValue(i, j) = dot(obj.autoTuningDetection.detectionCurve, squeeze(obj.computedRedTraceLinesAnalyses.Normalized(i, j, :)));
 				end
 			end
 

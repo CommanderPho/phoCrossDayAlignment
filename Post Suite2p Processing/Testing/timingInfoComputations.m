@@ -7,10 +7,10 @@
 % final_data_explorer_obj.redTraceLinesForAllStimuli
 % final_data_explorer_obj.multiSessionCellRoi_CompListIndicies 
 
-% size(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot) % [159    26    20   150]
+% size(final_data_explorer_obj.tracesForAllStimuli) % [159    26    20   150]
 
 % Compute all-trials maximums:
-[maxVals, maxInds] = max(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot,[], 4); % get max of current signal only within the startSound:endSound range
+[maxVals, maxInds] = max(final_data_explorer_obj.tracesForAllStimuli,[], 4); % get max of current signal only within the startSound:endSound range
 size(maxVals) % [159    26    20]
 
 
@@ -19,7 +19,7 @@ cellROIIndex = 5;
 
 
 %% Plot a heatmap where each of the 20 trials is a row (for a particular cellROI and stimulus):
-% curr_heatMap = squeeze(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot(cellROIIndex, :, :, :)); % should be [26 20 150]
+% curr_heatMap = squeeze(final_data_explorer_obj.tracesForAllStimuli(cellROIIndex, :, :, :)); % should be [26 20 150]
 % curr_heatMap = reshape(curr_heatMap, (26*20), 150);
 % % size(curr_heatMap) % [520 150]
 % fnPhoMatrixPlot(curr_heatMap');
@@ -36,7 +36,7 @@ cellROIIndex = 5;
 %     subplot(final_data_explorer_obj.stimuli_mapper.numStimuli, 1, stimulusIndex);
 % 
 %     %% Plot a heatmap where each of the 20 trials is a row (for a particular cellROI and stimulus):
-%     curr_heatMap = squeeze(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot(cellROIIndex, stimulusIndex, :, :)); % should be [20 150]
+%     curr_heatMap = squeeze(final_data_explorer_obj.tracesForAllStimuli(cellROIIndex, stimulusIndex, :, :)); % should be [20 150]
 % %     size(curr_heatMap)
 %     fnPhoMatrixPlot(curr_heatMap');
 % %     title('test heat map')

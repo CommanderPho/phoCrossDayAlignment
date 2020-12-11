@@ -72,7 +72,7 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
         numCol = 1;
     end
     
-    % final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot: [159    26    20   150]
+    % final_data_explorer_obj.tracesForAllStimuli: [159    26    20   150]
     % final_data_explorer_obj.active_DFF.redTraceLinesForAllStimuli: [159    26   150]
     
     if plotting_options.should_use_collapsed_heatmaps
@@ -80,7 +80,7 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
         curr_cellROI_heatMap = squeeze(final_data_explorer_obj.active_DFF.redTraceLinesForAllStimuli(curr_cellRoiIndex, :, :)); % should be [26 150]
         
     else
-        curr_cellROI_heatMap = squeeze(final_data_explorer_obj.active_DFF.TracesForAllStimuli.imgDataToPlot(curr_cellRoiIndex, :, :, :)); % should be [26 20 150]
+        curr_cellROI_heatMap = squeeze(final_data_explorer_obj.tracesForAllStimuli(curr_cellRoiIndex, :, :, :)); % should be [26 20 150]
     end
     % Get global color lims
     if plotting_options.useGlobalColorLims
