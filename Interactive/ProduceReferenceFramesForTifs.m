@@ -197,9 +197,6 @@ for tiffFileIndex = registered_imageInfo.first_index:registered_imageInfo.last_i
         
     end
     
-   
-    
-    
     %% Save out the file:
     if ~exist(curr_output_path.max_intensity, 'file')
         % Get the frames:
@@ -216,38 +213,83 @@ for tiffFileIndex = registered_imageInfo.first_index:registered_imageInfo.last_i
 
 end
 
-
-
-%% Once Each Individual Tif is processed and saved, create a new imageDatastore from the output path to process them further
-[output_imds, output_registered_imageInfo] = fnLoadTifFolderToDatastore(outputs.stackFileCombinedTifFolderPath);
-% Loop through the previously saved files to further aggregate the outputs
-output_numTifFiles = output_registered_imageInfo.count;
-output_totalCombinedNumFrames = numTifFiles;
-% Pre-allocate output images:
-currMovieFrames = zeros([output_totalCombinedNumFrames 512 512], 'int16');
-
-% Loop through outputs:
-for tiffFileIndex = output_registered_imageInfo.first_index:output_registered_imageInfo.last_index
-    curr_tifFileName = output_imds.registered.Files{tiffFileIndex};
-    % Each tif now is a single 512x512 image instead of a stack
-    [currMovieFrames(tiffFileIndex,:,:), ~] = fnLoadTifToMovieFrames(curr_tifFileName); % [512x512]
+%% Session Level Outputs:
+for sessionIndex = 1:sessionSplit.numSessions
+        curr_sessionChangeIndex = sessionSplit.frames_first_index_array(sessionIndex);
+       if (curr_tiff_first_index < curr_sessionChangeIndex) && (curr_sessionChangeIndex < curr_tiff_last_index)
+           contains_session_split = true;
+           currSplittingSession.endingSession.Index = sessionIndex - 1;
+           currSplittingSession.startingSession.Index = sessionIndex;
+           fprintf('sessionSplitting: fileIndex %d; sessionIndex %d\n', tiffFileIndex, sessionIndex);
+           break
+       end
+       out_file_name = '';
+       curr_max_intensity_filename = sprintf('max_tif_session_%d.tif', sessionIndex);
+       curr_output_path.max_intensity = fullfile(outputs.stackSessionCombinedTifFolderPath, curr_max_intensity_filename);
+       [~] = compute_aggregate_intensity(outputs.sessions(sessionIndex).files_list, curr_output_path.max_intensity);
 end
 
-
-tif_max_intensity = squeeze(max(currMovieFrames,[],1));
-%     tif_mean_intensity = mean(currMovieFrames, 3);
-%% Save out the file:
-curr_max_intensity_filename = 'max_tif_all.tif';
-curr_output_path.max_intensity = fullfile(outputs.stackAllCombinedTifFolderPath, curr_max_intensity_filename);
-if ~exist(curr_output_path.max_intensity, 'file')
-    fprintf('exporting max intensity image to %s...\n', curr_output_path.max_intensity);
-    saveastiff(tif_max_intensity, curr_output_path.max_intensity);
-    fprintf('\t done.');
-else
-    fprintf('%s exists, skipping.\n', curr_output_path.max_intensity);
-end
+% [tif_max_intensity] = compute_aggregate_intensity(load_paths, curr_output_path.max_intensity)
     
 
+
+% %% Once Each Individual Tif is processed and saved, create a new imageDatastore from the output path to process them further
+% [output_imds, output_registered_imageInfo] = fnLoadTifFolderToDatastore(outputs.stackFileCombinedTifFolderPath);
+% % Loop through the previously saved files to further aggregate the outputs
+% % Pre-allocate output images:
+% currMovieFrames = zeros([output_registered_imageInfo.count 512 512], 'int16');
+% 
+% % Loop through outputs:
+% for tiffFileIndex = output_registered_imageInfo.first_index:output_registered_imageInfo.last_index
+%     curr_tifFileName = output_imds.registered.Files{tiffFileIndex};
+%     % Each tif now is a single 512x512 image instead of a stack
+%     [currMovieFrames(tiffFileIndex,:,:), ~] = fnLoadTifToMovieFrames(curr_tifFileName); % [512x512]
+% end
+% 
+% tif_max_intensity = squeeze(max(currMovieFrames,[],1));
+% %     tif_mean_intensity = mean(currMovieFrames, 3);
+% %% Save out the file:
+% curr_max_intensity_filename = 'max_tif_all.tif';
+% curr_output_path.max_intensity = fullfile(outputs.stackAllCombinedTifFolderPath, curr_max_intensity_filename);
+% if ~exist(curr_output_path.max_intensity, 'file')
+%     fprintf('exporting max intensity image to %s...\n', curr_output_path.max_intensity);
+%     saveastiff(tif_max_intensity, curr_output_path.max_intensity);
+%     fprintf('\t done.');
+% else
+%     fprintf('%s exists, skipping.\n', curr_output_path.max_intensity);
+% end
+    
+
+
+function [tif_max_intensity] = compute_aggregate_intensity(load_paths, out_file_path)
+    %% Once Each Individual Tif is processed and saved, create a new imageDatastore from the output path to process them further
+    [output_imds, output_registered_imageInfo] = fnLoadTifFolderToDatastore(load_paths);
+    % Loop through the previously saved files to further aggregate the outputs
+    output_numTifFiles = output_registered_imageInfo.count;
+    output_totalCombinedNumFrames = output_numTifFiles;
+    % Pre-allocate output images:
+    currMovieFrames = zeros([output_totalCombinedNumFrames 512 512], 'int16');
+
+    % Loop through outputs:
+    for tiffFileIndex = output_registered_imageInfo.first_index:output_registered_imageInfo.last_index
+        curr_tifFileName = output_imds.registered.Files{tiffFileIndex};
+        % Each tif now is a single 512x512 image instead of a stack
+        [currMovieFrames(tiffFileIndex,:,:), ~] = fnLoadTifToMovieFrames(curr_tifFileName); % [512x512]
+    end
+
+    tif_max_intensity = squeeze(max(currMovieFrames,[],1));
+    %     tif_mean_intensity = mean(currMovieFrames, 3);
+    %% Save out the file:
+    curr_output_path.max_intensity = out_file_path;
+    if ~exist(curr_output_path.max_intensity, 'file')
+        fprintf('exporting max intensity image to %s...\n', curr_output_path.max_intensity);
+        saveastiff(tif_max_intensity, curr_output_path.max_intensity);
+        fprintf('\t done.');
+    else
+        fprintf('%s exists, skipping.\n', curr_output_path.max_intensity);
+    end
+
+end
 
 
 function [didSave] = saveastiff_IfNotExists(img, savePath)
