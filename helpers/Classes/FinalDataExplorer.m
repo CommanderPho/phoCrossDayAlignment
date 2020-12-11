@@ -463,20 +463,29 @@ classdef FinalDataExplorer
 
 			% D = dot(obj.redTraceLinesForAllStimuli, repmat(obj.autoTuningDetection.detectionCurve, [size(obj.redTraceLinesForAllStimuli, 1) size(obj.redTraceLinesForAllStimuli, 2)]), 3);
 
-			obj.computedRedTraceLinesAnalyses.autotuningValue = zeros([size(obj.redTraceLinesForAllStimuli, 1), size(obj.redTraceLinesForAllStimuli, 2)]);
+			obj.computedRedTraceLinesAnalyses.autotuning.StimulusAutotuningValues = zeros([size(obj.redTraceLinesForAllStimuli, 1), size(obj.redTraceLinesForAllStimuli, 2)]); % The autotuningValue is a 159x26 matrix
 
 			for i = 1:size(obj.redTraceLinesForAllStimuli, 1)
 				for j = 1:size(obj.redTraceLinesForAllStimuli, 2)
 					% obj.computedRedTraceLinesAnalyses.autotuningValue(i, j) = dot(obj.autoTuningDetection.detectionCurve, squeeze(obj.redTraceLinesForAllStimuli(i, j, :)));
 					% Need to use the normalized value so the outputs are comparible:
-					obj.computedRedTraceLinesAnalyses.autotuningValue(i, j) = dot(obj.autoTuningDetection.detectionCurve, squeeze(obj.computedRedTraceLinesAnalyses.Normalized(i, j, :)));
+					obj.computedRedTraceLinesAnalyses.autotuning.StimulusAutotuningValues(i, j) = dot(obj.autoTuningDetection.detectionCurve, squeeze(obj.computedRedTraceLinesAnalyses.Normalized(i, j, :)));
 				end
-			end
+            end
+            
+			num_to_include = 5; % returns the num_to_include-largest stimulus autotuning values for each comp.
+			[obj.computedRedTraceLinesAnalyses.autotuning.topStimuliValues, obj.computedRedTraceLinesAnalyses.autotuning.topStimuliIndicies] = maxk(obj.computedRedTraceLinesAnalyses.autotuning.StimulusAutotuningValues, num_to_include, 2);
+			obj.computedRedTraceLinesAnalyses.autotuning.compTotalAutotuning = sum(obj.computedRedTraceLinesAnalyses.autotuning.StimulusAutotuningValues, 2); % Sum over the autotuning values for all stimuli to get a general value for the comp
 
-		end
 
+			% [val,irow] = max(obj.computedRedTraceLinesAnalyses.autotuning.StimulusAutotuningValues, [], 2);
+			% [val,icol] = max(val);
+			% irow = irow(icol)
 
-
+        
+        end
+        
+		
     end % end methods
 end % end class
 

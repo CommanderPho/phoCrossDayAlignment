@@ -266,7 +266,7 @@ end
 
 
 final_data_explorer_obj = final_data_explorer_obj.computeCurveAnalysis();
-final_data_explorer_obj.setupAutotuningDetection(autoTuningDetection);
+final_data_explorer_obj = final_data_explorer_obj.setupAutotuningDetection(autoTuningDetection);
 
 
 fprintf('\t done.\n');

@@ -2,7 +2,7 @@ function [figH] = fnPlotTimingHeatMap_AllStimulusStacked(final_data_explorer_obj
     %% fnPlotTimingHeatMap_AllStimulusStacked: Plot a heatmap where:
         % each of the trials for each of the stimuli are plotted as a single row (for a particular cellROI and stimulus): 
     if ~exist('extantFigH','var')
-        figH = figure(1337 + cellRoiIndex); % generate a new figure to plot the sessions.
+        figH = figure(1337 + curr_cellRoiIndex); % generate a new figure to plot the sessions.
     else
         figH = extantFigH; % use the existing provided figure    
         figure(figH);

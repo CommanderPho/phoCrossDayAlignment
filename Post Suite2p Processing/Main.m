@@ -74,6 +74,7 @@ temp.S = load(detectionCurvePath, 'detectionCurve');
 autoTuningDetection.detectionCurve = temp.S.detectionCurve;
 
 
+
 %% Plot the detectionCurve with the stimulus indicator lines:
 figure(99);
 
@@ -97,7 +98,7 @@ line(x, y,'Color','red','LineStyle','-')
 hold on;
 plot(autoTuningDetection.detectionCurve);
 
-    
+
 
 %%% PhoTuningMeshExplorer Options:
 % phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures';
