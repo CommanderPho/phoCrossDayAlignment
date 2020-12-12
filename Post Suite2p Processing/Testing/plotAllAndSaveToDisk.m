@@ -70,12 +70,11 @@ for i = 1:num_rois_to_plot
         
     end
     
-    fprintf('\t done.\n')
-    set(groot, 'DefaultFigureVisible', 'on');
-    
-
-    
 end
+
+%% Restore the default figure visibility:
+set(groot, 'DefaultFigureVisible', 'on');
+fprintf('\t done.\n')
 
 
 function [curr_fig_export_path] = performExportFigure(figH, fig_name, export_extension, phoPipelineOptions)
