@@ -4,7 +4,6 @@
 addpath(genpath('../helpers'));
 
 plot_manager_cellRoiPlot.setupGraphicalSelectionTable();
-
 % plot_manager_cellRoiPlot.interaction_helper_obj.updateGraphicalSelectionTable();
 
    
@@ -67,4 +66,9 @@ plot_manager_cellRoiPlot.setupGraphicalSelectionTable();
 
 
 
+
+
+function updatePlot(src, event)
+    disp('updatePlot(...)')
+end
 
