@@ -151,6 +151,10 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
         %% plotAMConditions_FDS Style
         outputs.default_DFF.AMConditions.imgDataToPlot(b,:) = mean(imgDataDFF(currStimulusTrialIndicies,:)); % This gets the particular red line for this stimulus
         
+        currStimulusCurve = squeeze(outputs.default_DFF.AMConditions.imgDataToPlot(b, :));
+        [outputs.default_DFF.StimulusCurveSummaryStats(b)] = fnProcessCurveStats(currStimulusCurve, outputs.default_DFF.timingInfo); %% TODO: remove the redundant measures that are computed below
+        
+        
         [~, stimStartRelative_maxInd] = max(outputs.default_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
 		maxInd = stimStartRelative_maxInd + processingOptions.startSound - 1; % convert back to a frame index instead of a stimulus start relative index
 
@@ -171,6 +175,10 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 
             %% plotAMConditions_FDS Style
             outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b,:) = mean(imagingDataMinusNeuropilDFF(currStimulusTrialIndicies,:));
+            
+            currStimulusCurve = squeeze(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, :));
+            [outputs.minusNeuropil_DFF.StimulusCurveSummaryStats(b)] = fnProcessCurveStats(currStimulusCurve, outputs.minusNeuropil_DFF.timingInfo); %% TODO: remove the redundant measures that are computed below
+        
             [~, stimStartRelative_maxInd] = max(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, processingOptions.startSound:processingOptions.endSound)); % get max of current signal only within the startSound:endSound range
             maxInd = stimStartRelative_maxInd + processingOptions.startSound - 1; % convert back to a frame index instead of a stimulus start relative index
             outputs.minusNeuropil_DFF.AMConditions.peakSignal(b) = mean(outputs.minusNeuropil_DFF.AMConditions.imgDataToPlot(b, maxInd-processingOptions.sampPeak:maxInd+processingOptions.sampPeak));
