@@ -4,10 +4,10 @@
 
 addpath(genpath('../helpers'));
 
-figure(9)
-clf;
+extantFigH = figure(9);
+clf(extantFigH);
     
-subplot(1,2,1)
+
 
 show_only_first_session = true;
 
@@ -16,13 +16,28 @@ valid_only_quality = phoPipelineOptions.loadedFilteringData.manualRoiFilteringRe
 valid_only_quality(phoPipelineOptions.loadedFilteringData.manualRoiFilteringResults.final_is_Excluded) = []; % remove the excluded entries.
 
 if show_only_first_session
-    fnPhoMatrixPlotDetailed(valid_only_quality)
+    auto_plot = final_data_explorer_obj.computedRedTraceLinesAnalyses.autotuning.compTotalAutotuning(1:final_data_explorer_obj.num_cellROIs);
+    to_plot = [valid_only_quality auto_plot];
 else
     valid_only_quality_all_sessions = repmat(valid_only_quality, [3 1]);
-    fnPhoMatrixPlotDetailed(valid_only_quality_all_sessions)
+    auto_plot = final_data_explorer_obj.computedRedTraceLinesAnalyses.autotuning.compTotalAutotuning;
+    to_plot = [valid_only_quality_all_sessions auto_plot];
+end
+
+
+% fnPhoMatrixPlotDetailed(to_plot', extantFigH)
+
+
+ax1 = subplot(1,2,1);
+if show_only_first_session
+    [out_axes, h] = fnPhoMatrixPlotDetailed(valid_only_quality, ax1);
+else
+    [out_axes, h] = fnPhoMatrixPlotDetailed(valid_only_quality_all_sessions, extantFigH);
 end
 title('manually ranked')
-subplot(1,2,2)
+ax2 = subplot(1,2,2);
+fnPhoMatrixPlotDetailed(auto_plot, ax2)
+
 % fnPhoMatrixPlot(final_data_explorer_obj.computedRedTraceLinesAnalyses.autotuning.compTotalAutotuning)
 % valid_only = ~phoPipelineOptions.loadedFilteringData.manualRoiFilteringResults.data_table.isManuallyExcluded;
 
@@ -36,11 +51,6 @@ subplot(1,2,2)
 % That means for the three sessions, there are 53 * 3 = 159 comps while before there was 82 * 3 = 246
 
 
-if show_only_first_session
-    % Only plot the first session:
-    fnPhoMatrixPlotDetailed(final_data_explorer_obj.computedRedTraceLinesAnalyses.autotuning.compTotalAutotuning(1:final_data_explorer_obj.num_cellROIs));
-else
-    fnPhoMatrixPlotDetailed(final_data_explorer_obj.computedRedTraceLinesAnalyses.autotuning.compTotalAutotuning)
-end
+
 
 title('autotuning algorithm')
