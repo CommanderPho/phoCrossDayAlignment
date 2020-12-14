@@ -5,7 +5,7 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
     
     numRepeatedColumns = length(sliderValues);
     
-    if ~exist('figH','var') || ~isgraphics(figH)
+    if ~exist('figH','var') || ~isvalid(figH) || ~isgraphics(figH)
         figObj = uifigure('Position',[100 100 1080 200]);
     else
         figObj = figH;
@@ -48,15 +48,6 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
 
     function [embedded_grid_obj, out_buttons, out_axes] = fnPhoControllerSlider(parent, numRepeatedColumns, buttonCallbackEvent)
         embedded_grid_obj = uigridlayout(parent,[2 numRepeatedColumns]);
-%         embedded_grid_obj.RowHeight = {22,22,22};
-%         embedded_grid_obj.ColumnWidth = {80,'1x'};
-%         embedded_grid_obj = uigridlayout(parent,[1 1]);
-        
-%         embedded_button_group_obj = uibuttongroup(embedded_grid_obj,'Scrollable','on');
-%         embedded_button_group_obj.Title = 'Buttons';
-%         embedded_button_group_obj.Layout.Row = 1;
-%         embedded_button_group_obj.Layout.Column = [1, numRepeatedColumns]; % Span all columns
-%         embedded_button_group_obj.SelectionChangedFcn = @(h,e)onButtonPushed(obj,e);
         % Add Label
         button_labels = {};
         button_tooltips = {};
@@ -96,9 +87,6 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
         out_axes = uiaxes(embedded_grid_obj,'Tag','uiaxes_phoControllerSlider');
         out_axes.Layout.Row = 2;
         out_axes.Layout.Column = [1 numRepeatedColumns]; % Span all columns
-        
-        
-        
     end
 
 
