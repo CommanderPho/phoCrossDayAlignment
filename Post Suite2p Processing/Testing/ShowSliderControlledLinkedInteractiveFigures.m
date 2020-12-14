@@ -16,6 +16,7 @@ should_show_masking_plot = false;
 should_show_stimulus_traces_plot = true;
 should_show_stimulus_traces_custom_data_plot = false;
 should_show_stimulus_heatmaps_plot = true;
+should_show_stimulus_summary_stats_plot = true;
 
 temp.cellRoiIndex = 1;
 
@@ -68,13 +69,20 @@ if should_show_stimulus_traces_custom_data_plot
 	plot_callbacks{end+1} = stimulus_traces_extras_plot_callback;
 end
 
-
 if should_show_stimulus_heatmaps_plot
     extantFigH_plot_stimulus_traces_timing_heatmaps = createFigureWithTagIfNeeded('iscStimulusTracesTimingHeatmapsPlot');
     linkedFigureHandles(end+1) = extantFigH_plot_stimulus_traces_timing_heatmaps;
 	stimulus_traces_timing_heatmaps_plot_callback = @(curr_i) (pho_plot_timing_heatmaps(final_data_explorer_obj, extantFigH_plot_stimulus_traces_timing_heatmaps, curr_i));
     plot_callbacks{end+1} = stimulus_traces_timing_heatmaps_plot_callback;
 end
+
+if should_show_stimulus_summary_stats_plot
+    extantFigH_plot_stimulus_traces_summary_stats = createFigureWithTagIfNeeded('iscStimulusTracesSummaryStatsPlot');
+    linkedFigureHandles(end+1) = extantFigH_plot_stimulus_traces_summary_stats;
+	stimulus_traces_summary_stats_plot_callback = @(curr_i) (pho_plot_summary_stats(final_data_explorer_obj, extantFigH_plot_stimulus_traces_summary_stats, curr_i));
+    plot_callbacks{end+1} = stimulus_traces_summary_stats_plot_callback;
+end
+
 
 slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, plot_callbacks);
 % PhoBuildSpatialTuning;
@@ -116,7 +124,6 @@ function [callbackOutput] = pho_plot_cell_mask(dateStrings, compMasks, multiSess
         callbackOutput.shouldRemoveCallback = true;
     end
 end
-
 
 function [callbackOutput] = pho_plot_stimulus_traces(final_data_explorer_obj, extantFigH, curr_cellRoiIndex)
     % COMPUTED
@@ -183,6 +190,27 @@ function [callbackOutput] = pho_plot_timing_heatmaps(final_data_explorer_obj, ex
 %         [callbackOutput.plotted_figH] = fnPlotTimingHeatMap_AllStimulusStacked(final_data_explorer_obj, curr_cellRoiIndex, plotting_options, extantFigH);
         [callbackOutput.plotted_figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer_obj, curr_cellRoiIndex, plotting_options, extantFigH);
         set(callbackOutput.plotted_figH, 'Name', sprintf('Slider Controlled Timing Heatmap Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+    else
+        callbackOutput.plotted_figH = extantFigH;
+        callbackOutput.shouldRemoveCallback = true;
+    end
+end
+
+function [callbackOutput] = pho_plot_summary_stats(final_data_explorer_obj, extantFigH, curr_cellRoiIndex)
+    % COMPUTED
+    callbackOutput.shouldRemoveCallback = false;
+    
+    plotting_options.subplotLayoutIsGrid = true; % subplotLayoutIsGrid: if true, the subplots are layed out in a 5x5 grid with an additional subplot for the 0 entry.
+    plotting_options.should_plot_vertical_sound_start_stop_lines = true; % plotting_options.should_plot_vertical_sound_start_stop_lines: if true, vertical start/stop lines are drawn to show when the sound started and stopped.
+    plotting_options.should_normalize_to_local_peak = false; % plotting_options.should_normalize_to_local_peak: if true, the y-values are normalized across all stimuli and sessions for a cellRoi to the maximal peak value.
+    plotting_options.should_plot_titles_for_each_subplot = false; % plotting_options.should_plot_titles_for_each_subplot: if true, a title is added to each subplot (although it's redundent)
+
+
+    % Make Timing Heatmap Plot:
+    if isvalid(extantFigH)    
+%         [callbackOutput.plotted_figH] = fnPlotTimingHeatMap_AllStimulusStacked(final_data_explorer_obj, curr_cellRoiIndex, plotting_options, extantFigH);
+        [callbackOutput.plotted_figH] = fnPlotStimulusTraceSummaryStatsForCellROI(final_data_explorer_obj, curr_cellRoiIndex, plotting_options, extantFigH);
+        set(callbackOutput.plotted_figH, 'Name', sprintf('Slider Controlled Summary Statistics Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
     else
         callbackOutput.plotted_figH = extantFigH;
         callbackOutput.shouldRemoveCallback = true;
