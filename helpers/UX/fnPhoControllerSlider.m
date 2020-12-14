@@ -6,7 +6,7 @@ function [figObj] = fnPhoControllerSlider(figH)
     numRepeatedColumns = 15;
 
     if ~exist('figH','var')
-        figObj = uifigure('Position',[100 100 440 100]);
+        figObj = uifigure('Position',[100 100 440 200]);
     else
         figObj = figH;
     end
@@ -23,7 +23,8 @@ function [figObj] = fnPhoControllerSlider(figH)
 
     
     % Grid in the panel
-    [embedded_grid_obj] = fnPhoControllerSlider(sliderP, numRepeatedColumns);
+    
+    [embedded_grid_obj] = fnPhoControllerSlider(sliderP, numRepeatedColumns, @(srcH, evt) fnPhoControllerSlider_OnButtonPushed(srcH, evt));
     
     
 %     grid2 = uigridlayout(sliderP,[3 2]);
@@ -68,7 +69,7 @@ function [figObj] = fnPhoControllerSlider(figH)
     b2 = uibutton(grid3,'Text','Stop');
 
 
-    function [embedded_grid_obj] = fnPhoControllerSlider(parent, numRepeatedColumns)
+    function [embedded_grid_obj] = fnPhoControllerSlider(parent, numRepeatedColumns, buttonPushedEvent)
         embedded_grid_obj = uigridlayout(parent,[2 numRepeatedColumns]);
 %         embedded_grid_obj.RowHeight = {22,22,22};
 %         embedded_grid_obj.ColumnWidth = {80,'1x'};
@@ -77,12 +78,16 @@ function [figObj] = fnPhoControllerSlider(figH)
         % Add Label
         button_labels = {};
         button_tooltips = {};
+        button_tags = {};
+        button_icons = {};
         
         for i = 1:numRepeatedColumns
 
             curr_label_text = sprintf('%d',i);
             curr_label_tooltip = sprintf('Select cellROI[%d]',i);
             
+            button_icons{i} = '';
+            button_tags{i} = curr_label_text;
             button_labels{i} = curr_label_text;
             button_tooltips{i} = curr_label_tooltip;
             
@@ -97,14 +102,23 @@ function [figObj] = fnPhoControllerSlider(figH)
         buttonGridWidget.BackgroundColor = [.6 .8 1];     
         buttonGridWidget.Text = button_labels;
         buttonGridWidget.Tooltip = button_tooltips;
-        buttonGridWidget.Icon = {};
-        
+        buttonGridWidget.ButtonTag = button_tags;
+        buttonGridWidget.Icon = button_icons;
+        % Assign a callback
+        buttonGridWidget.ButtonPushedFcn = buttonPushedEvent;
+
     end
     
 
-%     function [embedded_grid_obj] = fnPhoControllerSlider_OnButtonPushed(parent, numRepeatedColumns)
-%         
-%     end
+    function fnPhoControllerSlider_OnButtonPushed(srcH, event)
+        
+        cellROI_pressed_str = event.Tag;
+        cellROI_pressed = str2num(cellROI_pressed_str);
+        
+        fprintf('fnPhoControllerSlider_OnButtonPushed(...) pushed!\n');
+        fprintf('\t pressed cellROI: %d\n', cellROI_pressed);
+%         disp(event);
+    end
     
 
 
