@@ -28,6 +28,9 @@ function [out_axes, h] = fnPhoMatrixPlotDetailed(data, extantParentH)
     
     xx = [1:dim.x];
     yy = [1:dim.y];
-    h = imagesc(out_axes, 'XData', xx, 'YData', yy, 'CData', data, 'AlphaData', .5);
+    
+    h = imagesc(out_axes, 'XData', yy, 'YData', xx, 'CData', data, 'AlphaData', .5);
+    
+%     h = imagesc(out_axes, 'XData', xx, 'YData', yy, 'CData', data, 'AlphaData', .5);
     colorbar(out_axes);
 end

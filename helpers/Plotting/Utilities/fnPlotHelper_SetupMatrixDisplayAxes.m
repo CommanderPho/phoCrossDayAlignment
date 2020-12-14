@@ -50,22 +50,22 @@ function [ax] = fnPlotHelper_SetupMatrixDisplayAxes(ax, matrixSize)
         is_vector = (is_column_vector || is_row_vector);
         
         %% Add Cell Text Labels:
-        for i = 1:numColumns
-            curr_cell_offset_start_x = ((i-1) * cellSize.height);
-            curr_cell_offset_center_x = curr_cell_offset_start_x + cellSize.halfWidth;
+        for i = 1:numRows
+%             curr_cell_offset_start_x = ((i-1) * cellSize.height);
+%             curr_cell_offset_center_x = curr_cell_offset_start_x + cellSize.halfWidth;
             
-            for j = 1:numRows
-                curr_cell_offset_start_y = ((j-1) * cellSize.width);
-                curr_cell_offset_center_y = curr_cell_offset_start_y + cellSize.halfHeight;
+            for j = 1:numColumns
+%                 curr_cell_offset_start_y = ((j-1) * cellSize.width);
+%                 curr_cell_offset_center_y = curr_cell_offset_start_y + cellSize.halfHeight;
                 if is_column_vector
-                    curr_cell_label = sprintf('%d',j);
-                elseif is_row_vector
                     curr_cell_label = sprintf('%d',i);
+                elseif is_row_vector
+                    curr_cell_label = sprintf('%d',j);
                 else
                     curr_cell_label = sprintf('(%d, %d)',i, j);
                 end                
 %                 h = text(ax, curr_cell_offset_center_x, curr_cell_offset_center_y, curr_cell_label, 'HorizontalAlignment','center','VerticalAlignment','middle');
-                h = text(ax, i, j, curr_cell_label, 'HorizontalAlignment','center','VerticalAlignment','middle');
+                h = text(ax, j, i, curr_cell_label, 'HorizontalAlignment','center','VerticalAlignment','middle');
 
             end 
         end
