@@ -84,7 +84,10 @@ if should_show_stimulus_summary_stats_plot
 end
 
 
-slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, plot_callbacks);
+% slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, plot_callbacks);
+
+slider_controller = PhoInteractiveCallbackSlider(iscInfo, plot_callbacks);
+
 % PhoBuildSpatialTuning;
 
 % Align the figures:
