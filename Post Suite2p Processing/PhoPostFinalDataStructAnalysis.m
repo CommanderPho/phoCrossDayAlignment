@@ -189,7 +189,9 @@ for i = 1:num_cellROIs
             minusNeuropil.timingInfo.Index.trialStartRelative.maxPeakIndex(curr_day_linear_comp_index,:) = outputs.minusNeuropil_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex;
             minusNeuropil.timingInfo.Index.trialStartRelative.startSound = outputs.minusNeuropil_DFF.timingInfo.Index.trialStartRelative.startSound;
             minusNeuropil.timingInfo.Index.trialStartRelative.endSound = outputs.minusNeuropil_DFF.timingInfo.Index.trialStartRelative.endSound;
-            minusNeuropil.timingInfo.Index.sampPeak = outputs.minusNeuropil_DFF.timingInfo.Index.sampPeak;
+            minusNeuropil.timingInfo.Index.sampPeak = outputs.minusNeuropil_DFF.timingInfo.Index.sampPeak;            
+            minusNeuropil.StimulusCurveSummaryStats(curr_day_linear_comp_index,:) = outputs.minusNeuropil_DFF.StimulusCurveSummaryStats;
+            
         end
 
         temp.isFirstSessionInCellRoi = (j == 1);
