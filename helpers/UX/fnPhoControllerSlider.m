@@ -31,7 +31,9 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
     xx = [1:size(sliderValues,1)];
     yy = [1:size(sliderValues,2)];
 %     h = imagesc(out_axes, xx, yy, sliderValues, 'AlphaData', .5);
-    h = imagesc(out_axes, 'XData', xx, 'YData', yy, 'CData', sliderValues, 'AlphaData', .5);
+    hIm = imagesc(out_axes, 'XData', xx, 'YData', yy, 'CData', sliderValues, 'AlphaData', .5);
+    hIm.ButtonDownFcn = @fnPhoControllerSlider_OnMatrixAreaClicked;
+    
     
 %     plot(out_axes, sliderValues);
     
@@ -100,8 +102,60 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
     end
 
 
-
+    function fnPhoControllerSlider_OnMatrixAreaClicked(srcH, event)
+        fprintf('fnPhoControllerSlider_OnMatrixAreaClicked(...) pushed!\n');
+        curr_hitPoint = event.IntersectionPoint; % [53.0662 0.8300 0]
+        curr_plotAxes = event.Source.Parent;
+%         curr_plotAxes.XLim % [0.5, 53.5]
+%         curr_plotAxes.YLim % [0.5, 1.5]
+        
+        curr_relative_HitPoint_x = curr_hitPoint(1) - curr_plotAxes.XLim(1);
+        curr_relative_HitPoint_y = curr_hitPoint(2) - curr_plotAxes.YLim(1);
+        curr_relative_HitPoint = [curr_relative_HitPoint_x curr_relative_HitPoint_y];
+        disp(curr_relative_HitPoint)
+        
+        curr_hit_cell_col = floor(curr_relative_HitPoint_x) + 1;
+        curr_hit_cell_row = floor(curr_relative_HitPoint_y) + 1;
+        curr_hit_cell_index = [curr_hit_cell_row curr_hit_cell_col];
+        disp(curr_hit_cell_index)
+        
+        fnPhoControllerSlider_OnCellSelected(curr_hit_cell_row, curr_hit_cell_col);
+        %% Add Cell Text Labels:
+%         disp(event)
+%         disp(event.Source)
+%         disp(curr_hitPoint)
+%         cellROI_pressed_str = event.Tag; 
+%         cellROI_pressed = str2num(cellROI_pressed_str);
+%         
+%         fprintf('\t pressed cellROI: %d\n', cellROI_pressed);
+%         disp(event);
+    end
     
+
+
+    function fnPhoControllerSlider_OnCellSelected(i, j)
+        
+%         cellROI_pressed_str = event.Tag; 
+%         cellROI_pressed = str2num(cellROI_pressed_str);
+        
+        fprintf('fnPhoControllerSlider_OnCellSelected(%d, %d) selected!\n', i, j);
+%         fprintf('\t pressed cellROI: %d\n', cellROI_pressed);
+%         disp(event);
+        
+        changed_btn_index = j;
+        
+        for btnIndex = 1:length(out_buttons)
+            if (btnIndex ~= changed_btn_index)
+                out_buttons{btnIndex}.Value = false;
+            else
+                out_buttons{btnIndex}.Value = true;
+            end
+        end
+        
+        
+    end
+
+
 
 
     function fnPhoControllerSlider_OnSelectedButtonValueChanged(srcH, event)
