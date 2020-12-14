@@ -27,46 +27,15 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
     
 %     [embedded_grid_obj] = fnPhoControllerSlider(sliderP, numRepeatedColumns, @(srcH, evt) fnPhoControllerSlider_OnButtonPushed(srcH, evt));
     [embedded_grid_obj, out_buttons, out_axes] = fnPhoControllerSlider(sliderPanel, numRepeatedColumns, @(srcH, evt) fnPhoControllerSlider_OnSelectedButtonValueChanged(srcH, evt));
-    [out_axes] = fnPhoSetupMatrixDisplayAxes(out_axes, size(sliderValues));
+    [out_axes] = fnPlotHelper_SetupMatrixDisplayAxes(out_axes, size(sliderValues));
+    
+    xx = [1:size(sliderValues,1)];
+    yy = [1:size(sliderValues,2)];
+%     h = imagesc(out_axes, xx, yy, sliderValues, 'AlphaData', .5);
+    h = imagesc(out_axes, 'XData', xx, 'YData', yy, 'CData', sliderValues, 'AlphaData', .5);
     
 %     plot(out_axes, sliderValues);
     
-    
-    
-    
-%     grid2 = uigridlayout(sliderP,[3 2]);
-%     grid2.RowHeight = {22,22,22};
-%     grid2.ColumnWidth = {80,'1x'};
-%     grid2.ColumnWidth = {'1x',80};
-
-%     % Device label
-%     dlabel = uilabel(grid2);
-%     dlabel.HorizontalAlignment = 'right';
-%     dlabel.Text = 'Device';
-% 
-%     % Device drop-down
-%     devicedd = uidropdown(grid2);
-%     devicedd.Items = {'Select a device'};
-% 
-%     % Channel label
-%     chlabel = uilabel(grid2);
-%     chlabel.HorizontalAlignment = 'right';
-%     chlabel.Text = 'Channel';
-% 
-%     % Channel drop-down
-%     channeldd = uidropdown(grid2);
-%     channeldd.Items = {'Channel 1', 'Channel 2'};
-% 
-%     % Rate Label
-%     ratelabel = uilabel(grid2);
-%     ratelabel.HorizontalAlignment = 'right';
-%     ratelabel.Text = 'Rate (scans/s)';
-% 
-%     % Rate edit field
-%     ef = uieditfield(grid2, 'numeric');
-%     ef.Value = 50;
-
-
     %% Footer:
     grid3 = uigridlayout(gridObj,[1 2]);
     grid3.Layout.Row = 2;
@@ -134,79 +103,7 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
 
 
 
-    function [ax] = fnPhoSetupMatrixDisplayAxes(ax, matrixSize)
-        % matrixSize: [numRows numColumns]
-        % Starts the plot at the top left (like a matrix)
-        numRows = matrixSize(1);
-        numColumns = matrixSize(2);
-        
-        numXTicks = numColumns - 1;
-        numYTicks = numRows - 1;
-        
-        cellSize.width = (1.0 / numColumns);
-        cellSize.height = (1.0 / numRows);
-        
-        cellSize.halfWidth = (cellSize.width / 2.0);
-        cellSize.halfHeight = (cellSize.height / 2.0);
-        
-        
-        ax.Layer = 'top'; % Place the ticks and grid lines on top of the plot
-        ax.GridAlpha = 0.9;
-        ax.Box = 'on';
-        ax.BoxStyle = 'full'; % Only affects 3D views
-        ax.YDir = 'reverse'; % Reverse the y-axis direction, so the origin is at the top left corner.
-        
-        ax.XTick = (1:numXTicks) + 0.5;
-        ax.XTickLabel = {};
-        ax.YTick = (1:numYTicks) + 0.5;
-        ax.YTickLabel = {};
-        
-        
-        ax.YLim = [0.5 (numRows+0.5)];
-        
-        is_column_vector = false;
-        is_row_vector = false;
-        
-        if numRows > 1
-            ax.YGrid = 'on';
-        else
-            ax.YGrid = 'off';
-            is_row_vector = true;
-        end
-        
-        ax.XLim = [0.5 (numColumns+0.5)];
-        if numColumns > 1
-            ax.XGrid = 'on';
-        else
-            ax.XGrid = 'off';
-            is_column_vector = true;
-        end
-        
-        is_vector = (is_column_vector || is_row_vector);
-        
-        %% Add Cell Text Labels:
-        for i = 1:numColumns
-            curr_cell_offset_start_x = ((i-1) * cellSize.height);
-            curr_cell_offset_center_x = curr_cell_offset_start_x + cellSize.halfWidth;
-            
-            for j = 1:numRows
-                curr_cell_offset_start_y = ((j-1) * cellSize.width);
-                curr_cell_offset_center_y = curr_cell_offset_start_y + cellSize.halfHeight;
-                if is_column_vector
-                    curr_cell_label = sprintf('%d',j);
-                elseif is_row_vector
-                    curr_cell_label = sprintf('%d',i);
-                else
-                    curr_cell_label = sprintf('(%d, %d)',i, j);
-                end                
-%                 h = text(ax, curr_cell_offset_center_x, curr_cell_offset_center_y, curr_cell_label, 'HorizontalAlignment','center','VerticalAlignment','middle');
-                h = text(ax, i, j, curr_cell_label, 'HorizontalAlignment','center','VerticalAlignment','middle');
-
-            end 
-        end
-
-       
-    end
+    
 
 
     function fnPhoControllerSlider_OnSelectedButtonValueChanged(srcH, event)
