@@ -85,9 +85,8 @@ end
 
 
 % slider_controller = fnBuildCallbackInteractiveSliderController(iscInfo, plot_callbacks);
-
-slider_controller = PhoInteractiveCallbackSlider(iscInfo, plot_callbacks);
-
+% slider_controller = PhoInteractiveCallbackSlider(iscInfo, plot_callbacks);
+slider_controller = PhoInteractiveCallbackSlider.getInstance(iscInfo, plot_callbacks);
 % PhoBuildSpatialTuning;
 
 % Align the figures:
