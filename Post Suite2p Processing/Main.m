@@ -126,31 +126,19 @@ PhoBuildSpatialTuning
 fprintf('Pipeline execution complete!\n')
 
 
-
 function [h] = fnPlotAutotuningDetectionCurveWithStimulusIndicatorLines(autoTuningDetection)
     %fnPlotAutotuningDetectionCurveWithStimulusIndicatorLines Plots a 2D matrix of unnormalized data.
     %   data should be an autoTuningDetection struct with the appropriate properties.
     figure(99);
 
-    % horizontal origin line:
-    x = [0 autoTuningDetection.period.post.endIndex];
-    y = [0 0];
-    line(x, y,'Color','black','LineStyle','-')
-    hold on;
-
     startSoundFrame = autoTuningDetection.period.during.startIndex;
     endSoundFrame = autoTuningDetection.period.during.endIndex;
 
     y = [-1 1]; % the same y-values are used for both lines (as they are the same height)
-    % sound start/on line:
-    x = [startSoundFrame startSoundFrame];
-    line(x, y,'Color','green','LineStyle','-')
-    hold on;
-    % sound end/off line:
-    x = [endSoundFrame endSoundFrame];
-    line(x, y,'Color','red','LineStyle','-')
-    hold on;
+    [h] = fnAddStimulusStartStopIndicatorLines(autoTuningDetection.period.post.endIndex, startSoundFrame, endSoundFrame, y);
+    
     % Plot the actual curve:
     h = plot(autoTuningDetection.detectionCurve);
     title('Autotuning Detection Curve')
 end
+

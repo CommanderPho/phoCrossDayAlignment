@@ -1,12 +1,13 @@
-function [figObj] = fnPhoControllerSlider(figH)
+function [figObj] = fnPhoControllerSlider(figH, sliderValues)
 %FNPHOCONTROLLERBUTTONS Summary of this function goes here
 %   Detailed explanation goes here
 % Create a figure with a grid layout
     
-    numRepeatedColumns = 15;
+    numRepeatedColumns = length(sliderValues);
+    
 
-    if ~exist('figH','var')
-        figObj = uifigure('Position',[100 100 440 200]);
+    if ~exist('figH','var') || ~isgraphics(figH)
+        figObj = uifigure('Position',[100 100 1080 200]);
     else
         figObj = figH;
     end
@@ -17,15 +18,18 @@ function [figObj] = fnPhoControllerSlider(figH)
       gridObj.RowHeight = {'1x', 40};
 %     gridObj.ColumnWidth = {150,'1x'};
 
-    sliderP = uipanel(gridObj,'Title','Configuration');
-    sliderP.Layout.Row = 1;
-    sliderP.Layout.Column = 1;
+    sliderPanel = uipanel(gridObj,'Title','CellROIs');
+    sliderPanel.Layout.Row = 1;
+    sliderPanel.Layout.Column = 1;
 
     
     % Grid in the panel
     
 %     [embedded_grid_obj] = fnPhoControllerSlider(sliderP, numRepeatedColumns, @(srcH, evt) fnPhoControllerSlider_OnButtonPushed(srcH, evt));
-    [embedded_grid_obj] = fnPhoControllerSlider(sliderP, numRepeatedColumns, @(srcH, evt) fnPhoControllerSlider_OnSelectedButtonValueChanged(srcH, evt));
+    [embedded_grid_obj, out_buttons, out_axes] = fnPhoControllerSlider(sliderPanel, numRepeatedColumns, @(srcH, evt) fnPhoControllerSlider_OnSelectedButtonValueChanged(srcH, evt));
+    [out_axes] = fnPhoSetupMatrixDisplayAxes(out_axes, size(sliderValues));
+    
+%     plot(out_axes, sliderValues);
     
     
     
@@ -72,7 +76,7 @@ function [figObj] = fnPhoControllerSlider(figH)
     b2 = uibutton(grid3,'Text','Stop');
 
 
-    function [embedded_grid_obj, out_buttons] = fnPhoControllerSlider(parent, numRepeatedColumns, buttonCallbackEvent)
+    function [embedded_grid_obj, out_buttons, out_axes] = fnPhoControllerSlider(parent, numRepeatedColumns, buttonCallbackEvent)
         embedded_grid_obj = uigridlayout(parent,[2 numRepeatedColumns]);
 %         embedded_grid_obj.RowHeight = {22,22,22};
 %         embedded_grid_obj.ColumnWidth = {80,'1x'};
@@ -118,20 +122,76 @@ function [figObj] = fnPhoControllerSlider(figH)
 %             curr_label.Text = curr_label_text;
             out_buttons{i} = curr_button;
         end
-    
-%         buttonGridWidget = wt.ButtonGrid(embedded_grid_obj);
-%         buttonGridWidget = wt.StateButtonGrid(embedded_grid_obj);
-%         buttonGridWidget.Layout.Row = 1;
-%         buttonGridWidget.Layout.Column = [1, numRepeatedColumns]; % Span all columns
-%         buttonGridWidget.BackgroundColor = [.6 .8 1];     
-%         buttonGridWidget.Text = button_labels;
-%         buttonGridWidget.Tooltip = button_tooltips;
-%         buttonGridWidget.ButtonTag = button_tags;
-%         buttonGridWidget.Icon = button_icons;
-        % Assign a callback
-%         buttonGridWidget.ButtonPushedFcn = buttonPushedEvent;
-%         buttonGridWidget.ValueChangedFcn = buttonPushedEvent;
+        
+        
+        out_axes = uiaxes(embedded_grid_obj,'Tag','uiaxes_phoControllerSlider');
+        out_axes.Layout.Row = 2;
+        out_axes.Layout.Column = [1 numRepeatedColumns]; % Span all columns
+        
+        
+        
+    end
 
+
+
+    function [ax] = fnPhoSetupMatrixDisplayAxes(ax, matrixSize)
+        % matrixSize: [numRows numColumns]
+        % Starts the plot at the top left (like a matrix)
+        numRows = matrixSize(1);
+        numColumns = matrixSize(2);
+        
+        cellSize.width = (1.0 / numColumns);
+        cellSize.height = (1.0 / numRows);
+        
+        cellSize.halfWidth = (cellSize.width / 2.0);
+        cellSize.halfHeight = (cellSize.height / 2.0);
+        
+        
+        ax.Layer = 'top'; % Place the ticks and grid lines on top of the plot
+        ax.GridAlpha = 0.9;
+        ax.Box = 'on';
+        ax.BoxStyle = 'full'; % Only affects 3D views
+        ax.YDir = 'reverse'; % Reverse the y-axis direction, so the origin is at the top left corner.
+        
+        ax.XTick = 1:numColumns;
+        ax.XTickLabel = {};
+        ax.YTick = 1:numRows;
+        ax.YTickLabel = {};
+        
+        
+        
+        
+        if numRows > 1
+            ax.YLim = [1 numRows];
+            ax.YGrid = 'on';
+        else
+            ax.YLim = [-0.5 0.5];
+            ax.YGrid = 'off';
+        end
+        
+        if numColumns > 1
+            ax.XLim = [1 numColumns];
+            ax.XGrid = 'on';
+        else
+            ax.XLim = [-0.5 0.5];
+            ax.XGrid = 'off';
+        end
+        
+        %% Add Cell Text Labels:
+        for i = 1:numColumns
+            curr_cell_offset_start_x = ((i-1) * cellSize.height);
+            curr_cell_offset_center_x = curr_cell_offset_start_x + cellSize.halfWidth;
+            
+            for j = 1:numRows
+                curr_cell_offset_start_y = ((j-1) * cellSize.width);
+                curr_cell_offset_center_y = curr_cell_offset_start_y + cellSize.halfHeight;
+            
+                curr_cell_label = sprintf('(%d, %d)',i, j);
+                h = text(ax, curr_cell_offset_center_x, curr_cell_offset_center_y, curr_cell_label, 'HorizontalAlignment','center','VerticalAlignment','middle');
+            end 
+        end
+
+       
     end
 
 
