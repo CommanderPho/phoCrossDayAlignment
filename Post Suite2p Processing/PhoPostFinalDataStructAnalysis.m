@@ -171,6 +171,9 @@ for i = 1:num_cellROIs
         default_DFF.timingInfo.Index.trialStartRelative.startSound = outputs.default_DFF.timingInfo.Index.trialStartRelative.startSound;
         default_DFF.timingInfo.Index.trialStartRelative.endSound = outputs.default_DFF.timingInfo.Index.trialStartRelative.endSound;
         default_DFF.timingInfo.Index.sampPeak = outputs.default_DFF.timingInfo.Index.sampPeak;
+        
+        % outputs.default_DFF.StimulusCurveSummaryStats: 1x26 struct. Has 4 fields (All, Pre, During, Post), each with 26 entries (one for each stimulus).
+        default_DFF.StimulusCurveSummaryStats(curr_day_linear_comp_index,:) = outputs.default_DFF.StimulusCurveSummaryStats;
     
         if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
             % Store the outputs in the grid:
