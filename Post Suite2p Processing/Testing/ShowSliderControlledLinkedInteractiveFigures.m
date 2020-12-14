@@ -88,7 +88,14 @@ end
 % slider_controller = PhoInteractiveCallbackSlider(iscInfo, plot_callbacks);
 % slider_controller = PhoInteractiveCallbackSlider.getInstance(iscInfo, plot_callbacks);
 
-slider_controller = PhoInteractiveCallbackSliderDefault.getInstance(iscInfo, plot_callbacks);
+% slider_controller = PhoInteractiveCallbackSliderDefault.getInstance(iscInfo, plot_callbacks);
+
+
+valid_only_quality = phoPipelineOptions.loadedFilteringData.manualRoiFilteringResults.final_quality_of_tuning;
+valid_only_quality(phoPipelineOptions.loadedFilteringData.manualRoiFilteringResults.final_is_Excluded) = []; % remove the excluded entries.
+
+slider_controller_build_gui_callback = @(app_obj) fnPhoControllerSlider(app_obj.slider_controller.controller.figH, valid_only_quality', {@(updated_i) app_obj.custom_post_update_function([], updated_i)});
+slider_controller = PhoInteractiveCallbackSliderCustom.getInstance(iscInfo, plot_callbacks, slider_controller_build_gui_callback);
 
 
 

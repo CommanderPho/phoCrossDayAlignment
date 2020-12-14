@@ -1,4 +1,4 @@
-function [figObj] = fnPhoControllerSlider(figH, sliderValues)
+function [figObj] = fnPhoControllerSlider(figH, sliderValues, onCellROIChangedCallbacks)
 %FNPHOCONTROLLERBUTTONS Summary of this function goes here
 %   Detailed explanation goes here
 % Create a figure with a grid layout
@@ -13,6 +13,7 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
 
     gridSize = [2 1];
     gridObj = uigridlayout(figObj, gridSize, "BackgroundColor", [.6 .8 1]);
+    gridObj.Padding = [0 0 0 0];
 %     gridObj.RowHeight = {22,'1x'};
       gridObj.RowHeight = {'1x', 40};
 %     gridObj.ColumnWidth = {150,'1x'};
@@ -23,14 +24,13 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
 
     
     % Grid in the panel
-    
-%     [embedded_grid_obj] = fnPhoControllerSlider(sliderP, numRepeatedColumns, @(srcH, evt) fnPhoControllerSlider_OnButtonPushed(srcH, evt));
     [embedded_grid_obj, out_buttons, out_axes] = fnPhoControllerSlider(sliderPanel, numRepeatedColumns, @(srcH, evt) fnPhoControllerSlider_OnSelectedButtonValueChanged(srcH, evt));
+    embedded_grid_obj.Padding = [0 0 0 0];
+    
     [out_axes] = fnPlotHelper_SetupMatrixDisplayAxes(out_axes, size(sliderValues));
     
     xx = [1:size(sliderValues,1)];
     yy = [1:size(sliderValues,2)];
-%     h = imagesc(out_axes, xx, yy, sliderValues, 'AlphaData', .5);
     hIm = imagesc(out_axes, 'XData', xx, 'YData', yy, 'CData', sliderValues, 'AlphaData', .5);
     hIm.ButtonDownFcn = @fnPhoControllerSlider_OnMatrixAreaClicked;
     
@@ -45,7 +45,7 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
     b1 = uibutton(grid3,'Text','Start');
     b2 = uibutton(grid3,'Text','Stop');
 
-
+    
     function [embedded_grid_obj, out_buttons, out_axes] = fnPhoControllerSlider(parent, numRepeatedColumns, buttonCallbackEvent)
         embedded_grid_obj = uigridlayout(parent,[2 numRepeatedColumns]);
         % Add Label
@@ -89,7 +89,6 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
         out_axes.Layout.Column = [1 numRepeatedColumns]; % Span all columns
     end
 
-
     function fnPhoControllerSlider_OnMatrixAreaClicked(srcH, event)
         fprintf('fnPhoControllerSlider_OnMatrixAreaClicked(...) pushed!\n');
         curr_hitPoint = event.IntersectionPoint; % [53.0662 0.8300 0]
@@ -108,29 +107,17 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
         disp(curr_hit_cell_index)
         
         fnPhoControllerSlider_OnCellSelected(curr_hit_cell_row, curr_hit_cell_col);
-        %% Add Cell Text Labels:
-%         disp(event)
-%         disp(event.Source)
-%         disp(curr_hitPoint)
-%         cellROI_pressed_str = event.Tag; 
-%         cellROI_pressed = str2num(cellROI_pressed_str);
-%         
-%         fprintf('\t pressed cellROI: %d\n', cellROI_pressed);
-%         disp(event);
     end
     
 
 
     function fnPhoControllerSlider_OnCellSelected(i, j)
-        
-%         cellROI_pressed_str = event.Tag; 
-%         cellROI_pressed = str2num(cellROI_pressed_str);
-        
         fprintf('fnPhoControllerSlider_OnCellSelected(%d, %d) selected!\n', i, j);
-%         fprintf('\t pressed cellROI: %d\n', cellROI_pressed);
-%         disp(event);
-        
         changed_btn_index = j;
+        for callbackIdx = 1:length(onCellROIChangedCallbacks)
+           curr_callback = onCellROIChangedCallbacks{callbackIdx};
+           curr_callback(changed_btn_index);
+        end
         
         for btnIndex = 1:length(out_buttons)
             if (btnIndex ~= changed_btn_index)
