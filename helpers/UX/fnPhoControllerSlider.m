@@ -69,8 +69,11 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues, onCellROIChangedCa
             curr_button = uibutton(embedded_grid_obj, 'state', 'Tag', curr_label_text);
             curr_button.Layout.Row = 1;
             curr_button.Layout.Column = i; % Span single column
-            curr_button.Value = false;
-            
+            if i == 1
+                curr_button.Value = true;
+            else
+                curr_button.Value = false;
+            end
             curr_button.ValueChangedFcn = @(h,e) buttonCallbackEvent(h,e);
             curr_button.Text = curr_label_text;
             curr_button.Icon = '';
