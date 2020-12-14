@@ -140,6 +140,9 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
         numRows = matrixSize(1);
         numColumns = matrixSize(2);
         
+        numXTicks = numColumns - 1;
+        numYTicks = numRows - 1;
+        
         cellSize.width = (1.0 / numColumns);
         cellSize.height = (1.0 / numRows);
         
@@ -153,29 +156,33 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
         ax.BoxStyle = 'full'; % Only affects 3D views
         ax.YDir = 'reverse'; % Reverse the y-axis direction, so the origin is at the top left corner.
         
-        ax.XTick = 1:numColumns;
+        ax.XTick = (1:numXTicks) + 0.5;
         ax.XTickLabel = {};
-        ax.YTick = 1:numRows;
+        ax.YTick = (1:numYTicks) + 0.5;
         ax.YTickLabel = {};
         
         
+        ax.YLim = [0.5 (numRows+0.5)];
         
+        is_column_vector = false;
+        is_row_vector = false;
         
         if numRows > 1
-            ax.YLim = [1 numRows];
             ax.YGrid = 'on';
         else
-            ax.YLim = [-0.5 0.5];
             ax.YGrid = 'off';
+            is_row_vector = true;
         end
         
+        ax.XLim = [0.5 (numColumns+0.5)];
         if numColumns > 1
-            ax.XLim = [1 numColumns];
             ax.XGrid = 'on';
         else
-            ax.XLim = [-0.5 0.5];
             ax.XGrid = 'off';
+            is_column_vector = true;
         end
+        
+        is_vector = (is_column_vector || is_row_vector);
         
         %% Add Cell Text Labels:
         for i = 1:numColumns
@@ -185,9 +192,16 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
             for j = 1:numRows
                 curr_cell_offset_start_y = ((j-1) * cellSize.width);
                 curr_cell_offset_center_y = curr_cell_offset_start_y + cellSize.halfHeight;
-            
-                curr_cell_label = sprintf('(%d, %d)',i, j);
-                h = text(ax, curr_cell_offset_center_x, curr_cell_offset_center_y, curr_cell_label, 'HorizontalAlignment','center','VerticalAlignment','middle');
+                if is_column_vector
+                    curr_cell_label = sprintf('%d',j);
+                elseif is_row_vector
+                    curr_cell_label = sprintf('%d',i);
+                else
+                    curr_cell_label = sprintf('(%d, %d)',i, j);
+                end                
+%                 h = text(ax, curr_cell_offset_center_x, curr_cell_offset_center_y, curr_cell_label, 'HorizontalAlignment','center','VerticalAlignment','middle');
+                h = text(ax, i, j, curr_cell_label, 'HorizontalAlignment','center','VerticalAlignment','middle');
+
             end 
         end
 
