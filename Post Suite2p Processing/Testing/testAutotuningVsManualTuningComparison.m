@@ -30,7 +30,7 @@ end
 
 ax1 = subplot(1,2,1);
 if show_only_first_session
-    [out_axes, h] = fnPhoMatrixPlotDetailed(valid_only_quality, ax1);
+    [out_axes, h] = fnPhoMatrixPlotDetailed([valid_only_quality auto_plot], ax1);
 else
     [out_axes, h] = fnPhoMatrixPlotDetailed(valid_only_quality_all_sessions, extantFigH);
 end
