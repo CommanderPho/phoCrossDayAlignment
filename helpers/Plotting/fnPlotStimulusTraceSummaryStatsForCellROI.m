@@ -42,10 +42,13 @@ function [figH] = fnPlotStimulusTraceSummaryStatsForCellROI(final_data_explorer_
         processingOptions.startSound = final_data_explorer_obj.active_DFF.timingInfo.Index.trialStartRelative.startSound;
         processingOptions.endSound = final_data_explorer_obj.active_DFF.timingInfo.Index.trialStartRelative.endSound;
         processingOptions.startSoundSeconds = final_data_explorer_obj.traceTimebase_t(processingOptions.startSound);
-        processingOptions.endSoundSeconds = final_data_explorer_obj.traceTimebase_t(processingOptions.endSound);      
+        processingOptions.endSoundSeconds = final_data_explorer_obj.traceTimebase_t(processingOptions.endSound);
+        
     end
     
     session_colors = {'r','g','b'};
+    
+    trialLengthNumSamples = length(final_data_explorer_obj.traceTimebase_t);
     
     %% Get Information about the ranges to be plotted:
     % TODO: May want to factor these out for both computational efficiency and to be able to access them elsewhere.
@@ -112,17 +115,10 @@ function [figH] = fnPlotStimulusTraceSummaryStatsForCellROI(final_data_explorer_
 						y = [-0.5 1.0];
 					else
 						y = [-0.1 0.1]; % the same y-values are used for both lines (as they are the same height)
-					end
-				
-					x = [processingOptions.startSoundSeconds processingOptions.startSoundSeconds];
-					line(x, y,'Color','black','LineStyle','-')
-					hold on;
-
-					% end sound line:
-					x = [processingOptions.endSoundSeconds processingOptions.endSoundSeconds];
-					line(x, y,'Color','black','LineStyle','-')
-					hold on;
-
+                    end
+                    plottingOptions.black_lines_only = true;
+                    [~] = fnAddStimulusStartStopIndicatorLines(trialLengthNumSamples, processingOptions.startSoundSeconds, processingOptions.endSoundSeconds, y, plottingOptions);
+			
 				end
 			end
             
@@ -137,13 +133,13 @@ function [figH] = fnPlotStimulusTraceSummaryStatsForCellROI(final_data_explorer_
             temp.curr_stim_post_value = repmat(temp.curr_stim_post.mean, [1 length(curr_x_post)]);
             
             h_PlotObj = plot(curr_x_pre, temp.curr_stim_pre_value);
-            set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 1);
+            set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 2);
             hold on;
             h_PlotObj = plot(curr_x_during, temp.curr_stim_during_value);
-            set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 1);
+            set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 2);
             hold on;
             h_PlotObj = plot(curr_x_post, temp.curr_stim_post_value);
-            set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 1);
+            set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 2);
             hold on;
             
 			if is_first_session_for_stimuli
@@ -163,8 +159,17 @@ function [figH] = fnPlotStimulusTraceSummaryStatsForCellROI(final_data_explorer_
             
 
         end % end for numStimuli
+    
+        %% Once the plot is finished, get the ylim values
+        curr_y_lim = ylim;
+        
+        
         
     end %% end for session
+    
+    
+    
+    
     
     sgtitle(['cellRoi: ' num2str(cellRoiIndex)]);
  
