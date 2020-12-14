@@ -72,17 +72,17 @@ function [figObj] = fnPhoControllerSlider(figH)
     b2 = uibutton(grid3,'Text','Stop');
 
 
-    function [embedded_grid_obj] = fnPhoControllerSlider(parent, numRepeatedColumns, buttonPushedEvent)
+    function [embedded_grid_obj, out_buttons] = fnPhoControllerSlider(parent, numRepeatedColumns, buttonCallbackEvent)
         embedded_grid_obj = uigridlayout(parent,[2 numRepeatedColumns]);
 %         embedded_grid_obj.RowHeight = {22,22,22};
 %         embedded_grid_obj.ColumnWidth = {80,'1x'};
 %         embedded_grid_obj = uigridlayout(parent,[1 1]);
         
-        embedded_button_group_obj = uibuttongroup(embedded_grid_obj,'Scrollable','on');
-        embedded_button_group_obj.Title = 'Buttons';
-        embedded_button_group_obj.Layout.Row = 1;
-        embedded_button_group_obj.Layout.Column = [1, numRepeatedColumns]; % Span all columns
-        embedded_button_group_obj.SelectionChangedFcn = @(h,e)onButtonPushed(obj,e);
+%         embedded_button_group_obj = uibuttongroup(embedded_grid_obj,'Scrollable','on');
+%         embedded_button_group_obj.Title = 'Buttons';
+%         embedded_button_group_obj.Layout.Row = 1;
+%         embedded_button_group_obj.Layout.Column = [1, numRepeatedColumns]; % Span all columns
+%         embedded_button_group_obj.SelectionChangedFcn = @(h,e)onButtonPushed(obj,e);
         % Add Label
         button_labels = {};
         button_tooltips = {};
@@ -106,13 +106,13 @@ function [figObj] = fnPhoControllerSlider(figH)
             curr_button.Layout.Column = i; % Span single column
             curr_button.Value = false;
             
-%             curr_button.ValueChangedFcn = @(h,e)onButtonPushed(obj,e);
+            curr_button.ValueChangedFcn = @(h,e) buttonCallbackEvent(h,e);
             curr_button.Text = curr_label_text;
             curr_button.Icon = '';
             curr_button.Tag = curr_label_text;
             curr_button.Tooltip = curr_label_tooltip;
             curr_button.IconAlignment = 'top';
-            curr_button.WordWrap = 'on';
+            curr_button.WordWrap = 'off';
 %             curr_label = uilabel(embedded_grid_obj);
 %             curr_label.HorizontalAlignment = 'center';
 %             curr_label.Text = curr_label_text;
@@ -147,15 +147,14 @@ function [figObj] = fnPhoControllerSlider(figH)
 
 
 
-%     function fnPhoControllerSlider_OnButtonPushed(srcH, event)
-%         
-%         cellROI_pressed_str = event.Tag;
-%         cellROI_pressed = str2num(cellROI_pressed_str);
-%         
-%         fprintf('fnPhoControllerSlider_OnButtonPushed(...) pushed!\n');
-%         fprintf('\t pressed cellROI: %d\n', cellROI_pressed);
-% %         disp(event);
-%     end
+    function fnPhoControllerSlider_OnButtonPushed(srcH, event)
+        
+        cellROI_pressed_str = event.Tag; 
+        cellROI_pressed = str2num(cellROI_pressed_str);
+        
+        fprintf('fnPhoControllerSlider_OnButtonPushed(...) pushed!\n'); fprintf('\t pressed cellROI: %d\n', cellROI_pressed);
+%         disp(event);
+    end
     
 
 
