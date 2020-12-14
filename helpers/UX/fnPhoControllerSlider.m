@@ -78,11 +78,17 @@ function [figObj] = fnPhoControllerSlider(figH)
 %         embedded_grid_obj.ColumnWidth = {80,'1x'};
 %         embedded_grid_obj = uigridlayout(parent,[1 1]);
         
+        embedded_button_group_obj = uibuttongroup(embedded_grid_obj,'Scrollable','on');
+        embedded_button_group_obj.Title = 'Buttons';
+        embedded_button_group_obj.Layout.Row = 1;
+        embedded_button_group_obj.Layout.Column = [1, numRepeatedColumns]; % Span all columns
+        embedded_button_group_obj.SelectionChangedFcn = @(h,e)onButtonPushed(obj,e);
         % Add Label
         button_labels = {};
         button_tooltips = {};
         button_tags = {};
         button_icons = {};
+        out_buttons = {};
         
         for i = 1:numRepeatedColumns
 
@@ -94,23 +100,37 @@ function [figObj] = fnPhoControllerSlider(figH)
             button_labels{i} = curr_label_text;
             button_tooltips{i} = curr_label_tooltip;
             
+%             curr_button = uibutton('state','Parent',embedded_button_group_obj);
+            curr_button = uibutton(embedded_grid_obj, 'state');
+            curr_button.Layout.Row = 1;
+            curr_button.Layout.Column = i; % Span single column
+            curr_button.Value = false;
+            
+%             curr_button.ValueChangedFcn = @(h,e)onButtonPushed(obj,e);
+            curr_button.Text = curr_label_text;
+            curr_button.Icon = '';
+            curr_button.Tag = curr_label_text;
+            curr_button.Tooltip = curr_label_tooltip;
+            curr_button.IconAlignment = 'top';
+            curr_button.WordWrap = 'on';
 %             curr_label = uilabel(embedded_grid_obj);
 %             curr_label.HorizontalAlignment = 'center';
 %             curr_label.Text = curr_label_text;
+            out_buttons{i} = curr_button;
         end
     
 %         buttonGridWidget = wt.ButtonGrid(embedded_grid_obj);
-        buttonGridWidget = wt.StateButtonGrid(embedded_grid_obj);
-        buttonGridWidget.Layout.Row = 1;
-        buttonGridWidget.Layout.Column = [1, numRepeatedColumns]; % Span all columns
-        buttonGridWidget.BackgroundColor = [.6 .8 1];     
-        buttonGridWidget.Text = button_labels;
-        buttonGridWidget.Tooltip = button_tooltips;
-        buttonGridWidget.ButtonTag = button_tags;
-        buttonGridWidget.Icon = button_icons;
+%         buttonGridWidget = wt.StateButtonGrid(embedded_grid_obj);
+%         buttonGridWidget.Layout.Row = 1;
+%         buttonGridWidget.Layout.Column = [1, numRepeatedColumns]; % Span all columns
+%         buttonGridWidget.BackgroundColor = [.6 .8 1];     
+%         buttonGridWidget.Text = button_labels;
+%         buttonGridWidget.Tooltip = button_tooltips;
+%         buttonGridWidget.ButtonTag = button_tags;
+%         buttonGridWidget.Icon = button_icons;
         % Assign a callback
 %         buttonGridWidget.ButtonPushedFcn = buttonPushedEvent;
-        buttonGridWidget.ValueChangedFcn = buttonPushedEvent;
+%         buttonGridWidget.ValueChangedFcn = buttonPushedEvent;
 
     end
 
