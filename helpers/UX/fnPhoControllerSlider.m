@@ -24,7 +24,10 @@ function [figObj] = fnPhoControllerSlider(figH)
     
     % Grid in the panel
     
-    [embedded_grid_obj] = fnPhoControllerSlider(sliderP, numRepeatedColumns, @(srcH, evt) fnPhoControllerSlider_OnButtonPushed(srcH, evt));
+%     [embedded_grid_obj] = fnPhoControllerSlider(sliderP, numRepeatedColumns, @(srcH, evt) fnPhoControllerSlider_OnButtonPushed(srcH, evt));
+    [embedded_grid_obj] = fnPhoControllerSlider(sliderP, numRepeatedColumns, @(srcH, evt) fnPhoControllerSlider_OnSelectedButtonValueChanged(srcH, evt));
+    
+    
     
     
 %     grid2 = uigridlayout(sliderP,[3 2]);
@@ -96,7 +99,8 @@ function [figObj] = fnPhoControllerSlider(figH)
 %             curr_label.Text = curr_label_text;
         end
     
-        buttonGridWidget = wt.ButtonGrid(embedded_grid_obj);
+%         buttonGridWidget = wt.ButtonGrid(embedded_grid_obj);
+        buttonGridWidget = wt.StateButtonGrid(embedded_grid_obj);
         buttonGridWidget.Layout.Row = 1;
         buttonGridWidget.Layout.Column = [1, numRepeatedColumns]; % Span all columns
         buttonGridWidget.BackgroundColor = [.6 .8 1];     
@@ -105,20 +109,33 @@ function [figObj] = fnPhoControllerSlider(figH)
         buttonGridWidget.ButtonTag = button_tags;
         buttonGridWidget.Icon = button_icons;
         % Assign a callback
-        buttonGridWidget.ButtonPushedFcn = buttonPushedEvent;
+%         buttonGridWidget.ButtonPushedFcn = buttonPushedEvent;
+        buttonGridWidget.ValueChangedFcn = buttonPushedEvent;
 
     end
-    
 
-    function fnPhoControllerSlider_OnButtonPushed(srcH, event)
+
+    function fnPhoControllerSlider_OnSelectedButtonValueChanged(srcH, event)
         
-        cellROI_pressed_str = event.Tag;
-        cellROI_pressed = str2num(cellROI_pressed_str);
+%         cellROI_pressed_str = event.Tag;
+%         cellROI_pressed = str2num(cellROI_pressed_str);
         
-        fprintf('fnPhoControllerSlider_OnButtonPushed(...) pushed!\n');
-        fprintf('\t pressed cellROI: %d\n', cellROI_pressed);
-%         disp(event);
+        fprintf('fnPhoControllerSlider_OnSelectedButtonValueChanged(...) pushed!\n');
+%         fprintf('\t pressed cellROI: %d\n', cellROI_pressed);
+        disp(event);
     end
+
+
+
+%     function fnPhoControllerSlider_OnButtonPushed(srcH, event)
+%         
+%         cellROI_pressed_str = event.Tag;
+%         cellROI_pressed = str2num(cellROI_pressed_str);
+%         
+%         fprintf('fnPhoControllerSlider_OnButtonPushed(...) pushed!\n');
+%         fprintf('\t pressed cellROI: %d\n', cellROI_pressed);
+% %         disp(event);
+%     end
     
 
 
