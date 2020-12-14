@@ -1,6 +1,10 @@
-function [out_axes, h] = fnPhoMatrixPlotDetailed(data, extantParentH)
+function [out_axes, h] = fnPhoMatrixPlotDetailed(data, plottingOptions, extantParentH)
     %fnPhoMatrixPlotDetailed currently does nothing more than the regular fnPhoMatrixPlot(...) function.
     %   data should be a 2D matrix.
+    
+    if ~exist('plottingOptions','var')
+        plottingOptions.should_show_colorbar = true;
+    end
     
     if (~exist('extantParentH','var') || ~isgraphics(extantParentH))
         figH = gcf; % Get the current figure
@@ -18,9 +22,6 @@ function [out_axes, h] = fnPhoMatrixPlotDetailed(data, extantParentH)
         end
     end
     
-    
-    
-
     dim.x = size(data, 1);
     dim.y = size(data, 2);
 
@@ -31,6 +32,7 @@ function [out_axes, h] = fnPhoMatrixPlotDetailed(data, extantParentH)
     
     h = imagesc(out_axes, 'XData', yy, 'YData', xx, 'CData', data, 'AlphaData', .5);
     
-%     h = imagesc(out_axes, 'XData', xx, 'YData', yy, 'CData', data, 'AlphaData', .5);
-    colorbar(out_axes);
+    if plottingOptions.should_show_colorbar
+        colorbar(out_axes);
+    end
 end

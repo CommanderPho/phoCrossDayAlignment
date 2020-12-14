@@ -5,7 +5,6 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
     
     numRepeatedColumns = length(sliderValues);
     
-
     if ~exist('figH','var') || ~isgraphics(figH)
         figObj = uifigure('Position',[100 100 1080 200]);
     else
@@ -74,7 +73,7 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
             button_tooltips{i} = curr_label_tooltip;
             
 %             curr_button = uibutton('state','Parent',embedded_button_group_obj);
-            curr_button = uibutton(embedded_grid_obj, 'state');
+            curr_button = uibutton(embedded_grid_obj, 'state', 'Tag', curr_label_text);
             curr_button.Layout.Row = 1;
             curr_button.Layout.Column = i; % Span single column
             curr_button.Value = false;
@@ -82,7 +81,6 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
             curr_button.ValueChangedFcn = @(h,e) buttonCallbackEvent(h,e);
             curr_button.Text = curr_label_text;
             curr_button.Icon = '';
-            curr_button.Tag = curr_label_text;
             curr_button.Tooltip = curr_label_tooltip;
             curr_button.IconAlignment = 'top';
             curr_button.WordWrap = 'off';
@@ -108,12 +106,20 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues)
 
     function fnPhoControllerSlider_OnSelectedButtonValueChanged(srcH, event)
         
-%         cellROI_pressed_str = event.Tag;
-%         cellROI_pressed = str2num(cellROI_pressed_str);
+        cellROI_pressed_str = event.Source.Tag;
+        cellROI_pressed = str2num(cellROI_pressed_str);
+        cellROI_updatedIsSelected = logical(event.Value);
         
         fprintf('fnPhoControllerSlider_OnSelectedButtonValueChanged(...) pushed!\n');
-%         fprintf('\t pressed cellROI: %d\n', cellROI_pressed);
-        disp(event);
+        fprintf('\t pressed cellROI: %d\n', cellROI_pressed);
+        
+        disp(srcH)
+%         disp(event);
+        
+        if cellROI_updatedIsSelected
+            
+        end
+%         disp(event.Source.Tag);
     end
 
 
