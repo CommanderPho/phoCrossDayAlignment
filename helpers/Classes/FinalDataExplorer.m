@@ -30,6 +30,10 @@ classdef FinalDataExplorer
         %- InsetEdge2 - 
     %
 
+	properties (Constant)
+		num_to_include = 5; % returns the num_to_include-largest stimulus autotuning values for each comp.
+	end
+
     properties
 
         cellROIIndex_mapper % a CellROIIndexMapper object
@@ -441,14 +445,14 @@ classdef FinalDataExplorer
 
 			obj.computedRedTraceLinesAnalyses.Normalized = obj.redTraceLinesForAllStimuli ./ obj.computedRedTraceLinesAnalyses.Extrema.LargestMagnitudeExtrema; % Normalize each one by its highest extrema.
 
-			
+			[obj.computedRedTraceLinesAnalyses.Extrema.topStimuliValues, obj.computedRedTraceLinesAnalyses.Extrema.topStimuliIndicies] = maxk(obj.computedRedTraceLinesAnalyses.Extrema.local_max_peaks, obj.num_to_include, 2);
+			[obj.computedRedTraceLinesAnalyses.Extrema.bottomStimuliValues, obj.computedRedTraceLinesAnalyses.Extrema.bottomStimuliIndicies] = mink(obj.computedRedTraceLinesAnalyses.Extrema.local_min_extrema, obj.num_to_include, 2);
 
 
 			obj.computedAllTraceLinesAnalyses.Extrema.local_max_peaks = max(obj.tracesForAllStimuli, [], [2 3 4]); % [159 x 1]
 			obj.computedAllTraceLinesAnalyses.Extrema.local_min_extrema = min(obj.tracesForAllStimuli, [], [2 3 4]); % [159 x 1]
 			obj.computedAllTraceLinesAnalyses.Range = obj.computedAllTraceLinesAnalyses.Extrema.local_max_peaks - obj.computedAllTraceLinesAnalyses.Extrema.local_min_extrema;
 					
-
 			% activePlotExtrema.local_max_peaks = max([obj.computedRedTraceLinesAnalyses.Extrema.local_max_peaks, obj.computedAllTraceLinesAnalyses.Extrema.local_max_peaks], [], 2); % For each cellROI, get the maximum value (whether it is on the average or the traces themsevles).
 			% activePlotExtrema.local_min_extrema = min([obj.computedRedTraceLinesAnalyses.Extrema.local_min_extrema, obj.computedAllTraceLinesAnalyses.Extrema.local_min_extrema], [], 2);
 
@@ -473,8 +477,8 @@ classdef FinalDataExplorer
 				end
             end
             
-			num_to_include = 5; % returns the num_to_include-largest stimulus autotuning values for each comp.
-			[obj.computedRedTraceLinesAnalyses.autotuning.topStimuliValues, obj.computedRedTraceLinesAnalyses.autotuning.topStimuliIndicies] = maxk(obj.computedRedTraceLinesAnalyses.autotuning.StimulusAutotuningValues, num_to_include, 2);
+			
+			[obj.computedRedTraceLinesAnalyses.autotuning.topStimuliValues, obj.computedRedTraceLinesAnalyses.autotuning.topStimuliIndicies] = maxk(obj.computedRedTraceLinesAnalyses.autotuning.StimulusAutotuningValues, obj.num_to_include, 2);
 			obj.computedRedTraceLinesAnalyses.autotuning.compTotalAutotuning = sum(obj.computedRedTraceLinesAnalyses.autotuning.StimulusAutotuningValues, 2); % Sum over the autotuning values for all stimuli to get a general value for the comp
 
 

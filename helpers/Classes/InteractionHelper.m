@@ -189,8 +189,6 @@ classdef InteractionHelper < handle
 
 
 		function obj = addTableColumn(obj, columnName, columnData)
-			
-
 
 			table_data = get(obj.GraphicalSelection.selectionCustomTableFigure.Table, 'Data');
 			table_is_column_editable = get(obj.GraphicalSelection.selectionCustomTableFigure.Table, 'ColumnEditable');
