@@ -428,6 +428,7 @@ classdef FinalDataExplorer
 
 		function [obj] = computeCurveAnalysis(obj)
 			% Computes the derivatives and other meta information from the red line traces objects.
+			% obj.redTraceLinesForAllStimuli is a 159x26x150 double
 			zeroPaddingColumn = zeros([size(obj.redTraceLinesForAllStimuli, 1), size(obj.redTraceLinesForAllStimuli, 2)]);
 
 			obj.computedRedTraceLinesAnalyses.first_derivative = cat(3, zeroPaddingColumn, diff(obj.redTraceLinesForAllStimuli, 1, 3));
@@ -443,12 +444,16 @@ classdef FinalDataExplorer
 			% LargestMagnitudeExtrema: The extrema with the largest abs(magnitude), used to normalize to a range [-1 1]
 			obj.computedRedTraceLinesAnalyses.Extrema.LargestMagnitudeExtrema = max([abs(obj.computedRedTraceLinesAnalyses.Extrema.local_max_peaks), abs(obj.computedRedTraceLinesAnalyses.Extrema.local_min_extrema)], [], 2);
 
+			% isInhibitory: True if the absolute value of the min_extrema is greater than that of the max_extrema. Check this.
+			obj.computedRedTraceLinesAnalyses.isInhibitory = (abs(obj.computedRedTraceLinesAnalyses.Extrema.local_min_extrema) >= ...
+    			abs(obj.computedRedTraceLinesAnalyses.Extrema.local_max_peaks));
+
 			obj.computedRedTraceLinesAnalyses.Normalized = obj.redTraceLinesForAllStimuli ./ obj.computedRedTraceLinesAnalyses.Extrema.LargestMagnitudeExtrema; % Normalize each one by its highest extrema.
 
-			[obj.computedRedTraceLinesAnalyses.Extrema.topStimuliValues, obj.computedRedTraceLinesAnalyses.Extrema.topStimuliIndicies] = maxk(obj.computedRedTraceLinesAnalyses.Extrema.local_max_peaks, obj.num_to_include, 2);
-			[obj.computedRedTraceLinesAnalyses.Extrema.bottomStimuliValues, obj.computedRedTraceLinesAnalyses.Extrema.bottomStimuliIndicies] = mink(obj.computedRedTraceLinesAnalyses.Extrema.local_min_extrema, obj.num_to_include, 2);
+			[obj.computedRedTraceLinesAnalyses.Extrema.topStimuliValues, obj.computedRedTraceLinesAnalyses.Extrema.topStimuliIndicies] = maxk(obj.redTraceLinesForAllStimuli, obj.num_to_include, 2);
+			[obj.computedRedTraceLinesAnalyses.Extrema.bottomStimuliValues, obj.computedRedTraceLinesAnalyses.Extrema.bottomStimuliIndicies] = mink(obj.redTraceLinesForAllStimuli, obj.num_to_include, 2);
 
-
+			% obj.tracesForAllStimuli : [159    26    20   150]
 			obj.computedAllTraceLinesAnalyses.Extrema.local_max_peaks = max(obj.tracesForAllStimuli, [], [2 3 4]); % [159 x 1]
 			obj.computedAllTraceLinesAnalyses.Extrema.local_min_extrema = min(obj.tracesForAllStimuli, [], [2 3 4]); % [159 x 1]
 			obj.computedAllTraceLinesAnalyses.Range = obj.computedAllTraceLinesAnalyses.Extrema.local_max_peaks - obj.computedAllTraceLinesAnalyses.Extrema.local_min_extrema;
