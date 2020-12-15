@@ -30,7 +30,7 @@ iscInfo.slider_identifier = 'ShowSliderControlledLinkedInteractiveFigures';
 iscInfo.curr_i = temp.cellRoiIndex;
 iscInfo.NumberOfSeries = length(final_data_explorer_obj.uniqueComps);
 
-linkedFigureHandles = [];
+linkedFigureHandles = gobjects(0);
 plot_callbacks = {};
 
 % Build or get the figures that will be controlled by the slider.
@@ -119,7 +119,10 @@ linked_plots_config.plot_callbacks = plot_callbacks;
 
 
 slider_controller = PhoInteractiveCallbackSliderCellROI.getInstance(iscInfo, linked_plots_config, valid_only_quality');
-
+% Link the selections
+for active_fig_i = 1:length(linkedFigureHandles)
+    SimpleSelectionSyncrhonizer.fnPlotHelper_RegisterSelectionSynchronizingFigure(linkedFigureHandles(active_fig_i));
+end
 
 
 % PhoBuildSpatialTuning;
