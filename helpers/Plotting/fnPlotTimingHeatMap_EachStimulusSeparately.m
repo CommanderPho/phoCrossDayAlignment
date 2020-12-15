@@ -30,6 +30,10 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
     if ~isfield(plotting_options, 'debugIncludeColorbars')
        plotting_options.debugIncludeColorbars = false; 
     end
+
+    if ~isfield(plotting_options, 'should_plot_vertical_sound_start_stop_lines')
+       plotting_options.should_plot_vertical_sound_start_stop_lines = true; 
+    end
     
     % Options for tightening up the subplots:
     if plotting_options.should_use_custom_subplots
@@ -121,6 +125,15 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
     %     title('test heat map')
         yticks([]);
         
+		if plotting_options.should_plot_vertical_sound_start_stop_lines
+			%% Plot the stimulus indicator lines:
+			curr_ylims = ylim;
+			y = [curr_ylims(1) curr_ylims(2)]; % the same y-values are used for both lines (as they are the same height)
+			plottingOptions.black_lines_only = true;
+			[~] = fnAddStimulusStartStopIndicatorLines(length(final_data_explorer_obj.traceTimebase_t), final_data_explorer_obj.active_DFF.timingInfo.Index.trialStartRelative.startSound, final_data_explorer_obj.active_DFF.timingInfo.Index.trialStartRelative.endSound, y, plottingOptions);	
+		end
+
+
 		fnPlotHelper_SetupStimulusSubplot(final_data_explorer_obj, numRows, numCol, stimulusIndex, curr_ax, plotting_options);
         
         if plotting_options.subplotLayoutIsGrid

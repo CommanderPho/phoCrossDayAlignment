@@ -113,6 +113,31 @@ classdef InteractionHelper < handle
 			isSelectedColumn = table(obj.isCellRoiSelected,'VariableNames',{'isCellRoiSelected'});
 			obj.GraphicalSelection.selectionCustomTableFigure.data_table = [obj.GraphicalSelection.selectionCustomTableFigure.data_table isSelectedColumn];
 
+
+			valueset = repmat({'unknown'}, obj.num_cellROIs, 1);
+			cnames = categorical(valueset, {'inhibitory','unknown','excitatory'});
+			excitatoryInhibitoryTypeColumn = table(cnames,'VariableNames',{'excitatoryInhibitoryType'});
+			obj.GraphicalSelection.selectionCustomTableFigure.data_table = [obj.GraphicalSelection.selectionCustomTableFigure.data_table excitatoryInhibitoryTypeColumn];
+
+            
+            valueset = repmat({'unknown'}, obj.num_cellROIs, 1);
+			cnames = categorical(valueset, {'on','other','off','unknown'});
+			stimulusLockingTypeColumn = table(cnames,'VariableNames',{'stimulusLocking'});
+			obj.GraphicalSelection.selectionCustomTableFigure.data_table = [obj.GraphicalSelection.selectionCustomTableFigure.data_table stimulusLockingTypeColumn];
+
+            % valueset = repmat({'unknown'}, obj.num_cellROIs, 1);
+			% cnames = categorical(valueset, {'on','other','off','unknown'});
+			% stimulusLockingTypeColumn = table(cnames,'VariableNames',{'stimulusLocking'});
+			% obj.GraphicalSelection.selectionCustomTableFigure.data_table = [obj.GraphicalSelection.selectionCustomTableFigure.data_table stimulusLockingTypeColumn];
+
+			tuning_array = zeros([obj.num_cellROIs, 1]);
+			stimulusStrongestTuningTypeColumn = table(tuning_array,'VariableNames',{'strongestStimuliTuning'});
+			obj.GraphicalSelection.selectionCustomTableFigure.data_table = [obj.GraphicalSelection.selectionCustomTableFigure.data_table stimulusStrongestTuningTypeColumn];
+
+
+
+
+
             foundExtantTableFigure = findall(0,'Type','figure','tag','uimgr.uifigure_PhoCustom_SelectionTable'); % Get the handle.
 			if ~isempty(foundExtantTableFigure) && isgraphics(foundExtantTableFigure)
                 fprintf('found existing table figure. re-using...\n');
@@ -147,12 +172,44 @@ classdef InteractionHelper < handle
 
             end
 
+			
+			
+
+
 			obj.GraphicalSelection.selectionCustomTableFigure.Table = uitable(obj.GraphicalSelection.selectionCustomTableFigure.Figure, 'Data', obj.GraphicalSelection.selectionCustomTableFigure.data_table,...
                 'Tag','uimgr.uitable_PhoCustom_SelectionTable');
+			obj.GraphicalSelection.selectionCustomTableFigure.Table.RowName = 'numbered';
 			obj.GraphicalSelection.selectionCustomTableFigure.Table.Position = [20 20 710 310];
-			obj.GraphicalSelection.selectionCustomTableFigure.Table.ColumnEditable = [false, false, false, false, true];
+			obj.GraphicalSelection.selectionCustomTableFigure.Table.ColumnEditable = [false, false, false, false, true, true, true, true];
+			obj.GraphicalSelection.selectionCustomTableFigure.Table.ColumnWidth = {'auto','auto','auto','auto','auto','auto','auto','auto'};
+
 			% obj.GraphicalSelection.selectionCustomTableFigure.Table.DisplayDataChangedFcn = @updatePlot;
 			obj.GraphicalSelection.selectionCustomTableFigure.Table.CellEditCallback = @(src, eventdata) (obj.selection_table_checkSelectedToggled_callback(src, eventdata));
+		end
+
+
+		function obj = addTableColumn(obj, columnName, columnData)
+			
+
+
+			table_data = get(obj.GraphicalSelection.selectionCustomTableFigure.Table, 'Data');
+			table_is_column_editable = get(obj.GraphicalSelection.selectionCustomTableFigure.Table, 'ColumnEditable');
+			
+			table_data(:,end+1) = columnData;
+			table_is_column_editable(end+1) = true;
+
+
+			% table_data(:,end+1) = num2cell(false(10,1));
+			% isEditable=[false(1, size(table_data,2)-1) true];
+			
+			set(obj.GraphicalSelection.selectionCustomTableFigure.Table,'Data', table_data);
+			set(obj.GraphicalSelection.selectionCustomTableFigure.Table,'ColumnEditable', table_is_column_editable);
+
+			% set(h, 'Data',[num2cell(c1) num2cell(c2)], ...
+    		% 'ColumnFormat',[repmat({[]},1,size(c1,2)),'logical'], ...
+    		% 'ColumnEditable',[false(1,size(c1,2)),true])
+
+
 		end
 
 		function obj = updateGraphicalSelectionTable(obj)

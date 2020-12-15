@@ -173,30 +173,3 @@ plotFigureStates{end+1} = PlotFigureState('iscStimulusTracesSummaryStatsPlot', s
 
 slider_controller = PhoInteractiveSliderCellROIPlotManager.getInstance(iscInfo, plot_manager_cellRoiPlot, valid_only_quality');
 
-% 
-% 
-% 
-% % PhoBuildSpatialTuning;
-% 
-% % Align the figures:
-% % align_figure(linkedFigureHandles);
-% figureLayoutManager.figuresSize.width = 880;
-% figureLayoutManager.figuresSize.height = 600;
-% figureLayoutManager.verticalSpacing = 30;
-% figureLayoutManager.horizontalSpacing = 5;
-% 
-% align_figure(linkedFigureHandles, 1, figureLayoutManager.figuresSize.width, figureLayoutManager.figuresSize.height,...
-%     100, figureLayoutManager.verticalSpacing, figureLayoutManager.horizontalSpacing, 100);
-% 
-% %% Note this FigureLayoutManager is overkill
-% fig_layout_manager_obj = FigureLayoutManager(linkedFigureHandles);
-% relative_figHandleIndex = length(linkedFigureHandles);
-% target_figureHandleRef = slider_controller.SliderControllerFigure;
-% 
-% fig_layout_manager_obj.bindSameWidth(relative_figHandleIndex, target_figureHandleRef)
-% fig_layout_manager_obj.bindAlignedEdgeLeft(relative_figHandleIndex, target_figureHandleRef)
-% fig_layout_manager_obj.bindAlignedTopTargetEdgeToBottomReferenceEdge(relative_figHandleIndex, target_figureHandleRef, figureLayoutManager.verticalSpacing)
-% 
-
-
-

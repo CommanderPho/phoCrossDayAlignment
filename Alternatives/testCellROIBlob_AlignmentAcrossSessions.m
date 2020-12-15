@@ -81,11 +81,7 @@ function result = fnTestCellROIIntensity_AlignmentAcrossSessions(final_data_expl
     maskSize = [size(curr_roiMaxIntensities, 2) size(curr_roiMaxIntensities, 3)]; % All masks should be the same size
     
     conjunction_min = squeeze(min(curr_roiMaxIntensities,[],1));
-    
-    
-    
-    
-    
+
     %% Build Figure
     result.figH = figure(4);
     clf(result.figH);
@@ -162,8 +158,5 @@ function [results] = fnAnalyzeOverlapBetweenMasks(masksMatrix)
     maskSize = [size(masksMatrix, 2) size(masksMatrix, 3)]; % All masks should be the same size
     
     conjunction_min = min(masksMatrix,[],1);
-    
-    
-    
 
 end
