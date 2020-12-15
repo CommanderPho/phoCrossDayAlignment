@@ -39,7 +39,7 @@ function [figH] = fnPlotStimulusTraceSummaryStatsForCellROI(final_data_explorer_
 	if ~isfield(plotting_options, 'should_plot_yticks')
 		plotting_options.should_plot_yticks = false; % plotting_options.should_plot_yticks: if true, the y-axis ticks are shown for each plot
 	end
-	
+
 	if ~plotting_options.should_plot_yticks
 		plotting_options.subtightplot.width_w = [0.01 0.01]; % if the yticks are hidden, we need more horizontal room so the labels on the left don't get cut off
 	end
@@ -107,7 +107,7 @@ function [figH] = fnPlotStimulusTraceSummaryStatsForCellROI(final_data_explorer_
                     end
                     plottingOptions.black_lines_only = true;
                     [~] = fnAddStimulusStartStopIndicatorLines(trialLengthNumSamples, processingOptions.startSoundSeconds, processingOptions.endSoundSeconds, y, plottingOptions);
-			
+					% [~] = fnAddStimulusStartStopIndicatorLines(trialLengthNumSamples, processingOptions.startSound, processingOptions.endSound, y, plottingOptions);
 				end
 			end
             

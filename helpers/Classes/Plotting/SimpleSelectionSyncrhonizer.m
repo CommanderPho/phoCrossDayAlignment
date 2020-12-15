@@ -72,9 +72,11 @@ classdef SimpleSelectionSyncrhonizer < handle
 			curr_registered_figures = SimpleSelectionSyncrhonizer.fnPlotHelper_RegisterSelectionSynchronizingFigure;
 			for i = 1:length(curr_registered_figures)
 				curr_reg_fig_H = curr_registered_figures(i);
-				if (initiating_update_figH ~= curr_reg_fig_H)
-					SimpleSelectionSyncrhonizer.fnPlotHelper_SetSubplotSelections(curr_reg_fig_H, updated_desired_is_selected);
-				end
+                if ~isvalid(curr_reg_fig_H) || ~isgraphics(curr_reg_fig_H)
+                    if (initiating_update_figH ~= curr_reg_fig_H)
+                        SimpleSelectionSyncrhonizer.fnPlotHelper_SetSubplotSelections(curr_reg_fig_H, updated_desired_is_selected);
+                    end
+                end
 			end
 		end
 

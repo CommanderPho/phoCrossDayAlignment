@@ -31,7 +31,7 @@ classdef FinalDataExplorer
     %
 
 	properties (Constant)
-		num_to_include = 5; % returns the num_to_include-largest stimulus autotuning values for each comp.
+		num_to_include = 9; % returns the num_to_include-largest stimulus autotuning values for each comp.
 	end
 
     properties
@@ -450,8 +450,17 @@ classdef FinalDataExplorer
 
 			obj.computedRedTraceLinesAnalyses.Normalized = obj.redTraceLinesForAllStimuli ./ obj.computedRedTraceLinesAnalyses.Extrema.LargestMagnitudeExtrema; % Normalize each one by its highest extrema.
 
-			[obj.computedRedTraceLinesAnalyses.Extrema.topStimuliValues, obj.computedRedTraceLinesAnalyses.Extrema.topStimuliIndicies] = maxk(obj.redTraceLinesForAllStimuli, obj.num_to_include, 2);
-			[obj.computedRedTraceLinesAnalyses.Extrema.bottomStimuliValues, obj.computedRedTraceLinesAnalyses.Extrema.bottomStimuliIndicies] = mink(obj.redTraceLinesForAllStimuli, obj.num_to_include, 2);
+			% Want the top num_to_include stimuli indicies and values for each compID
+			% [obj.computedRedTraceLinesAnalyses.Extrema.topStimuliValues, obj.computedRedTraceLinesAnalyses.Extrema.topStimuliIndicies] = maxk(obj.redTraceLinesForAllStimuli, obj.num_to_include, [2 3]);
+			% [obj.computedRedTraceLinesAnalyses.Extrema.bottomStimuliValues, obj.computedRedTraceLinesAnalyses.Extrema.bottomStimuliIndicies] = mink(obj.redTraceLinesForAllStimuli, obj.num_to_include, [2 3]);
+
+
+			% the intermediate max value should be 159x26 which is obtained the operating over all the 150 trial points, which will then be taken as the input to maxk.
+			[obj.computedRedTraceLinesAnalyses.Extrema.topStimuliValues, obj.computedRedTraceLinesAnalyses.Extrema.topStimuliIndicies] = maxk(max(obj.redTraceLinesForAllStimuli, [], 3), obj.num_to_include, 2);
+			[obj.computedRedTraceLinesAnalyses.Extrema.bottomStimuliValues, obj.computedRedTraceLinesAnalyses.Extrema.bottomStimuliIndicies] = mink(min(obj.redTraceLinesForAllStimuli, [], 3), obj.num_to_include, 2);
+
+
+
 
 			% obj.tracesForAllStimuli : [159    26    20   150]
 			obj.computedAllTraceLinesAnalyses.Extrema.local_max_peaks = max(obj.tracesForAllStimuli, [], [2 3 4]); % [159 x 1]

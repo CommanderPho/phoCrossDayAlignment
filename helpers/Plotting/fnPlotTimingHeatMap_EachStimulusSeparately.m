@@ -140,7 +140,11 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
 			curr_ylims = ylim;
 			y = [curr_ylims(1) curr_ylims(2)]; % the same y-values are used for both lines (as they are the same height)
 			plottingOptions.black_lines_only = true;
-			[~] = fnAddStimulusStartStopIndicatorLines(length(final_data_explorer_obj.traceTimebase_t), final_data_explorer_obj.active_DFF.timingInfo.Index.trialStartRelative.startSound, final_data_explorer_obj.active_DFF.timingInfo.Index.trialStartRelative.endSound, y, plottingOptions);	
+%             final_data_explorer_obj.
+			startSoundSeconds = final_data_explorer_obj.traceTimebase_t(final_data_explorer_obj.active_DFF.timingInfo.Index.trialStartRelative.startSound);
+			endSoundSeconds = final_data_explorer_obj.traceTimebase_t(final_data_explorer_obj.active_DFF.timingInfo.Index.trialStartRelative.endSound);
+
+			[~] = fnAddStimulusStartStopIndicatorLines(final_data_explorer_obj.traceTimebase_t(end), startSoundSeconds, endSoundSeconds, y, plottingOptions);	
 		end
 
 
