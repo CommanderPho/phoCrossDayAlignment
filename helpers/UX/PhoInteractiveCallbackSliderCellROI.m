@@ -2,14 +2,19 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
 
     properties
       cellRoiValues
+      linkedPlotFigureHandles = [];
+      active_plots_config
     end
 
    methods (Access = protected)
 
-		function obj = PhoInteractiveCallbackSliderCellROI(iscInfo, update_plot_callbacks, cellRoiSliderValues)
+		function obj = PhoInteractiveCallbackSliderCellROI(iscInfo, linked_plots_config, cellRoiSliderValues)
 			%PhoInteractiveCallbackSliderCellROI Construct an instance of this class
 			%   Detailed explanation goes here
-			obj@PhoInteractiveCallbackSliderBase(iscInfo, update_plot_callbacks);
+			obj@PhoInteractiveCallbackSliderBase(iscInfo, linked_plots_config.plot_callbacks);
+            
+            obj.linkedPlotFigureHandles = linked_plots_config.linkedFigureHandles;
+            obj.active_plots_config = linked_plots_config.active_plots;
             
             obj.cellRoiValues = cellRoiSliderValues;
 
@@ -27,7 +32,9 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
     properties (Access = protected)
         
 %         % Grid for task items
-        RootGrid (1,1) matlab.ui.container.GridLayout
+        RootGrid (1,1) matlab.ui.container.GridLayout;
+        
+        Toolbar (1,1) wt.Toolbar;
 %         
 %         % Task Labels
 %         Label (1,:) matlab.ui.control.Label
@@ -36,7 +43,7 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
 %         Icon (1,:) matlab.ui.control.Image
         
         % Back Button
-        CellRoiButton (1,:) matlab.ui.control.StateButton
+        CellRoiButton (1,:) matlab.ui.control.StateButton;
         
 %         % Status Label
 %         StatusLabel (1,1) matlab.ui.control.Label
@@ -46,13 +53,6 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
         
     end %properties
     
-    
-    
-   
-   
-   
-   
-	%% Abstract methods
 	methods (Access = public)
 
 		%% Slider callback function:
@@ -65,10 +65,9 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
 			obj.update_plots(obj.curr_i)
 		end
 
-	end
+    end
 
-
-	%% Abstract methods
+    
 	methods (Access = protected)
 
 		function build_controller_gui(obj)
@@ -102,36 +101,46 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
 		end % end build_controller_gui(...)
 
         function build_controller_gui_header(obj)
-            toolbarWidget = wt.Toolbar(obj.RootGrid);
-            toolbarWidget.Layout.Row = 1;
-            toolbarWidget.Layout.Column = 1;
+            obj.Toolbar = wt.Toolbar(obj.RootGrid);
+            obj.Toolbar.Layout.Row = 1;
+            obj.Toolbar.Layout.Column = 1;
 
             % Create a horizontal section
             section1 = wt.toolbar.HorizontalSection();
             section1.Title = "NORMAL BUTTONS";
             section1.addButton("open_24.png", "Open");
             section1.addButton("save_24.png", "Save");
+            section1.addButton("PhoHeatmapGradIcon.png", "Test");
+            
 
             % Create a horizontal section with state buttons
             section2 = wt.toolbar.HorizontalSection();
-            section2.Title = "STATE BUTTONS";
-            stateButton1 = section2.addStateButton("","Mode 1");
-            stateButton2 = section2.addStateButton("","Mode 2");
-            stateButton3 = section2.addStateButton("","Mode 3");
-
+            section2.Title = "Active Linked Figures";
+            stateButton1 = section2.addStateButton("","2D");
+            stateButton2 = section2.addStateButton("","3D Mesh");
+            stateButton3 = section2.addStateButton("","Masking");
+            stateButton4 = section2.addStateButton("","StimulusTraces");
+            stateButton5 = section2.addStateButton("","StimulusCustom");
+            stateButton6 = section2.addStateButton("PhoHeatmapGradIcon.png","Heatmap");
+            stateButton7 = section2.addStateButton("","SummaryStats");
+            
             % Set the state of the buttons
-            stateButton1.Value = true;
-            stateButton2.Value = false;
-            stateButton3.Value = false;
-
+            stateButton1.Value = obj.active_plots_config.should_show_2d_plot;
+            stateButton2.Value = obj.active_plots_config.should_show_3d_mesh_plot;
+            stateButton3.Value = obj.active_plots_config.should_show_masking_plot;
+            stateButton4.Value = obj.active_plots_config.should_show_stimulus_traces_plot;
+            stateButton5.Value = obj.active_plots_config.should_show_stimulus_traces_custom_data_plot;
+            stateButton6.Value = obj.active_plots_config.should_show_stimulus_heatmaps_plot;
+            stateButton7.Value = obj.active_plots_config.should_show_stimulus_summary_stats_plot;
+            
             % Attach the horizontal sections to the toolbar
-            toolbarWidget.Section = [
+            obj.Toolbar.Section = [
                 section1
                 section2
-                ];
+            ];
 
             % Assign a callback
-            toolbarWidget.ButtonPushedFcn = @(h,e)disp(e);
+            obj.Toolbar.ButtonPushedFcn = @(h,e)disp(e);
         end
         
         
@@ -179,6 +188,8 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
             hIm.ButtonDownFcn = @(h,event) obj.fnPhoControllerSlider_OnMatrixAreaClicked(h, event);
         end
 
+        
+        %% Callbacks:
         function fnPhoControllerSlider_OnSelectedButtonValueChanged(obj, srcH, event)
 
             cellROI_pressed_str = event.Source.Tag;
@@ -243,7 +254,7 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
 
 	methods (Static, Access = public)
 
-		function singleObj = getInstance(iscInfo, update_plot_callbacks, sliderValues)
+		function singleObj = getInstance(iscInfo, linked_plots_config, sliderValues)
 			persistent localInstanceMap
 			needs_instance_initialization = true;
 
@@ -255,9 +266,13 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
 				if does_extant_instance_exist
 					extant_instance_obj = localInstanceMap(iscInfo.slider_identifier);
 					if isvalid(extant_instance_obj)
-						fprintf('returning extant PhoInteractiveCallbackSliderCellROI instance with id: %s\n', iscInfo.slider_identifier);
-						singleObj = extant_instance_obj;
-						needs_instance_initialization = false;
+                        
+                        if isvalid(extant_instance_obj.slider_controller.controller.figH) 
+                            fprintf('returning extant PhoInteractiveCallbackSliderCellROI instance with id: %s\n', iscInfo.slider_identifier);
+                            singleObj = extant_instance_obj;
+                            needs_instance_initialization = false;
+                        end
+                        
 					end
 				end
 			end
@@ -265,7 +280,7 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
 			if needs_instance_initialization
 				% Create a new instance
 				fprintf('Initializing NEW PhoInteractiveCallbackSliderCellROI instance with id: %s\n', iscInfo.slider_identifier);
-				singleObj = PhoInteractiveCallbackSliderCellROI(iscInfo, update_plot_callbacks, sliderValues);
+				singleObj = PhoInteractiveCallbackSliderCellROI(iscInfo, linked_plots_config, sliderValues);
 				localInstanceMap(iscInfo.slider_identifier) = singleObj; % Add the new instance to the map
 			end
 

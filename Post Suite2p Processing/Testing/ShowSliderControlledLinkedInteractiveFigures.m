@@ -98,13 +98,13 @@ valid_only_quality(phoPipelineOptions.loadedFilteringData.manualRoiFilteringResu
 
 % slider_controller_build_gui_callbacks = {@(app_obj) fnPhoControllerSlider(app_obj.slider_controller.controller.figH, valid_only_quality', {@(updated_i) app_obj.custom_post_update_function([], updated_i)})};
 % 
-% toolbarOptions.should_show_2d_plot = should_show_2d_plot;
-% toolbarOptions.should_show_3d_mesh_plot = should_show_3d_mesh_plot;
-% toolbarOptions.should_show_masking_plot = should_show_masking_plot;
-% toolbarOptions.should_show_stimulus_traces_plot = should_show_stimulus_traces_plot;
-% toolbarOptions.should_show_stimulus_traces_custom_data_plot = should_show_stimulus_traces_custom_data_plot;
-% toolbarOptions.should_show_stimulus_heatmaps_plot = should_show_stimulus_heatmaps_plot;
-% toolbarOptions.should_show_stimulus_summary_stats_plot = should_show_stimulus_summary_stats_plot;
+linked_plots_config.active_plots.should_show_2d_plot = should_show_2d_plot;
+linked_plots_config.active_plots.should_show_3d_mesh_plot = should_show_3d_mesh_plot;
+linked_plots_config.active_plots.should_show_masking_plot = should_show_masking_plot;
+linked_plots_config.active_plots.should_show_stimulus_traces_plot = should_show_stimulus_traces_plot;
+linked_plots_config.active_plots.should_show_stimulus_traces_custom_data_plot = should_show_stimulus_traces_custom_data_plot;
+linked_plots_config.active_plots.should_show_stimulus_heatmaps_plot = should_show_stimulus_heatmaps_plot;
+linked_plots_config.active_plots.should_show_stimulus_summary_stats_plot = should_show_stimulus_summary_stats_plot;
 % toolbarOptions.linkedFigureHandles = linkedFigureHandles;
 % % 
 % % fnAddActivePlotsToolbar(slider_controller, toolbarOptions);
@@ -114,7 +114,11 @@ valid_only_quality(phoPipelineOptions.loadedFilteringData.manualRoiFilteringResu
 % slider_controller = PhoInteractiveCallbackSliderCustom.getInstance(iscInfo, plot_callbacks, slider_controller_build_gui_callbacks);
 
 
-slider_controller = PhoInteractiveCallbackSliderCellROI.getInstance(iscInfo, plot_callbacks, valid_only_quality');
+linked_plots_config.linkedFigureHandles = linkedFigureHandles;
+linked_plots_config.plot_callbacks = plot_callbacks;
+
+
+slider_controller = PhoInteractiveCallbackSliderCellROI.getInstance(iscInfo, linked_plots_config, valid_only_quality');
 
 
 
