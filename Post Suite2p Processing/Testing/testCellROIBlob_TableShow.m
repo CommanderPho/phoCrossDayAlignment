@@ -3,14 +3,14 @@
 
 addpath(genpath('../helpers'));
 
- if ~exist('plot_manager_cellRoiPlot','var')
+if ~exist('plot_manager_cellRoiPlot','var')
     combinedOffsetInsetIndicies = [nan, 0];
     % combinedOffsetInsetIndicies = [nan, 3, 2, 1, 0, -1, -2, -3];
     active_selections_backingFile_path = phoPipelineOptions.default_interactionManager_backingStorePath;
     %% Build a new plot manager object:
     plot_manager_cellRoiPlot = CellRoiPlotManager(final_data_explorer_obj, active_selections_backingFile_path);
     plot_manager_cellRoiPlot.activeOffsetInsetIndicies = combinedOffsetInsetIndicies;
- end
+end
  
 plot_manager_cellRoiPlot.setupGraphicalSelectionTable();
 % plot_manager_cellRoiPlot.interaction_helper_obj.updateGraphicalSelectionTable();

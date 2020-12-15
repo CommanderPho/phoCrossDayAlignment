@@ -12,13 +12,23 @@ addpath(genpath('../../helpers'));
 %% Options:
 should_show_2d_plot = false;
 should_show_3d_mesh_plot = false;
-should_show_masking_plot = false;
+should_show_masking_plot = true;
 should_show_stimulus_traces_plot = true;
 should_show_stimulus_traces_custom_data_plot = false;
 should_show_stimulus_heatmaps_plot = true;
 should_show_stimulus_summary_stats_plot = true;
+should_show_cellROI_table = false;
 
 temp.cellRoiIndex = 1;
+
+if ~exist('plot_manager_cellRoiPlot','var')
+    combinedOffsetInsetIndicies = [nan, 0];
+    % combinedOffsetInsetIndicies = [nan, 3, 2, 1, 0, -1, -2, -3];
+    active_selections_backingFile_path = phoPipelineOptions.default_interactionManager_backingStorePath;
+    %% Build a new plot manager object:
+    plot_manager_cellRoiPlot = CellRoiPlotManager(final_data_explorer_obj, active_selections_backingFile_path);
+    plot_manager_cellRoiPlot.activeOffsetInsetIndicies = combinedOffsetInsetIndicies;
+end
 
 
 %% Build a Slider Controller
@@ -51,8 +61,11 @@ end
 if should_show_masking_plot
     extantFigH_plot_masking = createFigureWithTagIfNeeded('iscMaskingPlot');
     linkedFigureHandles(end+1) = extantFigH_plot_masking;
-	secondary_plot_callback = @(curr_i) (pho_plot_interactive_masking_all(final_data_explorer_obj.dateStrings, final_data_explorer_obj.compMasks, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, extantFigH_plot_masking, curr_i));
-    plot_callbacks{end+1} = secondary_plot_callback;
+% 	masking_plot_callback = @(curr_i) (pho_plot_interactive_masking_all(final_data_explorer_obj.dateStrings, final_data_explorer_obj.compMasks, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, extantFigH_plot_masking, curr_i));
+	masking_plot_callback = @(curr_i) (pho_plot_cell_mask(final_data_explorer_obj.dateStrings, final_data_explorer_obj.compMasks, final_data_explorer_obj.multiSessionCellRoi_CompListIndicies, extantFigH_plot_masking, curr_i));
+
+    % masking_plot_callback = @(curr_i) (plot_manager_cellRoiPlot.plotTestCellROIBlob());
+    plot_callbacks{end+1} = masking_plot_callback;
 end
 
 if should_show_stimulus_traces_plot
@@ -117,9 +130,9 @@ linked_plots_config.active_plots.should_show_stimulus_summary_stats_plot = shoul
 linked_plots_config.linkedFigureHandles = linkedFigureHandles;
 linked_plots_config.plot_callbacks = plot_callbacks;
 
-
 slider_controller = PhoInteractiveCallbackSliderCellROI.getInstance(iscInfo, linked_plots_config, valid_only_quality');
 % Link the selections
+clear SimpleSelectionSyncrhonizer; % Delete the extant link
 for active_fig_i = 1:length(linkedFigureHandles)
     SimpleSelectionSyncrhonizer.fnPlotHelper_RegisterSelectionSynchronizingFigure(linkedFigureHandles(active_fig_i));
 end

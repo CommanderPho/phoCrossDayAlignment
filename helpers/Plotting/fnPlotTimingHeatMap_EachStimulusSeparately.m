@@ -34,6 +34,10 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
     if ~isfield(plotting_options, 'should_plot_vertical_sound_start_stop_lines')
        plotting_options.should_plot_vertical_sound_start_stop_lines = true; 
     end
+
+	if ~isfield(plotting_options, 'should_plot_yticks')
+		plotting_options.should_plot_yticks = false; % plotting_options.should_plot_yticks: if true, the y-axis ticks are shown for each plot
+	end
     
     % Options for tightening up the subplots:
     if plotting_options.should_use_custom_subplots
@@ -53,6 +57,12 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
         subplot_cmd = @(m,n,p) subplot(m, n, p);
     end
     
+
+	if ~plotting_options.should_plot_yticks
+		plotting_options.subtightplot.width_w = [0.01 0.01]; % if the yticks are hidden, we need more horizontal room so the labels on the left don't get cut off
+	end
+
+
     plotting_options.useGlobalColorLims = true;
     
     if (~exist('extantFigH','var') || isempty(extantFigH))

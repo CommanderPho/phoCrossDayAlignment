@@ -282,7 +282,7 @@ classdef (Sealed) PipelineInteractionState < handle
 
         % Menu selected function: ShowCellROIInteractiveSliderMenu
         function ShowCellROIInteractiveSliderMenuSelected(obj, src, event)
-            
+            evalin('base','OLD_ShowSliderControlledLinkedInteractiveFigures');
         end
 
         % Menu selected function: CloseAllFiguresMenu

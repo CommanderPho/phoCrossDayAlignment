@@ -36,6 +36,13 @@ function [figH] = fnPlotStimulusTraceSummaryStatsForCellROI(final_data_explorer_
     if ~isfield(plotting_options, 'should_plot_titles_for_each_subplot')
         plotting_options.should_plot_titles_for_each_subplot = false; % plotting_options.should_plot_titles_for_each_subplot: if true, a title is added to each subplot (although it's redundent)
     end
+	if ~isfield(plotting_options, 'should_plot_yticks')
+		plotting_options.should_plot_yticks = false; % plotting_options.should_plot_yticks: if true, the y-axis ticks are shown for each plot
+	end
+	
+	if ~plotting_options.should_plot_yticks
+		plotting_options.subtightplot.width_w = [0.01 0.01]; % if the yticks are hidden, we need more horizontal room so the labels on the left don't get cut off
+	end
     
     
     if ~exist('processingOptions','var')
@@ -125,7 +132,9 @@ function [figH] = fnPlotStimulusTraceSummaryStatsForCellROI(final_data_explorer_
 
 				xlim([0, 5]);
 				xticks([]);
-% 				yticks([]);
+				if ~plotting_options.should_plot_yticks
+					yticks([]);
+				end
 
 %                 if plotting_options.should_normalize_to_local_peak
 %                     ylim([-0.5, 1]);

@@ -7,11 +7,24 @@ classdef StimuliIndexMapper
         uniqueFreqs
         
         uniqueStimuli
-        numStimuli
+        
         indexMap_AmpsFreqs2StimulusArray
         indexMap_StimulusLinear2AmpsFreqsArray % This is a 26 x 2 array, where the two columns are the [ampIndex, frequencyIndex] corresponding to the linear stimulus index for that row.
 
     end
+
+	    % Computed Properties:
+    properties (Dependent)
+        numStimuli
+    end
+    
+    methods
+       function numStimuli = get.numStimuli(obj)
+          numStimuli = size(obj.uniqueStimuli,1);
+       end
+    end
+
+
     
     methods
         function obj = StimuliIndexMapper(uniqueStimuli,uniqueAmps,uniqueFreqs,indexMap_AmpsFreqs2StimulusArray,indexMap_StimulusLinear2AmpsFreqsArray)
@@ -22,7 +35,6 @@ classdef StimuliIndexMapper
             obj.uniqueFreqs = uniqueFreqs;
             
             obj.uniqueStimuli = uniqueStimuli;
-            obj.numStimuli = size(uniqueStimuli,1);
             
             obj.indexMap_AmpsFreqs2StimulusArray = indexMap_AmpsFreqs2StimulusArray;
             obj.indexMap_StimulusLinear2AmpsFreqsArray = indexMap_StimulusLinear2AmpsFreqsArray;
