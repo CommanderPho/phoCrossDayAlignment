@@ -88,13 +88,12 @@ classdef MainPipelineMenu < handle
 
             % Create ReloadWorkspaceMenu
             obj.ReloadWorkspaceMenu = uimenu(obj.PipelineMenu);
-            % obj.ReloadWorkspaceMenu.MenuSelectedFcn = createCallbackFcn(obj, @ReloadWorkspaceMenuSelected, true);
 			obj.ReloadWorkspaceMenu.MenuSelectedFcn = @ReloadWorkspaceMenuSelected;
             obj.ReloadWorkspaceMenu.Text = 'Reload Workspace';
 
             % Create ExitMenu
             obj.ExitMenu = uimenu(obj.PipelineMenu);
-            % obj.ExitMenu.MenuSelectedFcn = createCallbackFcn(obj, @ExitMenuSelected, true);
+            obj.ExitMenu.MenuSelectedFcn = @ExitMenuSelected;
             obj.ExitMenu.Text = 'Exit';
 
             % Create AnalysisMenu
@@ -103,7 +102,7 @@ classdef MainPipelineMenu < handle
 
             % Create RecomputePostLoadingStatsMenu
             obj.RecomputePostLoadingStatsMenu = uimenu(obj.AnalysisMenu);
-            % obj.RecomputePostLoadingStatsMenu.MenuSelectedFcn = createCallbackFcn(obj, @RecomputePostLoadingStatsMenuSelected, true);
+            obj.RecomputePostLoadingStatsMenu.MenuSelectedFcn = @RecomputePostLoadingStatsMenuSelected;
             obj.RecomputePostLoadingStatsMenu.Text = 'Recompute Post Loading Stats';
 
             % Create InteractiveMenu
@@ -112,18 +111,17 @@ classdef MainPipelineMenu < handle
 
             % Create ShowCellROIInteractiveSliderMenu
             obj.ShowCellROIInteractiveSliderMenu = uimenu(obj.InteractiveMenu);
-            % obj.ShowCellROIInteractiveSliderMenu.MenuSelectedFcn = createCallbackFcn(obj, @ShowCellROIInteractiveSliderMenuSelected, true);
+            obj.ShowCellROIInteractiveSliderMenu.MenuSelectedFcn = @ShowCellROIInteractiveSliderMenuSelected;
             obj.ShowCellROIInteractiveSliderMenu.Separator = 'on';
             obj.ShowCellROIInteractiveSliderMenu.Text = 'Show CellROI Interactive Slider';
 
             % Create ResetInteractiveFiguresMenu
             obj.ResetInteractiveFiguresMenu = uimenu(obj.InteractiveMenu);
-            % obj.ResetInteractiveFiguresMenu.MenuSelectedFcn = createCallbackFcn(obj, @ResetInteractiveFiguresMenuSelected, true);
+            obj.ResetInteractiveFiguresMenu.MenuSelectedFcn = @ResetInteractiveFiguresMenuSelected;
             obj.ResetInteractiveFiguresMenu.Text = 'Reset Interactive Figures';
 
             % Create CloseAllFiguresMenu
             obj.CloseAllFiguresMenu = uimenu(obj.InteractiveMenu);
-            % obj.CloseAllFiguresMenu.MenuSelectedFcn = createCallbackFcn(obj, @CloseAllFiguresMenuSelected, true);
 			obj.CloseAllFiguresMenu.MenuSelectedFcn = @CloseAllFiguresMenuSelected;
             obj.CloseAllFiguresMenu.Text = 'Close All Figures';
 

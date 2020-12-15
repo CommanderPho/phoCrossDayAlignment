@@ -18,8 +18,22 @@ classdef (Sealed) PipelineInteractionState < handle
         TaskGrid (1,1) matlab.ui.container.GridLayout
 		TaskStatusTableWidget (1,1) wt.TaskStatusTable
         
-        mainPipelineMenu (1, 1)
     end %properties
+
+	properties (Access = private, Transient, NonCopyable)
+        PipelineMenu                   matlab.ui.container.Menu
+        ReloadWorkspaceMenu            matlab.ui.container.Menu
+        ExitMenu                       matlab.ui.container.Menu
+        AnalysisMenu                   matlab.ui.container.Menu
+        RecomputePostLoadingStatsMenu  matlab.ui.container.Menu
+        InteractiveMenu                matlab.ui.container.Menu
+        ShowCellROIInteractiveSliderMenu  matlab.ui.container.Menu
+        ResetInteractiveFiguresMenu    matlab.ui.container.Menu
+        CloseAllFiguresMenu            matlab.ui.container.Menu
+        HelpMenu                       matlab.ui.container.Menu
+        ShowHelpMenu                   matlab.ui.container.Menu
+    end
+
 
 
     % Computed Properties:
@@ -153,16 +167,17 @@ classdef (Sealed) PipelineInteractionState < handle
 				obj.MainFigure = uifigure('Position',[100 100 350 625],'Name','phoMainWindow','HandleVisibility','on');
             end
 
-			obj.TaskGrid = uigridlayout(obj.MainFigure,[3 1],"BackgroundColor",[.6 .8 1]);
+			obj.TaskGrid = uigridlayout(obj.MainFigure,[2 1],"BackgroundColor",[.6 .8 1]);
 
 			% Create the menu:
-			obj.mainPipelineMenu = MainPipelineMenu(obj.MainFigure);
+			% obj.mainPipelineMenu = MainPipelineMenu(obj.MainFigure);
+			obj.createMenuComponents();
 
 			% Create the widget
 			obj.TaskStatusTableWidget = wt.TaskStatusTable(obj.TaskGrid);
-			obj.TaskStatusTableWidget.Layout.Row = 2;
+			obj.TaskStatusTableWidget.Layout.Row = 1;
     		obj.TaskStatusTableWidget.Layout.Column = 1;
-    		obj.TaskStatusTableWidget.Padding = [0 10 0 10];
+% %     		obj.TaskGrid.Padding = [0 10 0 10];
 
 			% Configure the widget
 			obj.TaskStatusTableWidget.Items = obj.pipelineStageNames;
@@ -175,7 +190,7 @@ classdef (Sealed) PipelineInteractionState < handle
 
 			%% Add Footer:
 			grid3 = uigridlayout(obj.TaskGrid, [1 2]);
-			grid3.Layout.Row = 3;
+			grid3.Layout.Row = 2;
 			grid3.Layout.Column = 1;
 			grid3.Padding = [0 0 0 0];
 			b1 = uibutton(grid3,'Text','Start');
@@ -197,44 +212,112 @@ classdef (Sealed) PipelineInteractionState < handle
     % Callbacks that handle component events
     methods (Access = protected)
 
+		% Menu Creation
+        function createMenuComponents(obj)
+
+            % % Create UIFigure and hide until all components are created
+            % obj.UIFigure = uifigure('Visible', 'off');
+            % obj.UIFigure.Position = [100 100 640 480];
+            % obj.UIFigure.Name = 'MATLAB obj';
+
+            % Create PipelineMenu
+            obj.PipelineMenu = uimenu(obj.MainFigure);
+            obj.PipelineMenu.Text = 'Pipeline';
+
+            % Create ReloadWorkspaceMenu
+            obj.ReloadWorkspaceMenu = uimenu(obj.PipelineMenu);
+            % obj.ReloadWorkspaceMenu.MenuSelectedFcn = createCallbackFcn(obj, @ReloadWorkspaceMenuSelected, true);
+			obj.ReloadWorkspaceMenu.MenuSelectedFcn = @(h,e) obj.ReloadWorkspaceMenuSelected(h,e);
+            obj.ReloadWorkspaceMenu.Text = 'Reload Workspace';
+
+            % Create ExitMenu
+            obj.ExitMenu = uimenu(obj.PipelineMenu);
+            % obj.ExitMenu.MenuSelectedFcn = createCallbackFcn(obj, @ExitMenuSelected, true);
+            obj.ExitMenu.Text = 'Exit';
+
+            % Create AnalysisMenu
+            obj.AnalysisMenu = uimenu(obj.MainFigure);
+            obj.AnalysisMenu.Text = 'Analysis';
+
+            % Create RecomputePostLoadingStatsMenu
+            obj.RecomputePostLoadingStatsMenu = uimenu(obj.AnalysisMenu);
+            % obj.RecomputePostLoadingStatsMenu.MenuSelectedFcn = createCallbackFcn(obj, @RecomputePostLoadingStatsMenuSelected, true);
+            obj.RecomputePostLoadingStatsMenu.Text = 'Recompute Post Loading Stats';
+
+            % Create InteractiveMenu
+            obj.InteractiveMenu = uimenu(obj.MainFigure);
+            obj.InteractiveMenu.Text = 'Interactive';
+
+            % Create ShowCellROIInteractiveSliderMenu
+            obj.ShowCellROIInteractiveSliderMenu = uimenu(obj.InteractiveMenu);
+            % obj.ShowCellROIInteractiveSliderMenu.MenuSelectedFcn = createCallbackFcn(obj, @ShowCellROIInteractiveSliderMenuSelected, true);
+            obj.ShowCellROIInteractiveSliderMenu.Separator = 'on';
+            obj.ShowCellROIInteractiveSliderMenu.Text = 'Show CellROI Interactive Slider';
+
+            % Create ResetInteractiveFiguresMenu
+            obj.ResetInteractiveFiguresMenu = uimenu(obj.InteractiveMenu);
+            % obj.ResetInteractiveFiguresMenu.MenuSelectedFcn = createCallbackFcn(obj, @ResetInteractiveFiguresMenuSelected, true);
+            obj.ResetInteractiveFiguresMenu.Text = 'Reset Interactive Figures';
+
+            % Create CloseAllFiguresMenu
+            obj.CloseAllFiguresMenu = uimenu(obj.InteractiveMenu);
+            % obj.CloseAllFiguresMenu.MenuSelectedFcn = createCallbackFcn(obj, @CloseAllFiguresMenuSelected, true);
+			obj.CloseAllFiguresMenu.MenuSelectedFcn = @(h,e) obj.CloseAllFiguresMenuSelected(h,e);
+            obj.CloseAllFiguresMenu.Text = 'Close All Figures';
+
+            % Create HelpMenu
+            obj.HelpMenu = uimenu(obj.MainFigure);
+            obj.HelpMenu.Text = 'Help';
+
+            % Create ShowHelpMenu
+            obj.ShowHelpMenu = uimenu(obj.HelpMenu);
+            % obj.ShowHelpMenu.MenuSelectedFcn = createCallbackFcn(obj, @ShowHelpMenuSelected, true);
+            obj.ShowHelpMenu.Text = 'Show Help';
+
+            % Show the figure after all components are created
+            % obj.MainFigure.Visible = 'on';
+        end
+
+
+
         % Menu selected function: ShowCellROIInteractiveSliderMenu
-        function ShowCellROIInteractiveSliderMenuSelected(obj, event)
+        function ShowCellROIInteractiveSliderMenuSelected(obj, src, event)
             
         end
 
         % Menu selected function: CloseAllFiguresMenu
-        function CloseAllFiguresMenuSelected(obj, event)
+        function CloseAllFiguresMenuSelected(obj, src, event)
             close all;
             
         end
 
         % Menu selected function: ExitMenu
-        function ExitMenuSelected(obj, event)
+        function ExitMenuSelected(obj, src, event)
             % close(obj.UIFigure)
         end
 
         % Menu selected function: ReloadWorkspaceMenu
-        function ReloadWorkspaceMenuSelected(obj, event)
+        function ReloadWorkspaceMenuSelected(obj, src, event)
             
         end
 
         % Menu selected function: RecomputePostLoadingStatsMenu
-        function RecomputePostLoadingStatsMenuSelected(obj, event)
+        function RecomputePostLoadingStatsMenuSelected(obj, src, event)
             
         end
 
         % Menu selected function: ResetInteractiveFiguresMenu
-        function ResetInteractiveFiguresMenuSelected(obj, event)
+        function ResetInteractiveFiguresMenuSelected(obj, src, event)
             
         end
 
         % Menu selected function: ShowHelpMenu
-        function ShowHelpMenuSelected(obj, event)
+        function ShowHelpMenuSelected(obj, src, event)
             
         end
     end
 
-	
+
 
 
 
