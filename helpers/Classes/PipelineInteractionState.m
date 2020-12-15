@@ -18,6 +18,7 @@ classdef (Sealed) PipelineInteractionState < handle
         TaskGrid (1,1) matlab.ui.container.GridLayout
 		TaskStatusTableWidget (1,1) wt.TaskStatusTable
         
+        mainPipelineMenu (1, 1)
     end %properties
 
 
@@ -152,10 +153,16 @@ classdef (Sealed) PipelineInteractionState < handle
 				obj.MainFigure = uifigure('Position',[100 100 350 625],'Name','phoMainWindow','HandleVisibility','on');
             end
 
-			obj.TaskGrid = uigridlayout(obj.MainFigure,[1 1],"BackgroundColor",[.6 .8 1]);
+			obj.TaskGrid = uigridlayout(obj.MainFigure,[3 1],"BackgroundColor",[.6 .8 1]);
+
+			% Create the menu:
+			obj.mainPipelineMenu = MainPipelineMenu(obj.MainFigure);
 
 			% Create the widget
 			obj.TaskStatusTableWidget = wt.TaskStatusTable(obj.TaskGrid);
+			obj.TaskStatusTableWidget.Layout.Row = 2;
+    		obj.TaskStatusTableWidget.Layout.Column = 1;
+    		obj.TaskStatusTableWidget.Padding = [0 10 0 10];
 
 			% Configure the widget
 			obj.TaskStatusTableWidget.Items = obj.pipelineStageNames;
@@ -166,12 +173,70 @@ classdef (Sealed) PipelineInteractionState < handle
 			% Assign a callback
 			obj.TaskStatusTableWidget.ButtonPushedFcn = @(h,e) obj.onTaskButtonPushed(e);
 
+			%% Add Footer:
+			grid3 = uigridlayout(obj.TaskGrid, [1 2]);
+			grid3.Layout.Row = 3;
+			grid3.Layout.Column = 1;
+			grid3.Padding = [0 0 0 0];
+			b1 = uibutton(grid3,'Text','Start');
+			b2 = uibutton(grid3,'Text','Stop');
+
+				
+
         end
 
         
         
         
    end
+
+
+
+
+
+    % Callbacks that handle component events
+    methods (Access = protected)
+
+        % Menu selected function: ShowCellROIInteractiveSliderMenu
+        function ShowCellROIInteractiveSliderMenuSelected(obj, event)
+            
+        end
+
+        % Menu selected function: CloseAllFiguresMenu
+        function CloseAllFiguresMenuSelected(obj, event)
+            close all;
+            
+        end
+
+        % Menu selected function: ExitMenu
+        function ExitMenuSelected(obj, event)
+            % close(obj.UIFigure)
+        end
+
+        % Menu selected function: ReloadWorkspaceMenu
+        function ReloadWorkspaceMenuSelected(obj, event)
+            
+        end
+
+        % Menu selected function: RecomputePostLoadingStatsMenu
+        function RecomputePostLoadingStatsMenuSelected(obj, event)
+            
+        end
+
+        % Menu selected function: ResetInteractiveFiguresMenu
+        function ResetInteractiveFiguresMenuSelected(obj, event)
+            
+        end
+
+        % Menu selected function: ShowHelpMenu
+        function ShowHelpMenuSelected(obj, event)
+            
+        end
+    end
+
+	
+
+
 
 
 	methods (Static)

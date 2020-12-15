@@ -8,4 +8,6 @@ function [pipelineInteractionObject] = fnInteractiveMainPipelineGui(phoPipelineO
     pipelineCallbacks{end+1} = @(anObj, currIndex) evalin('base','PhoBuildSpatialTuning');
     pipelineCallbacks{end+1} = @(anObj, currIndex) fprintf('Pipeline stage %d execution complete!\n', anObj.pipelineCurrentStage);
     pipelineInteractionObject.SetupPipeline({ 'PhoLoadFinalDataStruct', 'PhoPostFinalDataStructAnalysis', 'PhoBuildSpatialTuning', 'Finished' }, pipelineCallbacks);
+    
+    
 end
