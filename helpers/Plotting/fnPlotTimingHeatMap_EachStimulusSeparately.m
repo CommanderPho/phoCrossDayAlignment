@@ -99,9 +99,9 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
 
         if plotting_options.subplotLayoutIsGrid
             curr_linear_subplot_index = final_data_explorer_obj.stimuli_mapper.numStimuli-stimulusIndex+1;
-            subplot_cmd(numRows, numCol, curr_linear_subplot_index);
+            curr_ax = subplot_cmd(numRows, numCol, curr_linear_subplot_index);
         else
-            subplot_cmd(numRows, numCol, stimulusIndex);
+            curr_ax = subplot_cmd(numRows, numCol, stimulusIndex);
         end
         
         %% Plot a heatmap where each of the 20 trials is a vertical column within a single row (for a particular cellROI and stimulus):
@@ -117,13 +117,14 @@ function [figH] = fnPlotTimingHeatMap_EachStimulusSeparately(final_data_explorer
         else
             h = imagesc(xx, yy, curr_heatMap);
         end
+		set(h, 'PickableParts','none'); % Disable picking the image, so the clicks will be passed through
     %     title('test heat map')
         yticks([]);
         
-        
+		fnPlotHelper_SetupStimulusSubplot(final_data_explorer_obj, numRows, numCol, stimulusIndex, curr_ax, plotting_options);
         
         if plotting_options.subplotLayoutIsGrid
-            fnPlotHelper_StimulusGridLabels(final_data_explorer_obj, numRows, numCol, stimulusIndex, plotting_options)
+            fnPlotHelper_StimulusGridLabels(final_data_explorer_obj, numRows, numCol, stimulusIndex, plotting_options);
         
         else
             activeStr = [final_data_explorer_obj.stimuli_mapper.getFormattedString_Depth(depthValue) ' ' final_data_explorer_obj.stimuli_mapper.getFormattedString_Freq(freqValue)];

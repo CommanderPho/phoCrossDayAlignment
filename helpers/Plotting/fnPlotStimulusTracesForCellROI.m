@@ -130,8 +130,10 @@ function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRo
             meanData = squeeze(temp.currRedTraceLinesForAllStimuli(b,:));
             
             curr_linear_subplot_index = numStimuli-b+1;
-            subplot_cmd(numRows, numCol, curr_linear_subplot_index);
+            curr_ax = subplot_cmd(numRows, numCol, curr_linear_subplot_index);
             
+			fnPlotHelper_SetupStimulusSubplot(final_data_explorer_obj, numRows, numCol, b, curr_ax, plotting_options);
+			
 			if is_first_session_for_stimuli
 				if plotting_options.should_plot_vertical_sound_start_stop_lines
 					%% Plot the stimulus indicator lines:

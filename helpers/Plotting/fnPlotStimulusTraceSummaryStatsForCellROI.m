@@ -88,7 +88,7 @@ function [figH] = fnPlotStimulusTraceSummaryStatsForCellROI(final_data_explorer_
             temp.curr_stim_post = temp.curr_summary_stats(b).Post;
             
             curr_linear_subplot_index = numStimuli-b+1;
-            subplot_cmd(numRows, numCol, curr_linear_subplot_index);
+            curr_ax = subplot_cmd(numRows, numCol, curr_linear_subplot_index);
             
 			if is_first_session_for_stimuli
 				if plotting_options.should_plot_vertical_sound_start_stop_lines
@@ -104,7 +104,8 @@ function [figH] = fnPlotStimulusTraceSummaryStatsForCellROI(final_data_explorer_
 				end
 			end
             
-          
+			fnPlotHelper_SetupStimulusSubplot(final_data_explorer_obj, numRows, numCol, b, curr_ax, plotting_options);
+
             temp.curr_stim_pre_value = repmat(temp.curr_stim_pre.mean, [1 length(curr_x_pre)]);
             temp.curr_stim_during_value = repmat(temp.curr_stim_during.mean, [1 length(curr_x_during)]);
             temp.curr_stim_post_value = repmat(temp.curr_stim_post.mean, [1 length(curr_x_post)]);

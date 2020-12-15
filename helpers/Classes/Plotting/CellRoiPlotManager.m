@@ -20,6 +20,7 @@ classdef CellRoiPlotManager < PlotManager
         extantFigH_plot_stimulus_traces
 		extantFigH_plot_heatmap_traces
 
+		extantFigH_plot_stimulus_traces_summary_stats
     end
     
     %% Computed Properties:
@@ -65,6 +66,7 @@ classdef CellRoiPlotManager < PlotManager
 %             active_selections_backingFile_path = obj.interaction_helper_obj.BackingFile.fullPath;
 
 			obj.plotting_options.should_plot_neuropil_masks = true;
+			obj.plotting_options.disableAxesInteractivity = true; 
 
             obj.plotting_options.desiredSize = [512 512];
             % Build Colors Arrays:
@@ -337,8 +339,13 @@ classdef CellRoiPlotManager < PlotManager
 		end
 
 
-
-
+		function [obj] = pho_plot_summary_stats(obj, curr_cellRoiIndex)
+			local_plotting_options = obj.plotting_options;
+			local_plotting_options.should_normalize_to_local_peak = false; % plotting_options.should_normalize_to_local_peak: if true, the y-values are normalized across all stimuli and sessions for a cellRoi to the maximal peak value.
+			obj.extantFigH_plot_stimulus_traces_summary_stats = createFigureWithTagIfNeeded('CellRoiPlotManager_ROI_Plot_TracesSummaryStatsPlot'); % generate a new figure to plot the sessions.
+			[obj.extantFigH_plot_stimulus_traces_summary_stats] = fnPlotStimulusTraceSummaryStatsForCellROI(obj.final_data_explorer_obj, curr_cellRoiIndex, local_plotting_options, obj.extantFigH_plot_stimulus_traces_summary_stats);
+			set(obj.extantFigH_plot_stimulus_traces_summary_stats, 'Name', sprintf('Slider Controlled Summary Statistics Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted
+		end
 
 	end % end graphical methods block
 
