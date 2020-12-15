@@ -27,7 +27,7 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
     properties (Access = protected)
         
 %         % Grid for task items
-%         TaskGrid (1,1) matlab.ui.container.GridLayout
+        RootGrid (1,1) matlab.ui.container.GridLayout
 %         
 %         % Task Labels
 %         Label (1,:) matlab.ui.control.Label
@@ -74,34 +74,77 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
 		function build_controller_gui(obj)
 			% Just calls the custom functions:
             if ~exist('obj.slider_controller','var') || ~isvalid(obj.slider_controller.controller.figH) || ~isgraphics(obj.slider_controller.controller.figH)
-                obj.slider_controller.controller.figH = uifigure('Position',[100 100 1080 200],'Name','phoMainCellROISliderFigure','HandleVisibility','on');
+                obj.slider_controller.controller.figH = uifigure('Position',[100 100 1080 280],'Name','phoMainCellROISliderFigure','HandleVisibility','on');
             else
                 obj.slider_controller.controller.figH = figH;
             end
             
+            
+            gridSize = [3 1];
+            obj.RootGrid = uigridlayout(obj.slider_controller.controller.figH, gridSize, "BackgroundColor", [.6 .8 1]);
+            obj.RootGrid.Padding = [0 0 0 0];
+%             obj.RootGrid.RowHeight = {'1x', 40};
+            obj.RootGrid.RowHeight = {100, '1x', 40};
+
+            obj.build_controller_gui_header();
+            
             obj.build_controller_gui_slider();
+            
+            %% Footer:
+            grid3 = uigridlayout(obj.RootGrid,[1 2]);
+            grid3.Layout.Row = 3;
+            grid3.Layout.Column = 1;
+%             obj.RootGrid.RowHeight = {40};
+            grid3.Padding = [0 10 0 10];
+            b1 = uibutton(grid3,'Text','Start');
+            b2 = uibutton(grid3,'Text','Stop'); 
             
 		end % end build_controller_gui(...)
 
+        function build_controller_gui_header(obj)
+            toolbarWidget = wt.Toolbar(obj.RootGrid);
+            toolbarWidget.Layout.Row = 1;
+            toolbarWidget.Layout.Column = 1;
+
+            % Create a horizontal section
+            section1 = wt.toolbar.HorizontalSection();
+            section1.Title = "NORMAL BUTTONS";
+            section1.addButton("open_24.png", "Open");
+            section1.addButton("save_24.png", "Save");
+
+            % Create a horizontal section with state buttons
+            section2 = wt.toolbar.HorizontalSection();
+            section2.Title = "STATE BUTTONS";
+            stateButton1 = section2.addStateButton("","Mode 1");
+            stateButton2 = section2.addStateButton("","Mode 2");
+            stateButton3 = section2.addStateButton("","Mode 3");
+
+            % Set the state of the buttons
+            stateButton1.Value = true;
+            stateButton2.Value = false;
+            stateButton3.Value = false;
+
+            % Attach the horizontal sections to the toolbar
+            toolbarWidget.Section = [
+                section1
+                section2
+                ];
+
+            % Assign a callback
+            toolbarWidget.ButtonPushedFcn = @(h,e)disp(e);
+        end
+        
+        
         function build_controller_gui_slider(obj)
             numRepeatedColumns = length(obj.cellRoiValues);
-    
-           
-            gridSize = [2 1];
-            gridObj = uigridlayout(obj.slider_controller.controller.figH, gridSize, "BackgroundColor", [.6 .8 1]);
-            gridObj.Padding = [0 0 0 0];
-              gridObj.RowHeight = {'1x', 40};
-
-            sliderPanel = uipanel(gridObj,'Title','CellROIs');
-            sliderPanel.Layout.Row = 1;
+            
+            sliderPanel = uipanel(obj.RootGrid,'Title','CellROIs');
+            sliderPanel.Layout.Row = 2;
             sliderPanel.Layout.Column = 1;
 
             % Grid in the panel
-%             [embedded_grid_obj, out_buttons, out_axes] = fnPhoControllerSlider(sliderPanel, numRepeatedColumns, @(srcH, evt) fnPhoControllerSlider_OnSelectedButtonValueChanged(srcH, evt));
             embedded_grid_obj = uigridlayout(sliderPanel, [2 numRepeatedColumns]);
             embedded_grid_obj.Padding = [0 0 0 0];
-%             out_buttons = {};
-%             obj.CellRoiButton = [];
             
             for i = 1:numRepeatedColumns
                 curr_label_text = sprintf('%d',i);
@@ -134,15 +177,6 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
             yy = [1:size(obj.cellRoiValues,2)];
             hIm = imagesc(out_axes, 'XData', xx, 'YData', yy, 'CData', obj.cellRoiValues, 'AlphaData', .5);
             hIm.ButtonDownFcn = @(h,event) obj.fnPhoControllerSlider_OnMatrixAreaClicked(h, event);
-
-            %% Footer:
-            grid3 = uigridlayout(gridObj,[1 2]);
-            grid3.Layout.Row = 2;
-            grid3.Layout.Column = 1;
-            grid3.Padding = [0 10 0 10];
-            b1 = uibutton(grid3,'Text','Start');
-            b2 = uibutton(grid3,'Text','Stop'); 
-            
         end
 
         function fnPhoControllerSlider_OnSelectedButtonValueChanged(obj, srcH, event)
