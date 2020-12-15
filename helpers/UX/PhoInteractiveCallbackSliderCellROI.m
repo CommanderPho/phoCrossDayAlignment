@@ -72,15 +72,13 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
 
 		function build_controller_gui(obj)
 			% Just calls the custom functions:
-            if ~exist('obj.slider_controller','var') || ~isvalid(obj.slider_controller.controller.figH) || ~isgraphics(obj.slider_controller.controller.figH)
-                obj.slider_controller.controller.figH = uifigure('Position',[100 100 1080 280],'Name','phoMainCellROISliderFigure','HandleVisibility','on');
-            else
-                obj.slider_controller.controller.figH = figH;
+            if ~isvalid(obj.SliderControllerFigure) || ~isgraphics(obj.SliderControllerFigure)
+                error('Should not ever initialize new SliderControllerFigure, even if closed! Base class should do that!')
+%                 obj.SliderControllerFigure = uifigure('Position',[100 100 1080 280],'Name','phoMainCellROISliderFigure','HandleVisibility','on');
             end
             
-            
             gridSize = [3 1];
-            obj.RootGrid = uigridlayout(obj.slider_controller.controller.figH, gridSize, "BackgroundColor", [.6 .8 1]);
+            obj.RootGrid = uigridlayout(obj.SliderControllerFigure, gridSize, "BackgroundColor", [.6 .8 1]);
             obj.RootGrid.Padding = [0 0 0 0];
 %             obj.RootGrid.RowHeight = {'1x', 40};
             obj.RootGrid.RowHeight = {100, '1x', 40};
@@ -90,7 +88,7 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
             obj.build_controller_gui_slider();
             
             %% Footer:
-            grid3 = uigridlayout(obj.RootGrid,[1 2]);
+            grid3 = uigridlayout(obj.RootGrid, [1 2]);
             grid3.Layout.Row = 3;
             grid3.Layout.Column = 1;
 %             obj.RootGrid.RowHeight = {40};
@@ -132,15 +130,24 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
             stateButton5.Value = obj.active_plots_config.should_show_stimulus_traces_custom_data_plot;
             stateButton6.Value = obj.active_plots_config.should_show_stimulus_heatmaps_plot;
             stateButton7.Value = obj.active_plots_config.should_show_stimulus_summary_stats_plot;
+        
+            section2.ButtonPushedFcn = @(h,event) obj.fnPhoControllerSlider_OnToolbarPlotButtonValueChanged(h, event);
+            
+            
+            section3 = wt.toolbar.HorizontalSection();
+            section3.Title = "Control Functions";
+            closeAllButton = section3.addButton("", "Close All");
+            closeAllButton.ButtonPushedFcn = @(h,e) obj.fnPhoControllerSlider_OnToolbarCloseAllButtonPressed(h, e);
             
             % Attach the horizontal sections to the toolbar
             obj.Toolbar.Section = [
                 section1
                 section2
+                section3
             ];
-
+        
             % Assign a callback
-            obj.Toolbar.ButtonPushedFcn = @(h,e)disp(e);
+%             obj.Toolbar.ButtonPushedFcn = @(h,e)disp(e);
         end
         
         
@@ -190,8 +197,20 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
 
         
         %% Callbacks:
+        function fnPhoControllerSlider_OnToolbarPlotButtonValueChanged(obj, srcH, event)
+            fprintf('fnPhoControllerSlider_OnToolbarPlotButtonValueChanged(...) pushed!\n');
+%             fprintf('\t pressed cellROI: %d\n', cellROI_pressed);
+            
+        end
+        
+        function fnPhoControllerSlider_OnToolbarCloseAllButtonPressed(obj, srcH, event)
+            fprintf('fnPhoControllerSlider_OnToolbarCloseAllButtonPressed(...) pushed!\n');
+%             fprintf('\t pressed cellROI: %d\n', cellROI_pressed);
+            close all;
+        end
+        
+        
         function fnPhoControllerSlider_OnSelectedButtonValueChanged(obj, srcH, event)
-
             cellROI_pressed_str = event.Source.Tag;
             cellROI_pressed = str2num(cellROI_pressed_str);
             cellROI_updatedIsSelected = logical(event.Value);
@@ -267,7 +286,7 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
 					extant_instance_obj = localInstanceMap(iscInfo.slider_identifier);
 					if isvalid(extant_instance_obj)
                         
-                        if isvalid(extant_instance_obj.slider_controller.controller.figH) 
+                        if isvalid(extant_instance_obj.SliderControllerFigure) 
                             fprintf('returning extant PhoInteractiveCallbackSliderCellROI instance with id: %s\n', iscInfo.slider_identifier);
                             singleObj = extant_instance_obj;
                             needs_instance_initialization = false;
