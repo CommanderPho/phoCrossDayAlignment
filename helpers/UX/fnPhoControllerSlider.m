@@ -48,24 +48,12 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues, onCellROIChangedCa
     
     function [embedded_grid_obj, out_buttons, out_axes] = fnPhoControllerSlider(parent, numRepeatedColumns, buttonCallbackEvent)
         embedded_grid_obj = uigridlayout(parent,[2 numRepeatedColumns]);
-        % Add Label
-        button_labels = {};
-        button_tooltips = {};
-        button_tags = {};
-        button_icons = {};
         out_buttons = {};
         
         for i = 1:numRepeatedColumns
-
             curr_label_text = sprintf('%d',i);
             curr_label_tooltip = sprintf('Select cellROI[%d]',i);
             
-            button_icons{i} = '';
-            button_tags{i} = curr_label_text;
-            button_labels{i} = curr_label_text;
-            button_tooltips{i} = curr_label_tooltip;
-            
-%             curr_button = uibutton('state','Parent',embedded_button_group_obj);
             curr_button = uibutton(embedded_grid_obj, 'state', 'Tag', curr_label_text);
             curr_button.Layout.Row = 1;
             curr_button.Layout.Column = i; % Span single column
@@ -80,12 +68,8 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues, onCellROIChangedCa
             curr_button.Tooltip = curr_label_tooltip;
             curr_button.IconAlignment = 'top';
             curr_button.WordWrap = 'off';
-%             curr_label = uilabel(embedded_grid_obj);
-%             curr_label.HorizontalAlignment = 'center';
-%             curr_label.Text = curr_label_text;
             out_buttons{i} = curr_button;
         end
-        
         
         out_axes = uiaxes(embedded_grid_obj,'Tag','uiaxes_phoControllerSlider');
         out_axes.Layout.Row = 2;
@@ -112,8 +96,6 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues, onCellROIChangedCa
         fnPhoControllerSlider_OnCellSelected(curr_hit_cell_row, curr_hit_cell_col);
     end
     
-
-
     function fnPhoControllerSlider_OnCellSelected(i, j)
         fprintf('fnPhoControllerSlider_OnCellSelected(%d, %d) selected!\n', i, j);
         changed_btn_index = j;
@@ -133,9 +115,6 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues, onCellROIChangedCa
         
     end
 
-
-
-
     function fnPhoControllerSlider_OnSelectedButtonValueChanged(srcH, event)
         
         cellROI_pressed_str = event.Source.Tag;
@@ -154,8 +133,6 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues, onCellROIChangedCa
 %         disp(event.Source.Tag);
     end
 
-
-
     function fnPhoControllerSlider_OnButtonPushed(srcH, event)
         
         cellROI_pressed_str = event.Tag; 
@@ -165,7 +142,6 @@ function [figObj] = fnPhoControllerSlider(figH, sliderValues, onCellROIChangedCa
 %         disp(event);
     end
     
-
 
 end
 
