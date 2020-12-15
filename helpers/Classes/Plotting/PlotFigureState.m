@@ -9,7 +9,7 @@ classdef PlotFigureState < handle
     end
 
 	%% Internal Properties
-    properties (Access = protected)
+    properties (Access = protected, Transient, NonCopyable)
         % The handle to the figure window
         FigureWindow (1,1) matlab.ui.Figure;
                 

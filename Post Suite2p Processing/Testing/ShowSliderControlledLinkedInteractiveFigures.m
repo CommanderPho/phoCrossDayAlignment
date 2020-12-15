@@ -18,9 +18,6 @@ combinedOffsetInsetIndicies = [nan, 0];
  plot_manager_cellRoiPlot = CellRoiPlotManager(final_data_explorer_obj, active_selections_backingFile_path);
  plot_manager_cellRoiPlot.activeOffsetInsetIndicies = combinedOffsetInsetIndicies;
  
- 
- 
-
 %% Options:
 should_show_2d_plot = false;
 should_show_3d_mesh_plot = false;
@@ -42,8 +39,8 @@ iscInfo.slider_identifier = 'ShowSliderControlledLinkedInteractiveFigures';
 iscInfo.curr_i = temp.cellRoiIndex;
 iscInfo.NumberOfSeries = length(final_data_explorer_obj.uniqueComps);
 
-linkedFigureHandles = [];
-plot_callbacks = {};
+% linkedFigureHandles = [];
+% plot_callbacks = {};
 
 plotFigureStates = {};
 
@@ -54,11 +51,10 @@ plotFigureStates = {};
 %     @(extantFigH, curr_i) (pho_plot_stimulus_traces(final_data_explorer_obj, extantFigH, curr_i)));
 
 
-
 plotFigureStates{end+1} = PlotFigureState('isc2DPlot', should_show_2d_plot, ...
     @(extantFigH, curr_i) (plot_manager_cellRoiPlot.pho_plot_2d(curr_i)));
 
-plotFigureStates{end+1} = PlotFigureState('isc3DMeshPlot', should_show_2d_plot, ...
+plotFigureStates{end+1} = PlotFigureState('isc3DMeshPlot', should_show_3d_mesh_plot, ...
     @(extantFigH, curr_i) (plot_manager_cellRoiPlot.pho_plot_3d_mesh(curr_i)));
 
 plotFigureStates{end+1} = PlotFigureState('iscStimulusTracesPlot', should_show_stimulus_traces_plot, ...
@@ -174,7 +170,9 @@ plotFigureStates{end+1} = PlotFigureState('iscStimulusTracesSummaryStatsPlot', s
 % linked_plots_config.plot_callbacks = plot_callbacks;
 % 
 % 
-slider_controller = PhoInteractiveCallbackSliderCellROI.getInstance(iscInfo, linked_plots_config, valid_only_quality');
+
+slider_controller = PhoInteractiveSliderCellROIPlotManager.getInstance(iscInfo, plot_manager_cellRoiPlot, valid_only_quality');
+
 % 
 % 
 % 

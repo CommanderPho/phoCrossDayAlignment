@@ -12,7 +12,7 @@ classdef (Sealed) PipelineInteractionState < handle
     end
     
 	%% Internal Properties
-    properties (Access = protected)
+    properties (Access = private, Transient, NonCopyable)
         MainFigure (1,1) matlab.ui.Figure
         % Grid for task items
         TaskGrid (1,1) matlab.ui.container.GridLayout
@@ -145,19 +145,12 @@ classdef (Sealed) PipelineInteractionState < handle
 		% end
 
 
-		function SetupUI(obj, extantFigH)
+		function SetupUI(obj)
 			% Create a figure with a grid layout
 			needs_create_new_fig = true;
-			if exist('extantFigH','var')
-				if isvalid(extantFigH)
-					needs_create_new_fig = false;
-                    obj.MainFigure = extantFigH;
-				end
-			end
-
 			if needs_create_new_fig
 				obj.MainFigure = uifigure('Position',[100 100 350 625],'Name','phoMainWindow','HandleVisibility','on');
-			end
+            end
 
 			obj.TaskGrid = uigridlayout(obj.MainFigure,[1 1],"BackgroundColor",[.6 .8 1]);
 
