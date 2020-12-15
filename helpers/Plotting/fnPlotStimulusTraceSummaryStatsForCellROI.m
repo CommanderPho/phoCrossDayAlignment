@@ -50,24 +50,6 @@ function [figH] = fnPlotStimulusTraceSummaryStatsForCellROI(final_data_explorer_
     
     trialLengthNumSamples = length(final_data_explorer_obj.traceTimebase_t);
     
-    %% Get Information about the ranges to be plotted:
-    % TODO: May want to factor these out for both computational efficiency and to be able to access them elsewhere.
- 
-%     if plotting_options.should_normalize_to_local_peak
-%        redTraceLinesExtrema.local_max_peaks = max(final_data_explorer_obj.redTraceLinesForAllStimuli, [], [2 3]); % [159 x 1]
-%        redTraceLinesExtrema.local_min_extrema = min(final_data_explorer_obj.redTraceLinesForAllStimuli, [], [2 3]); % [159 x 1]
-%      
-%         if plotting_options.should_plot_all_traces
-%             tracesForAllStimuliExtrema.local_max_peaks = max(final_data_explorer_obj.tracesForAllStimuli, [], [2 3 4]); % [159 x 1]
-%             tracesForAllStimuliExtrema.local_min_extrema = min(final_data_explorer_obj.tracesForAllStimuli, [], [2 3 4]); % [159 x 1]
-%             
-%             activePlotExtrema.local_max_peaks = max([redTraceLinesExtrema.local_max_peaks, tracesForAllStimuliExtrema.local_max_peaks], [], 2); % For each cellROI, get the maximum value (whether it is on the average or the traces themsevles).
-%             activePlotExtrema.local_min_extrema = min([redTraceLinesExtrema.local_min_extrema, tracesForAllStimuliExtrema.local_min_extrema], [], 2);
-%         else
-%             activePlotExtrema = redTraceLinesExtrema;
-%         end
-%     end
-    
     if ~exist('extantFigH','var')
         figH = createFigureWithNameIfNeeded(['CellROI StimulusTracesSummaryStats Figure: cellROI ' num2str(cellRoiIndex)]); % generate a new figure to plot the sessions.
     else
@@ -122,12 +104,7 @@ function [figH] = fnPlotStimulusTraceSummaryStatsForCellROI(final_data_explorer_
 				end
 			end
             
-
-            % plot the average (red) line:
-%             temp.curr_stim_all_value = repmat(temp.curr_stim_all.mean, [1 length(curr_x_all)]);
-%             h_PlotObj = plot(curr_x_pre, temp.curr_stim_all.mean);
-%             set(h_PlotObj, 'color', session_colors{i}, 'linewidth', 2);
-            
+          
             temp.curr_stim_pre_value = repmat(temp.curr_stim_pre.mean, [1 length(curr_x_pre)]);
             temp.curr_stim_during_value = repmat(temp.curr_stim_during.mean, [1 length(curr_x_during)]);
             temp.curr_stim_post_value = repmat(temp.curr_stim_post.mean, [1 length(curr_x_post)]);
@@ -162,9 +139,7 @@ function [figH] = fnPlotStimulusTraceSummaryStatsForCellROI(final_data_explorer_
     
         %% Once the plot is finished, get the ylim values
         curr_y_lim = ylim;
-        
-        
-        
+          
     end %% end for session
     
     
