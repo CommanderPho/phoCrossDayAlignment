@@ -111,6 +111,7 @@ if ~phoPipelineOptions.shouldShowPlots
     end
 end
 
+
 % [hPropsPane, phoPipelineOptions] = propertiesGUI(0, phoPipelineOptions);
 % 
 % %% Main Status Widget:
