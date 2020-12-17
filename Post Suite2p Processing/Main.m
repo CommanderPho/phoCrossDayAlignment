@@ -118,7 +118,7 @@ end
 % [figObj] = fnMakeMainWindow();
 
 
-use_interactive_pipeline_gui = true;
+use_interactive_pipeline_gui = false;
 
 
 if use_interactive_pipeline_gui
