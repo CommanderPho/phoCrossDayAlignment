@@ -63,8 +63,10 @@ function [outputs] = process_loaded_FISSA_result(fissa_data, phoPipelineOptions)
         curr_cell_id_original_index = filteredCellFieldOriginalIndex(i);
 %         curr_cell.df_raw = 
         
-        [fieldSizes, fieldDims, outputValues] = flattenAllFields(df_result.(curr_cell_id_name), 2);
+        [~, ~, curr_cell.df_result] = flattenAllFields(df_result.(curr_cell_id_name), 2);
+        [~, ~, curr_cell.df_raw] = flattenAllFields(df_raw.(curr_cell_id_name), 2);
         
+        [~, ~, outputValues] = flattenAllFields(loaded_fissa_data.df_raw.cell0, 2);
     end
 
     

@@ -18,7 +18,7 @@ function [fieldSizes, fieldDims, outputValues] = flattenAllFields(S, alongDimens
 %     can_cat_on_dim = [];
     
     num_active_cat_dims = 0;
-%     fieldSizes = [];
+%     fieldSizes = {};
     fieldDims = zeros([num_fields 1]); % Holds the dimensions of each field
     
     for aFieldIndex = 1:num_fields
@@ -27,16 +27,10 @@ function [fieldSizes, fieldDims, outputValues] = flattenAllFields(S, alongDimens
        currValSize = size(currVal);
        num_curr_dims = length(size(currValSize));
 
-       if preallocate
-            fieldSizes(aFieldIndex) = currValSize;
-       else
-           if ~exist('fieldSizes','var')
-              fieldSizes = currValSize;
-           else
-               fieldSizes(end+1) = currValSize;
-           end        
-       end
-    
+       if ~exist('fieldSizes','var')
+              fieldSizes = zeros([num_fields, num_curr_dims]);
+       end   
+       fieldSizes(aFieldIndex,:) = currValSize;
        
        fieldDims(aFieldIndex) = num_curr_dims;
        if exist('active_field_size','var')
