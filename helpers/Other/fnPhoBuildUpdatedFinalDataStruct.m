@@ -7,7 +7,7 @@ function [finalDataStruct] = fnPhoBuildUpdatedFinalDataStruct(anmID, dateString,
         finalDataStruct = struct; % Create an empty struct if needed.
     end
 
-    dateString = strcat('session_',dateString);
+    dateString = strcat('session_', dateString);
         
     if ~isfield(finalDataStruct, anmID)
         finalDataStruct.(anmID)=struct;

@@ -8,7 +8,7 @@ if ~exist('processingOptions','var')
 end
 
 for a = 1:numel(sessionList)
-    currentAnm=sessionList(a).anmID;
+    currentAnm = sessionList(a).anmID;
     currentSesh = sessionList(a).date;
     
     %sometimes the current sesh is listed as a num instead of string, so
@@ -24,7 +24,7 @@ for a = 1:numel(sessionList)
         currentComp=compNames{aa};
         
         imgData=fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingData;
-        [numTrials,numFrames]=size(imgData);
+        [numTrials, numFrames] = size(imgData);
         
         %pre-allocate
         fStruct.(currentAnm).(currentSesh).imgData.(currentComp).imagingDataDFF = zeros(numTrials,numFrames);
