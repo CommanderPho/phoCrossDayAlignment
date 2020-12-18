@@ -9,6 +9,12 @@ phoPipelineOptions.default_interactionManager_backingStorePath = '/Users/pho/rep
 
 phoPipelineOptions.imageDimensions = [512 512];
 
+% activeNeuropilCompensationMode: specifies which dFF curves to use.
+phoPipelineOptions.ActiveNeuropilCompensationModes = {'none','suite2p','fissa'};
+phoPipelineOptions.activeNeuropilCompensationMode = categorical(ActiveNeuropilCompensationModes);
+
+% Used to use: phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
+% phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil = true;
 
 % % phoPipelineOptions.ignoredCellROIs = [];
 % % phoPipelineOptions.ignoredCellROI_Indicies = [3, 50, 132, 157, 116];
