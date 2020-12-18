@@ -8,20 +8,24 @@
 % - `raw.cell0.trial0(1,:)` raw measured cell signal
 % - `raw.cell0.trial0(2,:)` raw signal from first neuropil region
 
-phoPipelineOptions.fissa_included_cellROIs_only = false;
-phoPipelineOptions.default_fissa_file_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/fissa_suite2p_example/experiment_matlab.mat';
-if ~exist('loaded_fissa_data','var')
-    fprintf('Loading FISSA .mat output at %s... \n', phoPipelineOptions.default_fissa_file_path)
-    loaded_fissa_data = load(phoPipelineOptions.default_fissa_file_path);
-    disp('done.')
-end
-if ~exist('fissa_outputs','var')
-    fprintf('Processing FISSA outputs... \n')
-    [fissa_outputs] = process_loaded_FISSA_result(loaded_fissa_data, phoPipelineOptions);
-    disp('done.')
-end
+% phoPipelineOptions.fissa.load_fissa_data_and_update_FDS = true;
+% phoPipelineOptions.fissa.included_cellROIs_only = false;
+% phoPipelineOptions.fissa.default_fissa_file_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/fissa_suite2p_example/experiment_matlab.mat';
 
-[finalDataStruct] = fnPhoBuildUpdatedFDS_FromFISSA(fissa_outputs, finalDataStruct, phoPipelineOptions);
+if phoPipelineOptions.fissa.load_fissa_data_and_update_FDS
+    if ~exist('loaded_fissa_data','var')
+        fprintf('Loading FISSA .mat output at %s... \n', phoPipelineOptions.fissa.default_fissa_file_path)
+        loaded_fissa_data = load(phoPipelineOptions.fissa.default_fissa_file_path);
+        disp('done.')
+    end
+    if ~exist('fissa_outputs','var')
+        fprintf('Processing FISSA outputs... \n')
+        [fissa_outputs] = process_loaded_FISSA_result(loaded_fissa_data, phoPipelineOptions);
+        disp('done.')
+    end
+
+    [finalDataStruct] = fnPhoBuildUpdatedFDS_FromFISSA(fissa_outputs, finalDataStruct, phoPipelineOptions);
+end
 
 
 function [finalDataStruct] = fnPhoBuildUpdatedFDS_FromFISSA(fissa_outputs, finalDataStruct, phoPipelineOptions)
@@ -120,7 +124,7 @@ function [fissa_outputs] = process_loaded_FISSA_result(fissa_data, phoPipelineOp
         fprintf('WARNING: the loaded fissa data is missing the computed dF/F data. Did you run the full python script?');
     end
     
-    if phoPipelineOptions.fissa_included_cellROIs_only
+    if phoPipelineOptions.fissa.included_cellROIs_only
         includedCompMask = ~phoPipelineOptions.loadedFilteringData.manualRoiFilteringResults.final_is_Excluded;
 
     else
