@@ -151,6 +151,30 @@ function [finalDataStruct] = fnPhoBuildUpdatedFDS_FromFISSA(fissa_outputs, final
         curr_session_data.curr_absolute_session_trial_frame_first_index_array = (cum_session_relative_trial_first_index_array + curr_session_frame_first_index - 1);
         curr_session_data.curr_absolute_session_trial_frame_last_index_array = (cum_session_relative_trial_last_index_array + curr_session_frame_first_index - 1);
             
+        %% Pre-allocate for all trials in this specific session
+        for comp_index = 1:numComps
+            currentComp = fds_compNames{comp_index}; %get the current component
+            
+            % Remove existing fields first
+            does_fissa_field_exist = isfield(finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp), phoPipelineOptions.fissa.fissa_field_names);
+            fields_to_remove = phoPipelineOptions.fissa.fissa_field_names(does_fissa_field_exist);
+            finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp) = rmfield(finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp), fields_to_remove);
+            
+            
+            finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_df_raw = zeros([num_trials_per_session numFramesPerTrial]); % 520x150
+            finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_df_result.all = zeros([num_trials_per_session 5 numFramesPerTrial]); % 520x5x150
+            finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_raw.all = zeros([num_trials_per_session 5 numFramesPerTrial]); % 520x5x150
+            finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_result.all = zeros([num_trials_per_session 5 numFramesPerTrial]); % 520x5x150
+            
+            finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_df_result.cell_dff = zeros([num_trials_per_session numFramesPerTrial]); % 520x150
+            finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_df_result.neuropil_region_dff = zeros([num_trials_per_session 4 numFramesPerTrial]); % 520x4x150
+            finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_raw.measured_cell_signal = zeros([num_trials_per_session numFramesPerTrial]); % 520x150
+            finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_raw.raw_neuropil_region_signal = zeros([num_trials_per_session 4 numFramesPerTrial]); % 520x4x150
+            finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_result.final_extracted_cell_signal = zeros([num_trials_per_session numFramesPerTrial]); % 520x150
+            finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_result.contaminating_neuropil_region_signal = zeros([num_trials_per_session 4 numFramesPerTrial]); % 520x4x150
+                
+        end % end for comps
+            
             
         for session_trial_index = 1:num_trials_per_session
             curr_session_trial_frame_first_index = cum_session_relative_trial_first_index_array(session_trial_index);
@@ -159,10 +183,10 @@ function [finalDataStruct] = fnPhoBuildUpdatedFDS_FromFISSA(fissa_outputs, final
             curr_absolute_session_trial_frame_last_index = curr_session_data.curr_absolute_session_trial_frame_last_index_array(session_trial_index);
             
             % Using Relative Indexing:
-            curr_session_trial_data.df_raw = squeeze(curr_session_data.df_raw(:,curr_session_trial_frame_first_index:curr_session_trial_frame_last_index));
-            curr_session_trial_data.df_result = squeeze(curr_session_data.df_result(:,:,curr_session_trial_frame_first_index:curr_session_trial_frame_last_index));
-            curr_session_trial_data.raw = squeeze(curr_session_data.raw(:,:,curr_session_trial_frame_first_index:curr_session_trial_frame_last_index));
-            curr_session_trial_data.result = squeeze(curr_session_data.result(:,:,curr_session_trial_frame_first_index:curr_session_trial_frame_last_index));
+            curr_session_trial_data.df_raw = squeeze(curr_session_data.df_raw(:,curr_session_trial_frame_first_index:curr_session_trial_frame_last_index)); % 82x150
+            curr_session_trial_data.df_result = squeeze(curr_session_data.df_result(:,:,curr_session_trial_frame_first_index:curr_session_trial_frame_last_index)); % 82x5x150
+            curr_session_trial_data.raw = squeeze(curr_session_data.raw(:,:,curr_session_trial_frame_first_index:curr_session_trial_frame_last_index)); % 82x5x150
+            curr_session_trial_data.result = squeeze(curr_session_data.result(:,:,curr_session_trial_frame_first_index:curr_session_trial_frame_last_index)); % 82x5x150
         
             % Using Absolute Indexing:
 %             curr_absolute_session_trial_frame_first_index = (curr_session_trial_frame_first_index + curr_session_frame_first_index - 1);
@@ -179,13 +203,19 @@ function [finalDataStruct] = fnPhoBuildUpdatedFDS_FromFISSA(fissa_outputs, final
             for comp_index = 1:numComps
                 currentComp = fds_compNames{comp_index}; %get the current component
             
-                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_df_raw = curr_session_trial_data.df_raw;
-                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_df_result = curr_session_trial_data.df_result;
+                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_df_raw(session_trial_index,:) = squeeze(curr_session_trial_data.df_raw(comp_index,:)); % 1x150 
+%                 finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_df_result(session_trial_index,:,:) = squeeze(curr_session_trial_data.df_result(comp_index,:,:)); % 5x150 
 
-                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_raw.measured_cell_signal = squeeze(curr_session_trial_data.raw(comp_index, 1, session_index, :, :));
-                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_raw.raw_neuropil_region_signal = squeeze(curr_session_trial_data.raw(comp_index, 2:end, session_index, :, :));
-                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_result.final_extracted_cell_signal = squeeze(curr_session_trial_data.result(comp_index, 1, session_index, :, :));
-                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_result.contaminating_neuropil_region_signal = squeeze(curr_session_trial_data.result(comp_index, 2:end, session_index, :, :));
+                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_df_result.all(session_trial_index,:,:) = squeeze(curr_session_trial_data.df_result(comp_index,:,:)); % 5x150
+                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_raw.all(session_trial_index,:,:) = squeeze(curr_session_trial_data.raw(comp_index,:,:)); % 5x150
+                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_result.all(session_trial_index,:,:) = squeeze(curr_session_trial_data.result(comp_index,:,:)); % 5x150
+                
+                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_df_result.cell_dff(session_trial_index,:) = squeeze(curr_session_trial_data.df_result(comp_index, 1, :));
+                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_df_result.neuropil_region_dff(session_trial_index,:,:) = squeeze(curr_session_trial_data.df_result(comp_index, 2:end, :));
+                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_raw.measured_cell_signal(session_trial_index,:) = squeeze(curr_session_trial_data.raw(comp_index, 1, :));
+                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_raw.raw_neuropil_region_signal(session_trial_index,:,:) = squeeze(curr_session_trial_data.raw(comp_index, 2:end, :));
+                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_result.final_extracted_cell_signal(session_trial_index,:) = squeeze(curr_session_trial_data.result(comp_index, 1, :));
+                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_result.contaminating_neuropil_region_signal(session_trial_index,:,:) = squeeze(curr_session_trial_data.result(comp_index, 2:end, :));
 
             end % end for comps
         

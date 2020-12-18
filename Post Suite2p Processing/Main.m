@@ -40,7 +40,6 @@ end
 
 use_interactive_pipeline_gui = false;
 
-
 if use_interactive_pipeline_gui
     if ~exist('pipelineInteractionObject','var')
        clear pipelineInteractionObject; 
