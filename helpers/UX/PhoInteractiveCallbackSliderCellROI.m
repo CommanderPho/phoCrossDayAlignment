@@ -180,7 +180,6 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
                 curr_button.Tooltip = curr_label_tooltip;
                 curr_button.IconAlignment = 'top';
                 curr_button.WordWrap = 'off';
-%                 out_buttons{i} = curr_button;
                 obj.CellRoiButton(1,i) = curr_button;
             end
 
@@ -237,12 +236,12 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
             curr_relative_HitPoint_x = curr_hitPoint(1) - curr_plotAxes.XLim(1);
             curr_relative_HitPoint_y = curr_hitPoint(2) - curr_plotAxes.YLim(1);
             curr_relative_HitPoint = [curr_relative_HitPoint_x curr_relative_HitPoint_y];
-            disp(curr_relative_HitPoint)
+            % disp(curr_relative_HitPoint)
 
             curr_hit_cell_col = floor(curr_relative_HitPoint_x) + 1;
             curr_hit_cell_row = floor(curr_relative_HitPoint_y) + 1;
             curr_hit_cell_index = [curr_hit_cell_row curr_hit_cell_col];
-            disp(curr_hit_cell_index)
+            % disp(curr_hit_cell_index)
 
             obj.fnPhoControllerSlider_OnCellSelected(curr_hit_cell_row, curr_hit_cell_col);
         end
