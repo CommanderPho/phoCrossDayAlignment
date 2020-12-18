@@ -68,8 +68,10 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 		outputs.referenceMask = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).segmentLabelMatrix; % get the reference mask for this component
 		%% TODO: use fissa masks, which haven't been figured out yet
 		outputs.referenceMaskNeuropil = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).neuropilMaskLabelMatrix; % get the reference mask for the neuropil mask of this component
-		neuropilCorrectedDFF = squeeze(fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_df_result(1,:,:));  % 520x150 double. %assumes you have this field
-       	outputs.imgDataNeuropil = sum(fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_df_result(2:end,:,:),1); % 520x150 double
+% 		neuropilCorrectedDFF = squeeze(fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_df_result(1,:,:));  % 520x150 double. %assumes you have this field
+%        	outputs.imgDataNeuropil = squeeze(sum(fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_df_result(2:end,:,:),1)); % 520x150 double
+		neuropilCorrectedDFF = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_df_result.cell_dff;  % 520x150 double. %assumes you have this field
+       	outputs.imgDataNeuropil = squeeze(sum(fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_df_result.neuropil_region_dff,1)); % 520x150 double
 	else
 		error('Invalid neuropil mode!')
 	end

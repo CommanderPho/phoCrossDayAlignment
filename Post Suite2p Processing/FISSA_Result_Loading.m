@@ -12,7 +12,7 @@
 % phoPipelineOptions.fissa.included_cellROIs_only = false;
 % phoPipelineOptions.fissa.default_fissa_file_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/fissa_suite2p_example/experiment_matlab.mat';
 
-phoPipelineOptions.fissa.load_fissa_data_and_update_FDS = true;
+% phoPipelineOptions.fissa.load_fissa_data_and_update_FDS = true;
 
 if phoPipelineOptions.fissa.load_fissa_data_and_update_FDS
     if ~exist('loaded_fissa_data','var')
