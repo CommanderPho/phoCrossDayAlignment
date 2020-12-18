@@ -12,7 +12,7 @@
 % phoPipelineOptions.fissa.included_cellROIs_only = false;
 % phoPipelineOptions.fissa.default_fissa_file_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/fissa_suite2p_example/experiment_matlab.mat';
 
-phoPipelineOptions.fissa.load_fissa_data_and_update_FDS = true;
+% phoPipelineOptions.fissa.load_fissa_data_and_update_FDS = true;
 
 if phoPipelineOptions.fissa.load_fissa_data_and_update_FDS
     if ~exist('loaded_fissa_data','var')
@@ -79,14 +79,12 @@ function [fissa_outputs] = process_loaded_FISSA_result(fissa_data, phoPipelineOp
 
 
 		%% Validate the the ROIs are the same for all trials in the same cell:
-		% fissa_data.ROIs.(curr_cell_id_name).(curr_trial_fieldname)
-		% struc
 
         % The regions for this ROI, always 1x5 cell
-        curr_cell.ROI_regions = curr_trial_cell_ROI_regions;
+%         curr_cell.ROI_regions = curr_trial_cell_ROI_regions;
         
         %% Clean up the input ROI_regions:
-        curr_cell.ROI_regions
+        [curr_cell.ROI_regions] = cleanUp_Imported_FISSA_ROIs(curr_trial_cell_ROI_regions); % PRoblem with 2x45x2 input is occuring in cell51.trial0
         
 %         fissa_outputs.results.ROI_regions
         [~, ~, curr_cell.df_raw] = flattenAllFields(fissa_data.df_raw.(curr_cell_id_name), 2);

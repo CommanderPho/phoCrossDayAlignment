@@ -1,7 +1,7 @@
-function [cleaned_curr_trial_cell_ROI_regions] = cleanUp_Imported_FISSA_ROIs(curr_trial_cell_ROI_regions)
+function [cleaned_curr_trial_cell_ROI_regions, did_encounter_problem] = cleanUp_Imported_FISSA_ROIs(curr_trial_cell_ROI_regions)
 % cleanUp_Imported_FISSA_ROIs: Loads the data exported from fissa
 % curr_trial_cell_ROI_regions: 1x5 cell
-
+    did_encounter_problem = false;
     if iscell(curr_trial_cell_ROI_regions)
         num_regions = length(curr_trial_cell_ROI_regions);
 
@@ -18,7 +18,8 @@ function [cleaned_curr_trial_cell_ROI_regions] = cleanUp_Imported_FISSA_ROIs(cur
 						curr_cleaned_sub_part = process_final_numeric_array(curr_sub_part);
 						curr_cleaned_region{sub_part_index} = curr_cleaned_sub_part; % Add the cleaned region back into the array
 
-					else
+                    else
+                        did_encounter_problem = true;
 						error('This is as deep as we go!')					
 					end
 
@@ -35,6 +36,7 @@ function [cleaned_curr_trial_cell_ROI_regions] = cleanUp_Imported_FISSA_ROIs(cur
     else
         % curr_trial_cell_ROI_regions is already a numeric
 		error('This should not happen!')
+        did_encounter_problem = true;
         cleaned_curr_trial_cell_ROI_regions = {process_final_numeric_array(curr_trial_cell_ROI_regions)}; % return it in a cell array before returning
     end
 
@@ -46,8 +48,15 @@ function [cleaned_curr_trial_cell_ROI_regions] = cleanUp_Imported_FISSA_ROIs(cur
             % We're done!
 			return
         else
-			error('Problem with the numeric array!')      
-			cleaned = [];      
+ 			warning('Problem with the numeric array!')      % The item coming in is 2x45x2 for some reason
+            did_encounter_problem = true;
+            curr_cleaned_size = size(cleaned);
+            curr_cleaned_num_dims = length(curr_cleaned_size);
+            assert((curr_cleaned_size(end) == 2), 'If the last dim is not two, this is irrecoverable');
+            % Otherwise, so long as the last dimension is two, just take the last two dimensions
+            extra_dims = curr_cleaned_num_dims - 2;
+            fprintf('\t WARNING: dropping %d dimensions from the cellROI and continuing\n', extra_dims);
+            cleaned = squeeze(cleaned(ones([1 extra_dims]),:,:)); % Get the last two dimensions    
         end
     end
 
