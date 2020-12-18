@@ -64,10 +64,10 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 
 	elseif strcmpi(phoPipelineOptions.activeNeuropilCompensationMode, 'fissa')
 		rawDFF = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_df_raw;  % 520x150 double. %assumes you have this field
-		%% TODO: use fissa masks, which haven't been figured out yet
-		outputs.referenceMask = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).segmentLabelMatrix; % get the reference mask for this component
-		%% TODO: use fissa masks, which haven't been figured out yet
-		outputs.referenceMaskNeuropil = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).neuropilMaskLabelMatrix; % get the reference mask for the neuropil mask of this component
+		%% Using fissa masks, which are actually polygon points and not masks
+		outputs.referenceMask = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_ROI_regions{1}; % a 1x5 cell array, where the first item corresponds to the ROI mask
+		outputs.referenceMaskNeuropil = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_ROI_regions(2:end); % The remaining neuropil masks
+
 % 		neuropilCorrectedDFF = squeeze(fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_df_result(1,:,:));  % 520x150 double. %assumes you have this field
 %        	outputs.imgDataNeuropil = squeeze(sum(fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_df_result(2:end,:,:),1)); % 520x150 double
 		neuropilCorrectedDFF = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_df_result.cell_dff;  % 520x150 double. %assumes you have this field

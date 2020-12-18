@@ -392,3 +392,25 @@ function [figH] = plot_ROI_polygon(fissa_data, phoPipelineOptions)
     end % end for region
 
 end
+
+
+
+function [outMasks] = build_ROI_binaryMasks_from_polygon(fissa_data, phoPipelineOptions)
+% build_ROI_binaryMasks_from_polygon: Loads the data exported from fissa 
+    curr_trial_cell_ROI_regions = fissa_data.ROIs.(curr_cell_id_name).(curr_trial_fieldname);
+    
+    for region_index = 1:length(curr_trial_cell_ROI_regions)
+       curr_region = curr_trial_cell_ROI_regions{region_index};
+       for sub_part_index = 1:length(curr_region)
+           curr_sub_part = curr_region{sub_part_index};
+           x = curr_sub_part(:, 2);
+           y = curr_sub_part(:, 1);
+           
+		   outMasks = poly2mask(x, y, 512, 512);
+
+       end % end for sub_part
+
+    end % end for region
+
+end
+

@@ -67,8 +67,6 @@ end
 % activeSessionList = sessionList(strcmpi({sessionList.anmID}, phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal));
 % activeAnimalCompList = compList(strcmpi({compList.anmID}, phoPipelineOptions.PhoPostFinalDataStructAnalysis.curr_animal));
 
-
-
 %% Processing Options:
 
 %% This will need to be modified for bad/ignored cellROIs:
@@ -80,11 +78,11 @@ end
 cellROIIndexMapper = CellROIIndexMapper(activeSessionList, activeCompList, phoPipelineOptions);
 num_cellROIs = cellROIIndexMapper.num_cellROIs;
 
-%% Pre-Allocate:
-compMasks.Masks = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
-compMasks.Edge = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
+% %% Pre-Allocate:
+% compMasks.Masks = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
+% compMasks.Edge = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
 
-compNeuropilMasks.Masks = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
+% compNeuropilMasks.Masks = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
 
 
 if exist('stimuli_mapper','var')
@@ -111,12 +109,13 @@ for i = 1:num_cellROIs
 		[outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp, phoPipelineOptions);
 		uniqueAmps = outputs.uniqueAmps;
 		uniqueFreqs = outputs.uniqueFreqs; %
-		compMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMask;
-		compMasks.Edge(curr_day_linear_comp_index,:,:) = edge(outputs.referenceMask); %sobel by default;
 
-        if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
-            compNeuropilMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMaskNeuropil;
-        end
+		% compMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMask;
+		% compMasks.Edge(curr_day_linear_comp_index,:,:) = edge(outputs.referenceMask); %sobel by default;
+
+        % if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
+        %     compNeuropilMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMaskNeuropil;
+        % end
         
 		if ~exist('stimuli_mapper','var')
 			% Only allow initialization once, if it doesn't exist.
@@ -174,8 +173,8 @@ for i = 1:num_cellROIs
 end %% endfor each cellROI
 
 
-final_data_explorer_obj.compMasks = compMasks; % Set the compMasks, which contains the masks.
-final_data_explorer_obj.compNeuropilMasks = compNeuropilMasks; % Set the compNeuropilMasks, which contains the masks.
+% final_data_explorer_obj.compMasks = compMasks; % Set the compMasks, which contains the masks.
+% final_data_explorer_obj.compNeuropilMasks = compNeuropilMasks; % Set the compNeuropilMasks, which contains the masks.
 
 [final_data_explorer_obj] = final_data_explorer_obj.onCompleteProcessingDFF('default_DFF_Structure', phoPipelineOptions);
 % default_DFF_Structure.cellROI_SatisfiesFirstDayTuning = (default_DFF_Structure.cellROI_FirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);

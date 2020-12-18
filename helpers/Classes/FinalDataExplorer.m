@@ -42,7 +42,8 @@ classdef FinalDataExplorer
         
         %% Outputs:
         finalOutComponentSegment
-        compMasks % struct containing sessionRoiMask fields. sessionRoiMask: *one for each ROI in each session*: matricies the size of the original images (512x512 for example) that specify specific pixels related to the ROIs.
+        
+		compMasks % struct containing sessionRoiMask fields. sessionRoiMask: *one for each ROI in each session*: matricies the size of the original images (512x512 for example) that specify specific pixels related to the ROIs.
         compNeuropilMasks
         
 		activeNeuropilCompensationMode
@@ -60,18 +61,17 @@ classdef FinalDataExplorer
         computedRedTraceLinesAnalyses = struct; % Analysis done for the red mean tracelines
 		computedAllTraceLinesAnalyses % Analyses done for all trace lines
 		
-		
-
 		autoTuningDetection % Used to auto-determine the tuning for a given cellROI
         
     end
+
     methods
     %    function obj = set.active_DFF(obj, value)
     %        obj.active_DFF = value;
     %    end
-       function obj = set.compMasks(obj, value)
-           obj.compMasks = value;
-       end  
+    %    function obj = set.compMasks(obj, value)
+    %        obj.compMasks = value;
+    %    end  
        
     end
     
@@ -159,7 +159,8 @@ classdef FinalDataExplorer
 
 			obj.activeNeuropilCompensationMode = phoPipelineOptions.activeNeuropilCompensationMode;
     
-			obj.allocateDffs(phoPipelineOptions);
+			obj = obj.allocateDffs(phoPipelineOptions);
+			obj = obj.allocateComponentMasks(phoPipelineOptions);
 
         end
         
@@ -386,9 +387,45 @@ classdef FinalDataExplorer
             
         end % end function buildSpatialTuningInfo
         
+
+		function [obj] = processComponentMasks(obj, outputs, curr_day_linear_comp_index, phoPipelineOptions)
+			% processComponentMasks: currently called in obj.processOutputsDFF(...) which is itself called by PhoPostFinalDataStructAnalysis.m
+			% The masks will be processed differently based on whether we're in fissa mode or not.
+			% in fissa mode, binary masks aren't actually provided, only polygoin points that outline such masks are, so we need to do things differently.
+
+			if (strcmpi(obj.activeNeuropilCompensationMode, 'none') || strcmpi(obj.activeNeuropilCompensationMode, 'suite2p'))
+				obj.compMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMask;
+				obj.compMasks.Edge(curr_day_linear_comp_index,:,:) = edge(outputs.referenceMask); %sobel by default;
+
+				if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
+					obj.compNeuropilMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMaskNeuropil;
+				end
+
+			elseif strcmpi(obj.activeNeuropilCompensationMode, 'fissa')
+				%% TODO:
+				obj.compMasks.Polygons{curr_day_linear_comp_index} = outputs.referenceMask;
+				obj.compNeuropilMasks.Polygons{curr_day_linear_comp_index} = outputs.referenceMaskNeuropil;
+				% obj.compNeuropilMasks.Polygons(curr_day_linear_comp_index,:) = outputs.referenceMaskNeuropil;
+				%% TODO: Need to calculate obj.compMasks.Masks from obj.compMasks.Polygons
+
+				obj.compMasks.Masks = poly2mask(xi, yi, 512, 512)
+
+
+				warning('Not implemented: Need to calculate obj.compMasks.Masks from obj.compMasks.Polygons');
+
+			else
+				error('Invalid neuropil mode!')
+			end
+
+		end
+
+
         function [obj] = processOutputsDFF(obj, outputs, output_DFF_Name, curr_day_linear_comp_index, phoPipelineOptions)
 			% processOutputsDFF(...): process the outputs from processOutputsDFF(...) for a specific comp index and frame type
+			% also calls obj.processComponentMasks(...) to update the masks from the output as well
+			
 			if strcmpi(output_DFF_Name, 'default_DFF_Structure')
+				obj = obj.processComponentMasks(outputs, curr_day_linear_comp_index, phoPipelineOptions);
 				[obj.raw_DFF] = processAndUpdateOutputsDFF(outputs, obj.raw_DFF, output_DFF_Name, curr_day_linear_comp_index, phoPipelineOptions);
 			elseif strcmpi(output_DFF_Name, 'neuropilCorrected_DFF_Structure')
 				[obj.corrected_DFF] = processAndUpdateOutputsDFF(outputs, obj.corrected_DFF, output_DFF_Name, curr_day_linear_comp_index, phoPipelineOptions);
@@ -556,6 +593,23 @@ classdef FinalDataExplorer
 
 	%% Protected Methods Block:
 	methods (Access = protected)
+
+		function [obj] = allocateComponentMasks(obj, phoPipelineOptions)
+			%% Pre-Allocate:
+			obj.compMasks.Masks = zeros(obj.cellROIIndex_mapper.numCompListEntries, 512, 512);
+			obj.compMasks.Edge = zeros(obj.cellROIIndex_mapper.numCompListEntries, 512, 512);
+			if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
+				obj.compNeuropilMasks.Masks = zeros(obj.cellROIIndex_mapper.numCompListEntries, 512, 512);
+			end
+
+			if strcmpi(obj.activeNeuropilCompensationMode, 'fissa')
+				obj.compMasks.Polygons = cell([obj.cellROIIndex_mapper.numCompListEntries, 1]);
+				obj.compNeuropilMasks.Polygons = cell([obj.cellROIIndex_mapper.numCompListEntries, 1]); % This uses a flat cell array to hold the 1x4 cells from the neuropil mask
+				% obj.compNeuropilMasks.Polygons = cell([obj.cellROIIndex_mapper.numCompListEntries, 4]);
+			end
+
+		end
+
 
 		function [obj] = allocateDffs(obj, phoPipelineOptions)
 			obj.raw_DFF = FinalDataExplorer.allocateNewDff(obj.num_cellROIs, obj.cellROIIndex_mapper.numCompListEntries);
