@@ -22,7 +22,6 @@ autoTuningDetection.detectionCurve = temp.S.detectionCurve;
 %% Plot the detectionCurve with the stimulus indicator lines:
 % fnPlotAutotuningDetectionCurveWithStimulusIndicatorLines(autoTuningDetection)
 
-
 %% Main
 fprintf('Pho Post-Suite2p Processing Pipeline\n');
 if ~phoPipelineOptions.shouldShowPlots

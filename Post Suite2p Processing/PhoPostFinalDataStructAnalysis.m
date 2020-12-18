@@ -27,7 +27,7 @@ if ~exist('phoPipelineOptions','var')
 	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.frameRate = 30;
 	phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.smoothValue = 5;
 	
-	phoPipelineOptions.PhoPostFinalDataStructAnalysis.should_use_neuropil_corrected_version = true;
+	% phoPipelineOptions.PhoPostFinalDataStructAnalysis.should_use_neuropil_corrected_version = true;
 	
 	phoPipelineOptions.ignoredCellROIs = [];
 	
@@ -114,8 +114,10 @@ for i = 1:num_cellROIs
 		compMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMask;
 		compMasks.Edge(curr_day_linear_comp_index,:,:) = edge(outputs.referenceMask); %sobel by default;
 
-		compNeuropilMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMaskNeuropil;
-		
+        if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
+            compNeuropilMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMaskNeuropil;
+        end
+        
 		if ~exist('stimuli_mapper','var')
 			% Only allow initialization once, if it doesn't exist.
 			stimuli_mapper = StimuliIndexMapper(outputs.uniqueStimuli,...

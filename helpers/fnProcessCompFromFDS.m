@@ -99,7 +99,64 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     [~, outputs.numFramesPerTrial] = size(rawDFF);
     
 	%% First-session only:
-	[outputs] = subfnProcessFirstCompFromFDS(outputs, fStruct, currentAnm, currentSesh, processingOptions);
+	% [outputs] = subfnProcessFirstCompFromFDS(outputs, fStruct, currentAnm, currentSesh, processingOptions);
+	% outputs.stimList: starts as a 520x2 double
+	outputs.stimList(:,1) = fStruct.(currentAnm).(currentSesh).behData.amFrequency;
+	outputs.stimList(:,2) = fStruct.(currentAnm).(currentSesh).behData.amAmplitude;
+
+	%correct the 0 depth condition value glitch here; TODO: This appears that it's correcting for a data-entry error in outputs.stimList, where all trials that should been listed as [0, 0] were instead entered as [10 0].
+	zeroValIndicies = find(outputs.stimList(:,2)==0); % In the stimList list, several entries should be found.
+	outputs.stimList(zeroValIndicies, 1) = 0; % Set the invalid '10' entry to a zero.
+	
+	[outputs.uniqueStimuli, ~, ib] = unique(outputs.stimList, 'rows'); % Find all unique combinations of [freq, ampl] stimuli-pairs
+	% I think ib will contain all the repeated indicies in outputs.stimList for each outputs.uniqueStimuli
+	% ib: 520x1 double
+	% outputs.uniqueStimuli: 26x2
+	
+	% What is this doing?
+	% Using the 'ib' indexes found corresponding to each unique [freq, amp] stimuli-pair, find all rows corresponding to each stimulus:
+	outputs.linearStimulusPairIndexToTrialIndicies = accumarray(ib, find(ib), [], @(rows){rows}); % a outputs.numStimuli x outputs.numStimulusPairTrialRepetitionsPerSession (e.g. 26 x 20) map
+	outputs.numStimulusPairTrialRepetitionsPerSession = 20;
+	% outputs.linearStimulusPairIndexToTrialIndicies: 26x1 cell
+		% each entry is a 20x1 double of indicies into the original stimulus array
+		% '20' reflects the fact that there's 20 repetitions of each unique stimulus-pair across the session.
+		
+	[outputs.numStimuli, ~] = size(outputs.uniqueStimuli);
+	outputs.uniqueAmps = unique(outputs.uniqueStimuli(:,2));
+	outputs.uniqueFreqs = unique(outputs.uniqueStimuli(:,1));
+	outputs.numUniqueAmps = length(outputs.uniqueAmps);
+	outputs.numUniqueFreqs = length(outputs.uniqueFreqs);
+	
+	%% Up to this point, the setup is common for both plotAMConditions_FDS and plotTracesForAllStimuli_FDS
+	
+	%% Build a map from each unique stimuli to a linear stimulus index:
+	outputs.indexMap_AmpsFreqs2StimulusArray = zeros(outputs.numUniqueAmps, outputs.numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
+	outputs.indexMap_StimulusLinear2AmpsFreqsArray = zeros(outputs.numStimuli, 2); % each row contains a fixed linear stimulus, and the two entries in the adjacent columns contain the uniqueAmps index and the uniqueFreqs index.
+	
+	for i = 1:outputs.numUniqueAmps
+		activeUniqueAmp = outputs.uniqueAmps(i);
+		for j = 1:outputs.numUniqueFreqs
+			activeUniqueFreq = outputs.uniqueFreqs(j);
+			if (activeUniqueAmp == 0 || activeUniqueFreq == 0)
+				outputs.indexMap_AmpsFreqs2StimulusArray(i,j) = 1; % The linear index should be 1 (indicating the first entry) for all cases where either the freq or amp is zero.
+				outputs.indexMap_StimulusLinear2AmpsFreqsArray(1,:) = [1, 1];
+			else
+				currentLinearStimulusIdx = find((outputs.uniqueStimuli(:,1)==activeUniqueFreq) & (outputs.uniqueStimuli(:,2)==activeUniqueAmp));
+				outputs.indexMap_AmpsFreqs2StimulusArray(i,j) = currentLinearStimulusIdx;
+				outputs.indexMap_StimulusLinear2AmpsFreqsArray(currentLinearStimulusIdx, :) = [i, j];
+			end
+		end
+	end
+
+	%pre-allocate
+%     outputs.meanDFF = zeros(outputs.numStimuli, numFrames);
+	outputs.traceTimebase_t = linspace(0, outputs.numFramesPerTrial/processingOptions.frameRate, outputs.numFramesPerTrial); % make a timebase to plot as xAxis for traces
+	
+	outputs.timingInfo.Index.startSound = processingOptions.startSound;
+	outputs.timingInfo.Index.endSound = processingOptions.endSound;
+	outputs.timingInfo.Index.sampPeak = processingOptions.sampPeak;
+
+
 
 	%% Any session preallocations:
     outputs.TracesForAllStimuli.meanDFF = zeros([outputs.numStimuli, outputs.numStimulusPairTrialRepetitionsPerSession, outputs.numFramesPerTrial]); % raw traces
@@ -231,63 +288,63 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
     end
 
 	% 
-   function [outputs] = subfnProcessFirstCompFromFDS(outputs, fStruct, currentAnm, currentSesh, processingOptions)
-		% subfnProcessFirstCompFromFDS: this can eventually be factored out, it doesn't need to be ran for each comp within the given session, only at the start of the session.
-		% outputs.stimList: starts as a 520x2 double
-		outputs.stimList(:,1) = fStruct.(currentAnm).(currentSesh).behData.amFrequency;
-		outputs.stimList(:,2) = fStruct.(currentAnm).(currentSesh).behData.amAmplitude;
+%    function [outputs] = subfnProcessFirstCompFromFDS(outputs, fStruct, currentAnm, currentSesh, processingOptions)
+% 		% subfnProcessFirstCompFromFDS: this can eventually be factored out, it doesn't need to be ran for each comp within the given session, only at the start of the session.
+% 		% outputs.stimList: starts as a 520x2 double
+% 		outputs.stimList(:,1) = fStruct.(currentAnm).(currentSesh).behData.amFrequency;
+% 		outputs.stimList(:,2) = fStruct.(currentAnm).(currentSesh).behData.amAmplitude;
 
-		%correct the 0 depth condition value glitch here; TODO: This appears that it's correcting for a data-entry error in outputs.stimList, where all trials that should been listed as [0, 0] were instead entered as [10 0].
-		zeroValIndicies = find(outputs.stimList(:,2)==0); % In the stimList list, several entries should be found.
-		outputs.stimList(zeroValIndicies, 1) = 0; % Set the invalid '10' entry to a zero.
+% 		%correct the 0 depth condition value glitch here; TODO: This appears that it's correcting for a data-entry error in outputs.stimList, where all trials that should been listed as [0, 0] were instead entered as [10 0].
+% 		zeroValIndicies = find(outputs.stimList(:,2)==0); % In the stimList list, several entries should be found.
+% 		outputs.stimList(zeroValIndicies, 1) = 0; % Set the invalid '10' entry to a zero.
 		
-		[outputs.uniqueStimuli, ~, ib] = unique(outputs.stimList, 'rows'); % Find all unique combinations of [freq, ampl] stimuli-pairs
-		% I think ib will contain all the repeated indicies in outputs.stimList for each outputs.uniqueStimuli
-		% ib: 520x1 double
-		% outputs.uniqueStimuli: 26x2
+% 		[outputs.uniqueStimuli, ~, ib] = unique(outputs.stimList, 'rows'); % Find all unique combinations of [freq, ampl] stimuli-pairs
+% 		% I think ib will contain all the repeated indicies in outputs.stimList for each outputs.uniqueStimuli
+% 		% ib: 520x1 double
+% 		% outputs.uniqueStimuli: 26x2
 		
-		% What is this doing?
-		% Using the 'ib' indexes found corresponding to each unique [freq, amp] stimuli-pair, find all rows corresponding to each stimulus:
-		outputs.linearStimulusPairIndexToTrialIndicies = accumarray(ib, find(ib), [], @(rows){rows}); % a outputs.numStimuli x outputs.numStimulusPairTrialRepetitionsPerSession (e.g. 26 x 20) map
-		outputs.numStimulusPairTrialRepetitionsPerSession = 20;
-		% outputs.linearStimulusPairIndexToTrialIndicies: 26x1 cell
-			% each entry is a 20x1 double of indicies into the original stimulus array
-			% '20' reflects the fact that there's 20 repetitions of each unique stimulus-pair across the session.
+% 		% What is this doing?
+% 		% Using the 'ib' indexes found corresponding to each unique [freq, amp] stimuli-pair, find all rows corresponding to each stimulus:
+% 		outputs.linearStimulusPairIndexToTrialIndicies = accumarray(ib, find(ib), [], @(rows){rows}); % a outputs.numStimuli x outputs.numStimulusPairTrialRepetitionsPerSession (e.g. 26 x 20) map
+% 		outputs.numStimulusPairTrialRepetitionsPerSession = 20;
+% 		% outputs.linearStimulusPairIndexToTrialIndicies: 26x1 cell
+% 			% each entry is a 20x1 double of indicies into the original stimulus array
+% 			% '20' reflects the fact that there's 20 repetitions of each unique stimulus-pair across the session.
 			
-		[outputs.numStimuli, ~] = size(outputs.uniqueStimuli);
-		outputs.uniqueAmps = unique(outputs.uniqueStimuli(:,2));
-		outputs.uniqueFreqs = unique(outputs.uniqueStimuli(:,1));
-		outputs.numUniqueAmps = length(outputs.uniqueAmps);
-		outputs.numUniqueFreqs = length(outputs.uniqueFreqs);
+% 		[outputs.numStimuli, ~] = size(outputs.uniqueStimuli);
+% 		outputs.uniqueAmps = unique(outputs.uniqueStimuli(:,2));
+% 		outputs.uniqueFreqs = unique(outputs.uniqueStimuli(:,1));
+% 		outputs.numUniqueAmps = length(outputs.uniqueAmps);
+% 		outputs.numUniqueFreqs = length(outputs.uniqueFreqs);
 		
-		%% Up to this point, the setup is common for both plotAMConditions_FDS and plotTracesForAllStimuli_FDS
+% 		%% Up to this point, the setup is common for both plotAMConditions_FDS and plotTracesForAllStimuli_FDS
 		
-		%% Build a map from each unique stimuli to a linear stimulus index:
-		outputs.indexMap_AmpsFreqs2StimulusArray = zeros(outputs.numUniqueAmps, outputs.numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
-		outputs.indexMap_StimulusLinear2AmpsFreqsArray = zeros(outputs.numStimuli, 2); % each row contains a fixed linear stimulus, and the two entries in the adjacent columns contain the uniqueAmps index and the uniqueFreqs index.
+% 		%% Build a map from each unique stimuli to a linear stimulus index:
+% 		outputs.indexMap_AmpsFreqs2StimulusArray = zeros(outputs.numUniqueAmps, outputs.numUniqueFreqs); % each row contains a fixed amplitude, each column a fixed freq
+% 		outputs.indexMap_StimulusLinear2AmpsFreqsArray = zeros(outputs.numStimuli, 2); % each row contains a fixed linear stimulus, and the two entries in the adjacent columns contain the uniqueAmps index and the uniqueFreqs index.
 		
-		for i = 1:outputs.numUniqueAmps
-			activeUniqueAmp = outputs.uniqueAmps(i);
-			for j = 1:outputs.numUniqueFreqs
-				activeUniqueFreq = outputs.uniqueFreqs(j);
-				if (activeUniqueAmp == 0 || activeUniqueFreq == 0)
-					outputs.indexMap_AmpsFreqs2StimulusArray(i,j) = 1; % The linear index should be 1 (indicating the first entry) for all cases where either the freq or amp is zero.
-					outputs.indexMap_StimulusLinear2AmpsFreqsArray(1,:) = [1, 1];
-				else
-					currentLinearStimulusIdx = find((outputs.uniqueStimuli(:,1)==activeUniqueFreq) & (outputs.uniqueStimuli(:,2)==activeUniqueAmp));
-					outputs.indexMap_AmpsFreqs2StimulusArray(i,j) = currentLinearStimulusIdx;
-					outputs.indexMap_StimulusLinear2AmpsFreqsArray(currentLinearStimulusIdx, :) = [i, j];
-				end
-			end
-		end
+% 		for i = 1:outputs.numUniqueAmps
+% 			activeUniqueAmp = outputs.uniqueAmps(i);
+% 			for j = 1:outputs.numUniqueFreqs
+% 				activeUniqueFreq = outputs.uniqueFreqs(j);
+% 				if (activeUniqueAmp == 0 || activeUniqueFreq == 0)
+% 					outputs.indexMap_AmpsFreqs2StimulusArray(i,j) = 1; % The linear index should be 1 (indicating the first entry) for all cases where either the freq or amp is zero.
+% 					outputs.indexMap_StimulusLinear2AmpsFreqsArray(1,:) = [1, 1];
+% 				else
+% 					currentLinearStimulusIdx = find((outputs.uniqueStimuli(:,1)==activeUniqueFreq) & (outputs.uniqueStimuli(:,2)==activeUniqueAmp));
+% 					outputs.indexMap_AmpsFreqs2StimulusArray(i,j) = currentLinearStimulusIdx;
+% 					outputs.indexMap_StimulusLinear2AmpsFreqsArray(currentLinearStimulusIdx, :) = [i, j];
+% 				end
+% 			end
+% 		end
 
-		%pre-allocate
-	%     outputs.meanDFF = zeros(outputs.numStimuli, numFrames);
-		outputs.traceTimebase_t = linspace(0, outputs.numFramesPerTrial/processingOptions.frameRate, outputs.numFramesPerTrial); % make a timebase to plot as xAxis for traces
+% 		%pre-allocate
+% 	%     outputs.meanDFF = zeros(outputs.numStimuli, numFrames);
+% 		outputs.traceTimebase_t = linspace(0, outputs.numFramesPerTrial/processingOptions.frameRate, outputs.numFramesPerTrial); % make a timebase to plot as xAxis for traces
 		
-		outputs.timingInfo.Index.startSound = processingOptions.startSound;
-		outputs.timingInfo.Index.endSound = processingOptions.endSound;
-		outputs.timingInfo.Index.sampPeak = processingOptions.sampPeak;
-   end 
+% 		outputs.timingInfo.Index.startSound = processingOptions.startSound;
+% 		outputs.timingInfo.Index.endSound = processingOptions.endSound;
+% 		outputs.timingInfo.Index.sampPeak = processingOptions.sampPeak;
+%    end % end subfnProcessFirstCompFromFDS
     
 end

@@ -12,11 +12,10 @@ phoPipelineOptions.imageDimensions = [512 512];
 % activeNeuropilCompensationMode: specifies which dFF curves to use.
 phoPipelineOptions.ActiveNeuropilCompensationModeLabels = {'none','suite2p','fissa'};
 phoPipelineOptions.ActiveNeuropilCompensationModes = categorical(phoPipelineOptions.ActiveNeuropilCompensationModeLabels);
+% phoPipelineOptions.activeNeuropilCompensationMode = 'none';
+% phoPipelineOptions.activeNeuropilCompensationMode = 'suite2p';
 phoPipelineOptions.activeNeuropilCompensationMode = 'fissa';
 
-
-
-    
 % Used to use: phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
 % phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil = true;
 
@@ -47,7 +46,6 @@ phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames = [
 %% Filtering:
 phoPipelineOptions.PhoLoadFinalDataStruct.filtering.specFilePath = fullfile('../data','manualRoiFilteringResults-12_04_2020.mat');
 
-
 %%% PhoPostFinalDataStructAnalysis Options:
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.numFramesPerTrial = 150; % the trial length in number of frames
 % tuning_max_threshold_criteria: the threshold value for peakDFF
@@ -69,7 +67,7 @@ phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.sampPeak = 2
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.frameRate = 30;
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.smoothValue = 5;
 
-phoPipelineOptions.PhoPostFinalDataStructAnalysis.should_use_neuropil_corrected_version = false;
+% phoPipelineOptions.PhoPostFinalDataStructAnalysis.should_use_neuropil_corrected_version = false;
     
 %%% PhoTuningMeshExplorer Options:
 % phoPipelineOptions.PhoTuningMeshExplorer.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures';
