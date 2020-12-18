@@ -12,11 +12,11 @@ addpath(genpath('../../helpers'));
 %% Options:
 should_show_2d_plot = false;
 should_show_3d_mesh_plot = false;
-should_show_masking_plot = true;
+should_show_masking_plot = false;
 should_show_stimulus_traces_plot = true;
 should_show_stimulus_traces_custom_data_plot = false;
 should_show_stimulus_heatmaps_plot = true;
-should_show_stimulus_summary_stats_plot = true;
+should_show_stimulus_summary_stats_plot = false;
 should_show_cellROI_table = false;
 
 temp.cellRoiIndex = 1;

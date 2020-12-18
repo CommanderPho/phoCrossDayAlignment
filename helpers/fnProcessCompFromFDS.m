@@ -72,6 +72,7 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 %        	outputs.imgDataNeuropil = squeeze(sum(fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_df_result(2:end,:,:),1)); % 520x150 double
 		neuropilCorrectedDFF = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_df_result.cell_dff;  % 520x150 double. %assumes you have this field
        	outputs.imgDataNeuropil = squeeze(sum(fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_df_result.neuropil_region_dff,1)); % 520x150 double
+        
 	else
 		error('Invalid neuropil mode!')
 	end
