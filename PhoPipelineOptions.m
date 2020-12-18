@@ -44,7 +44,7 @@ phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil = true;
 phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames = [1, 30];
 
 %% Filtering:
-phoPipelineOptions.PhoLoadFinalDataStruct.filtering.specFilePath = fullfile('../data','manualRoiFilteringResults-12_04_2020.mat');
+phoPipelineOptions.PhoLoadFinalDataStruct.filtering.specFilePath = fullfile('manualRoiFilteringResults-12_04_2020.mat');
 
 %%% PhoPostFinalDataStructAnalysis Options:
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.numFramesPerTrial = 150; % the trial length in number of frames

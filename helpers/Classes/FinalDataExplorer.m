@@ -408,10 +408,15 @@ classdef FinalDataExplorer
 				% obj.compNeuropilMasks.Polygons(curr_day_linear_comp_index,:) = outputs.referenceMaskNeuropil;
 				%% TODO: Need to calculate obj.compMasks.Masks from obj.compMasks.Polygons
 
-				obj.compMasks.Masks = poly2mask(xi, yi, 512, 512)
+% 				[obj.compMasks.Masks(curr_day_linear_comp_index,:,:)] = build_ROI_binaryMasks_from_polygon(obj.compMasks.Polygons{curr_day_linear_comp_index}); % 1-by-512-by-512 and the size of the right side is 4-by-512-by-512
+               
+                [obj.compMasks.Masks(curr_day_linear_comp_index,:,:)] = sum(build_ROI_binaryMasks_from_polygon(obj.compMasks.Polygons{curr_day_linear_comp_index}), 1); % 1-by-512-by-512 and the size of the right side is 4-by-512-by-512             
+				obj.compMasks.Edge(curr_day_linear_comp_index,:,:) = edge(squeeze(obj.compMasks.Masks(curr_day_linear_comp_index,:,:))); %sobel by default;
+				
+% 				[obj.compNeuropilMasks.Masks(curr_day_linear_comp_index,:,:)] = {build_ROI_binaryMasks_from_polygon(obj.compNeuropilMasks.Polygons{curr_day_linear_comp_index})}; % 1-by-512-by-512 and the size of the right side is 4-by-512-by-512
+                [obj.compNeuropilMasks.Masks(curr_day_linear_comp_index,:,:)] = sum(build_ROI_binaryMasks_from_polygon(obj.compNeuropilMasks.Polygons{curr_day_linear_comp_index}), 1); % 1-by-512-by-512 and the size of the right side is 4-by-512-by-512
 
-
-				warning('Not implemented: Need to calculate obj.compMasks.Masks from obj.compMasks.Polygons');
+% 				warning('Not implemented: Need to calculate obj.compMasks.Masks from obj.compMasks.Polygons');
 
 			else
 				error('Invalid neuropil mode!')

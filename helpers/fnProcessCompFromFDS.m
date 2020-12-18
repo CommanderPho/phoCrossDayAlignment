@@ -65,7 +65,8 @@ function [outputs] = fnProcessCompFromFDS(fStruct, currentAnm, currentSesh, curr
 	elseif strcmpi(phoPipelineOptions.activeNeuropilCompensationMode, 'fissa')
 		rawDFF = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_df_raw;  % 520x150 double. %assumes you have this field
 		%% Using fissa masks, which are actually polygon points and not masks
-		outputs.referenceMask = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_ROI_regions{1}; % a 1x5 cell array, where the first item corresponds to the ROI mask
+        % fissa_ROI_regions: a 1x5 cell array, where the first item corresponds to the ROI mask
+		outputs.referenceMask = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_ROI_regions{1}; 
 		outputs.referenceMaskNeuropil = fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_ROI_regions(2:end); % The remaining neuropil masks
 
 % 		neuropilCorrectedDFF = squeeze(fStruct.(currentAnm).(currentSesh).imgData.(currentComp).fissa_df_result(1,:,:));  % 520x150 double. %assumes you have this field
