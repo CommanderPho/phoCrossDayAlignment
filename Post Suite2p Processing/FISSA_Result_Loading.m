@@ -113,23 +113,7 @@ function [finalDataStruct] = fnPhoBuildUpdatedFDS_FromFISSA(fissa_outputs, final
         % - `raw.cell0.trial0(1,:)` raw measured cell signal
         % - `raw.cell0.trial0(2,:)` raw signal from first neuropil region
         
-%     fprintf('reshaping the fissa_outputs...\n')
-%     curr_df_raw = reshape(fissa_outputs.results.df_raw, [numComps, numSessions, num_trials_per_session, 150]);
-%     curr_df_result = reshape(fissa_outputs.results.df_result, [numComps, 5, numSessions, num_trials_per_session, 150]);
-%     curr_raw = reshape(fissa_outputs.results.raw, [numComps, 5, numSessions, num_trials_per_session, 150]);
-%     curr_result = reshape(fissa_outputs.results.result, [numComps, 5, numSessions, num_trials_per_session, 150]);
 
-
-%     curr_df_raw = reshape(fissa_outputs.results.df_raw, [numComps, numSessions, num_frames_per_session]); % 82x3x78000
-%     curr_df_result = reshape(fissa_outputs.results.df_result, [numComps, 5, numSessions, num_frames_per_session]); % 82x5x3x78000
-%     curr_raw = reshape(fissa_outputs.results.raw, [numComps, 5, numSessions, num_frames_per_session]); % 82x5x3x78000
-%     curr_result = reshape(fissa_outputs.results.result, [numComps, 5, numSessions, num_frames_per_session]); % 82x5x3x78000
-% 
-%     curr_session_df_raw = reshape(curr_df_raw, [numComps, numSessions, num_trials_per_session, numFramesPerTrial]); % 82x3x520x150
-%     curr_session_df_result = reshape(curr_df_result, [numComps, 5, numSessions, num_trials_per_session, numFramesPerTrial]); % 82x5x3x520x150
-%     curr_session_raw = reshape(curr_raw, [numComps, 5, numSessions, num_trials_per_session, numFramesPerTrial]); % 82x5x3x520x150
-%     curr_session_result = reshape(curr_result, [numComps, 5, numSessions, num_trials_per_session, numFramesPerTrial]); % 82x5x3x520x150
-        
     %% Tests:
     
     fprintf('doing new method to compute the fissa_outputs...\n')
@@ -147,10 +131,6 @@ function [finalDataStruct] = fnPhoBuildUpdatedFDS_FromFISSA(fissa_outputs, final
         curr_session_data.raw = squeeze(fissa_outputs.results.raw(:,:,curr_session_frame_first_index:curr_session_frame_last_index));
         curr_session_data.result = squeeze(fissa_outputs.results.result(:,:,curr_session_frame_first_index:curr_session_frame_last_index));
 
-        % Using Absolute Indexing:
-        curr_session_data.curr_absolute_session_trial_frame_first_index_array = (cum_session_relative_trial_first_index_array + curr_session_frame_first_index - 1);
-        curr_session_data.curr_absolute_session_trial_frame_last_index_array = (cum_session_relative_trial_last_index_array + curr_session_frame_first_index - 1);
-            
         %% Pre-allocate for all trials in this specific session
         for comp_index = 1:numComps
             currentComp = fds_compNames{comp_index}; %get the current component
@@ -160,7 +140,7 @@ function [finalDataStruct] = fnPhoBuildUpdatedFDS_FromFISSA(fissa_outputs, final
             fields_to_remove = phoPipelineOptions.fissa.fissa_field_names(does_fissa_field_exist);
             finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp) = rmfield(finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp), fields_to_remove);
             
-            
+            % Pre-allocate:
             finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_df_raw = zeros([num_trials_per_session numFramesPerTrial]); % 520x150
             finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_df_result.all = zeros([num_trials_per_session 5 numFramesPerTrial]); % 520x5x150
             finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_raw.all = zeros([num_trials_per_session 5 numFramesPerTrial]); % 520x5x150
@@ -188,17 +168,8 @@ function [finalDataStruct] = fnPhoBuildUpdatedFDS_FromFISSA(fissa_outputs, final
             curr_session_trial_data.raw = squeeze(curr_session_data.raw(:,:,curr_session_trial_frame_first_index:curr_session_trial_frame_last_index)); % 82x5x150
             curr_session_trial_data.result = squeeze(curr_session_data.result(:,:,curr_session_trial_frame_first_index:curr_session_trial_frame_last_index)); % 82x5x150
         
-            % Using Absolute Indexing:
-%             curr_absolute_session_trial_frame_first_index = (curr_session_trial_frame_first_index + curr_session_frame_first_index - 1);
-%             curr_absolute_session_trial_frame_last_index = (curr_session_trial_frame_last_index + curr_session_frame_first_index - 1);
-            
-            
             % TEST: if this works, curr_absolute_session_trial_frame_last_index should equal the curr_session_trial_frame_last_index for the last trial
-%             curr_session_trial_data.df_raw = squeeze(fissa_outputs.results.df_raw(:,curr_absolute_session_trial_frame_first_index:curr_absolute_session_trial_frame_last_index));
-%             curr_session_trial_data.df_result = squeeze(fissa_outputs.results.df_result(:,:,curr_absolute_session_trial_frame_first_index:curr_absolute_session_trial_frame_last_index));
-%             curr_session_trial_data.raw = squeeze(fissa_outputs.results.raw(:,:,curr_absolute_session_trial_frame_first_index:curr_absolute_session_trial_frame_last_index));
-%             curr_session_trial_data.result = squeeze(fissa_outputs.results.result(:,:,curr_absolute_session_trial_frame_first_index:curr_absolute_session_trial_frame_last_index));
-%         
+
             % Add the current block of the current session to the finalDataStruct
             for comp_index = 1:numComps
                 currentComp = fds_compNames{comp_index}; %get the current component
@@ -314,6 +285,29 @@ function [fissa_outputs] = process_loaded_FISSA_result(fissa_data, phoPipelineOp
         % - `result.cell0.trial0(2,:)` contaminating signal
         % - `raw.cell0.trial0(1,:)` raw measured cell signal
         % - `raw.cell0.trial0(2,:)` raw signal from first neuropil region
+        
+        %% For the ROIs:
+        % Each trial field
+         % The ROIs are the same across all trials (for the same ROI)
+        curr_cell_ROIs_temp = fissa_data.ROIs.(curr_cell_id_name);
+        trial_index = 1;
+%         for trial_index = 1:fissa_outputs.numTifImages
+            curr_trial_fieldname = fissa_outputs.tifIdentifierNames{trial_index};
+            curr_trial_cell_ROIs = curr_cell_ROIs_temp.(curr_trial_fieldname);
+            fprintf('length(curr_trial_cell_ROIs): %d\n', length(curr_trial_cell_ROIs));
+%             temp_sizes(trial_index) = size(curr_trial_cell_ROIs);
+            for item_index = 1:length(curr_trial_cell_ROIs)
+               curr_item = curr_trial_cell_ROIs{item_index};
+               fprintf('\t length(curr_item): %d\n', length(curr_item));
+               for sub_item_index = 1:length(curr_item)
+                   curr_sub_item = curr_item{sub_item_index};
+                   fprintf('\t\t length(curr_sub_item): %d\n', length(curr_sub_item));
+               end
+            
+%                disp(size(curr_item))
+            end
+%         end 
+        
 
         [~, ~, curr_cell.df_raw] = flattenAllFields(fissa_data.df_raw.(curr_cell_id_name), 2);
         numCombinedDatapoints = length(curr_cell.df_raw);

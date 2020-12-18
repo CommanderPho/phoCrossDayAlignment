@@ -39,7 +39,7 @@ phoPipelineOptions.activeNeuropilCompensationMode = 'fissa';
 
 
 %%% PhoLoadFinalDataStruct Options:
-phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave = false;
+phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave = true;
 phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil = true;
 phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames = [1, 30];
 
@@ -90,7 +90,7 @@ phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawC
 phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels = false;
 
 
-phoPipelineOptions.fissa.load_fissa_data_and_update_FDS = false;
+phoPipelineOptions.fissa.load_fissa_data_and_update_FDS = true;
 phoPipelineOptions.fissa.included_cellROIs_only = false;
 phoPipelineOptions.fissa.default_fissa_file_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/fissa_suite2p_example/experiment_matlab.mat';
 phoPipelineOptions.fissa.fissa_field_names = {'fissa_df_raw','fissa_df_result','fissa_raw','fissa_result'};
