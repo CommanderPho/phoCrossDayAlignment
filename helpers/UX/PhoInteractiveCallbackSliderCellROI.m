@@ -1,14 +1,15 @@
 classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
 
     properties
-      cellRoiValues
+      cellRoiDataValues
+	  cellRoiDataLabels
       linkedPlotFigureHandles = [];
       active_plots_config
     end
 
    methods (Access = protected)
 
-		function obj = PhoInteractiveCallbackSliderCellROI(iscInfo, linked_plots_config, cellRoiSliderValues)
+		function obj = PhoInteractiveCallbackSliderCellROI(iscInfo, linked_plots_config, cellRoiSliderDataStruct)
 			%PhoInteractiveCallbackSliderCellROI Construct an instance of this class
 			%   Detailed explanation goes here
 			obj@PhoInteractiveCallbackSliderBase(iscInfo, linked_plots_config.plot_callbacks);
@@ -16,7 +17,20 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
             obj.linkedPlotFigureHandles = linked_plots_config.linkedFigureHandles;
             obj.active_plots_config = linked_plots_config.active_plots;
             
-            obj.cellRoiValues = cellRoiSliderValues;
+			% cellRoiValues: should be a struct with fields of the same size, having properties corresponding to each ROI
+%             obj.cellRoiData = cellRoiSliderValues;
+
+			obj.cellRoiDataLabels = fieldnames(cellRoiSliderDataStruct);
+			for i = 1:length(obj.cellRoiDataLabels)
+				curr_field = obj.cellRoiDataLabels{i};
+				curr_values = cellRoiSliderDataStruct.(curr_field);
+				is_first_item = (i == 1);
+				if is_first_item
+					obj.cellRoiDataValues = curr_values;
+				else
+					obj.cellRoiDataValues = cat(1, obj.cellRoiDataValues, curr_values);
+				end
+			end
 
 			% Once that's done, build the slider GUI:
 			obj.build_controller_gui();
@@ -152,7 +166,7 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
         
         
         function build_controller_gui_slider(obj)
-            numRepeatedColumns = length(obj.cellRoiValues);
+            numRepeatedColumns = size(obj.cellRoiDataValues, 2);
             
             sliderPanel = uipanel(obj.RootGrid,'Title','CellROIs');
             sliderPanel.Layout.Row = 2;
@@ -163,7 +177,9 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
             embedded_grid_obj.Padding = [0 0 0 0];
             
             for i = 1:numRepeatedColumns
-                curr_label_text = sprintf('%d',i);
+                curr_original_comp_index = obj.cellRoiDataValues(2,i);
+                
+                curr_label_text = sprintf('%d\n%d',i,curr_original_comp_index);
                 curr_label_tooltip = sprintf('Select cellROI[%d]',i);
 
                 curr_button = uibutton(embedded_grid_obj, 'state', 'Tag', curr_label_text);
@@ -186,11 +202,15 @@ classdef PhoInteractiveCallbackSliderCellROI < PhoInteractiveCallbackSliderBase
             out_axes = uiaxes(embedded_grid_obj,'Tag','uiaxes_phoControllerSlider');
             out_axes.Layout.Row = 2;
             out_axes.Layout.Column = [1 numRepeatedColumns]; % Span all columns
-            [out_axes] = fnPlotHelper_SetupMatrixDisplayAxes(out_axes, size(obj.cellRoiValues));
+    
+            % The values to plot on the matrix grid:
+            active_matrix_values = obj.cellRoiDataValues(1,:);
+%             active_matrix_values = obj.cellRoiDataValues;
+            [out_axes] = fnPlotHelper_SetupMatrixDisplayAxes(out_axes, size(active_matrix_values));
 
-            xx = [1:size(obj.cellRoiValues,1)];
-            yy = [1:size(obj.cellRoiValues,2)];
-            hIm = imagesc(out_axes, 'XData', xx, 'YData', yy, 'CData', obj.cellRoiValues, 'AlphaData', .5);
+            xx = [1:size(active_matrix_values,1)];
+            yy = [1:size(active_matrix_values,2)];
+            hIm = imagesc(out_axes, 'XData', xx, 'YData', yy, 'CData', active_matrix_values, 'AlphaData', .5);
             hIm.ButtonDownFcn = @(h,event) obj.fnPhoControllerSlider_OnMatrixAreaClicked(h, event);
         end
 
