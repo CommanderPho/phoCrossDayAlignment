@@ -45,7 +45,9 @@ classdef FinalDataExplorer
         compMasks % struct containing sessionRoiMask fields. sessionRoiMask: *one for each ROI in each session*: matricies the size of the original images (512x512 for example) that specify specific pixels related to the ROIs.
         compNeuropilMasks
         
-        active_DFF
+		raw_DFF
+		corrected_DFF
+
         traceTimebase_t
         
         %% Processed Outputs: Computed by running obj.buildSpatialTuningInfo(...)
@@ -63,9 +65,9 @@ classdef FinalDataExplorer
         
     end
     methods
-       function obj = set.active_DFF(obj, value)
-           obj.active_DFF = value;
-       end  
+    %    function obj = set.active_DFF(obj, value)
+    %        obj.active_DFF = value;
+    %    end
        function obj = set.compMasks(obj, value)
            obj.compMasks = value;
        end  
@@ -89,8 +91,14 @@ classdef FinalDataExplorer
         uniqueFreqs
         uniqueStimuli
 
+		active_DFF
     end
     methods
+		function active_DFF = get.active_DFF(obj)
+		%% TODO: decide which DFF is active by a setting
+          active_DFF = obj.raw_DFF;
+       end
+
        function dateStrings = get.dateStrings(obj)
           dateStrings = obj.cellROIIndex_mapper.dateStrings;
        end
@@ -128,6 +136,7 @@ classdef FinalDataExplorer
        function uniqueStimuli = get.uniqueStimuli(obj)
           uniqueStimuli = obj.stimuli_mapper.uniqueStimuli;
        end
+
     end
     
     methods
@@ -141,6 +150,7 @@ classdef FinalDataExplorer
     
         end
         
+
         function [mask] = getFillRoiMask(obj, roiIndex)
            %% getFillRoiMask: convenience method for accessing the fill mask for a given roiIndex.
            mask = squeeze(obj.roiMasks.Fill(roiIndex,:,:));
@@ -363,8 +373,60 @@ classdef FinalDataExplorer
             
         end % end function buildSpatialTuningInfo
         
-        
-        
+        function [obj] = processOutputsDFF(obj, outputs, output_DFF_Name, curr_day_linear_comp_index, phoPipelineOptions)
+			% processOutputsDFF(...): process the outputs from processOutputsDFF(...) for a specific comp index and frame type
+
+			if strcmpi(output_DFF_Name, 'default_DFF')
+				[obj.raw_DFF] = processAndUpdateOutputsDFF(outputs, obj.raw_DFF, output_DFF_Name, curr_day_linear_comp_index, phoPipelineOptions);
+			elseif strcmpi(output_DFF_Name, 'minusNeuropil_DFF')
+				[obj.corrected_DFF] = processAndUpdateOutputsDFF(outputs, obj.corrected_DFF, output_DFF_Name, curr_day_linear_comp_index, phoPipelineOptions);
+			else
+				error('Unknown dff type')
+			end
+		end
+
+		function [obj] = onCompleteProcessingDFF(obj, output_DFF_Name, phoPipelineOptions)
+			% onCompleteProcessingDFF(...): process the outputs from processOutputsDFF(...) for a specific comp index and frame type
+			if strcmpi(output_DFF_Name, 'default_DFF')
+				obj.raw_DFF.componentAggregatePropeties = updateComponentAggregateProperties(obj.raw_DFF.componentAggregatePropeties, phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
+				% [obj.raw_DFF] = processOutputsDFF(outputs, obj.raw_DFF, output_DFF_Name, curr_day_linear_comp_index, phoPipelineOptions)
+			elseif strcmpi(output_DFF_Name, 'minusNeuropil_DFF')
+				obj.corrected_DFF.componentAggregatePropeties = updateComponentAggregateProperties(obj.corrected_DFF.componentAggregatePropeties, phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
+				% [obj.corrected_DFF] = processOutputsDFF(outputs, obj.corrected_DFF, output_DFF_Name, curr_day_linear_comp_index, phoPipelineOptions)
+			else
+				error('Unknown dff type')
+			end
+		end
+
+		function [obj] = allocateDffs(obj, phoPipelineOptions)
+			obj.raw_DFF = obj.allocateNewDff()
+
+			if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
+				obj.corrected_DFF = obj.allocateNewDff()
+			end
+		end
+
+        function [new_DFF] = allocateNewDff(obj)
+           %% getFillRoiMask: convenience method for accessing the fill mask for a given roiIndex.
+           	new_DFF.cellROI_FirstDayTuningMaxPeak = zeros(obj.num_cellROIs, 1); % Just the first day
+			new_DFF.cellROI_SatisfiesFirstDayTuning = zeros(obj.num_cellROIs, 1); % Just the first day
+
+			new_DFF.TracesForAllStimuli.imgDataToPlot = zeros(obj.cellROIIndex_mapper.numCompListEntries, 26, 20, 150);
+			new_DFF.redTraceLinesForAllStimuli = zeros(obj.cellROIIndex_mapper.numCompListEntries, 26, 150);
+			% Build 2D Mesh for each component
+			new_DFF.finalOutPeaksGrid = zeros(obj.cellROIIndex_mapper.numCompListEntries,6,6);
+			% componentAggregatePropeties.maxTuningPeakValue: the maximum peak value for each signal
+			new_DFF.componentAggregatePropeties.maxTuningPeakValue = zeros(obj.cellROIIndex_mapper.numCompListEntries,1);
+			% componentAggregatePropeties.sumTuningPeaksValue: the sum of all peaks
+			new_DFF.componentAggregatePropeties.sumTuningPeaksValue = zeros(obj.cellROIIndex_mapper.numCompListEntries,1);
+
+			% Timing Info:
+			% the relative offset between the start of the sound stimulus and the max peak
+			new_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(obj.cellROIIndex_mapper.numCompListEntries, 26);
+			% timingInfo.Index.trialStartRelative.maxPeakIndex: the relative offset between the start of the trial (not the stimulus) and the max peak. As close to an absolute index as it gets.
+			new_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(obj.cellROIIndex_mapper.numCompListEntries, 26);
+        end
+
         function [obj] = allocateOutputObjects(obj, phoPipelineOptions)
             %% HELPER FUNCTION: allocateOutputObjects
             % Allocates the computed output objects.
@@ -418,7 +480,6 @@ classdef FinalDataExplorer
 			obj.preferredStimulusInfo.ChangeScores = zeros(obj.num_cellROIs, 1);
 			obj.preferredStimulusInfo.InterSessionConsistencyScores = zeros(obj.num_cellROIs, 1);
 			
-
             obj.roiComputedProperties.areas = zeros(obj.num_cellROIs, 1);
             obj.roiComputedProperties.boundingBoxes = zeros(obj.num_cellROIs, 4);
             obj.roiComputedProperties.centroids = zeros(obj.num_cellROIs, 2);
