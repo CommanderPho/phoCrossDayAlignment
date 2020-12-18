@@ -47,9 +47,6 @@ end
 final_data_explorer_obj = final_data_explorer_obj.buildSpatialTuningInfo(phoPipelineOptions);
 % prefStimChangeScores = sum(final_data_explorer_obj.preferredStimulusInfo.DidPreferredStimulusChange,2);
 
-
-
-
 if phoPipelineOptions.shouldShowPlots
     [figH_numDaysCriteria, figH_roiTuningPreferredStimulus, final_data_explorer_obj] = fnPlotPhoBuildSpatialTuningFigures(final_data_explorer_obj, phoPipelineOptions);
     
