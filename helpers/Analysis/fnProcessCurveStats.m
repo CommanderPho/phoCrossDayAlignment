@@ -5,7 +5,7 @@ function [outputs] = fnProcessCurveStats(curve, timingInfo)
 
     %% Subidivide the Curve into the regions based on the timingInfo:
 
-    %outputs.default_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex
+    %outputs.default_DFF_Structure.timingInfo.Index.trialStartRelative.maxPeakIndex
     subCurve_All = curve(1:timingInfo.Index.trialStartRelative.startSound);
     [outputs.All] = fnProcessSubCurveStats(subCurve_All);
     outputs.All.max.Idx = outputs.All.max.subcurveStartRelativeIdx; % same for Pre-stimulus start periods

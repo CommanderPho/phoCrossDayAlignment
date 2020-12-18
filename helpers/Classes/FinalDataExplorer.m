@@ -45,6 +45,7 @@ classdef FinalDataExplorer
         compMasks % struct containing sessionRoiMask fields. sessionRoiMask: *one for each ROI in each session*: matricies the size of the original images (512x512 for example) that specify specific pixels related to the ROIs.
         compNeuropilMasks
         
+		activeNeuropilCompensationMode
 		raw_DFF
 		corrected_DFF
 
@@ -95,8 +96,16 @@ classdef FinalDataExplorer
     end
     methods
 		function active_DFF = get.active_DFF(obj)
-		%% TODO: decide which DFF is active by a setting
-          active_DFF = obj.raw_DFF;
+			%% TODO: decide which DFF is active by a setting
+			if strcmpi(obj.activeNeuropilCompensationMode, 'none')
+				active_DFF = obj.raw_DFF;
+			elseif strcmpi(obj.activeNeuropilCompensationMode, 'suite2p')
+				active_DFF = obj.corrected_DFF;
+			elseif strcmpi(obj.activeNeuropilCompensationMode, 'fissa')
+				active_DFF = obj.corrected_DFF;
+			else
+				error('Invalid neuropil mode!')
+			end
        end
 
        function dateStrings = get.dateStrings(obj)
@@ -124,7 +133,7 @@ classdef FinalDataExplorer
           redTraceLinesForAllStimuli = obj.active_DFF.redTraceLinesForAllStimuli;
        end
        function tracesForAllStimuli = get.tracesForAllStimuli(obj)
-          tracesForAllStimuli = obj.active_DFF.TracesForAllStimuli.imgDataToPlot;
+          tracesForAllStimuli = obj.active_DFF.TracesForAllStimuli.meanDFF;
        end
 
        function uniqueAmps = get.uniqueAmps(obj)
@@ -140,14 +149,18 @@ classdef FinalDataExplorer
     end
     
     methods
-        function obj = FinalDataExplorer(cellROIIndex_mapper, stimuli_mapper)
+        function obj = FinalDataExplorer(cellROIIndex_mapper, stimuli_mapper, phoPipelineOptions)
             %FINALDATAEXPLORER Construct an instance of this class
             %   Detailed explanation goes here
    
             obj.cellROIIndex_mapper = cellROIIndex_mapper;
 
             obj.stimuli_mapper = stimuli_mapper;
+
+			obj.activeNeuropilCompensationMode = phoPipelineOptions.activeNeuropilCompensationMode;
     
+			obj.allocateDffs(phoPipelineOptions);
+
         end
         
 
@@ -375,10 +388,9 @@ classdef FinalDataExplorer
         
         function [obj] = processOutputsDFF(obj, outputs, output_DFF_Name, curr_day_linear_comp_index, phoPipelineOptions)
 			% processOutputsDFF(...): process the outputs from processOutputsDFF(...) for a specific comp index and frame type
-
-			if strcmpi(output_DFF_Name, 'default_DFF')
+			if strcmpi(output_DFF_Name, 'default_DFF_Structure')
 				[obj.raw_DFF] = processAndUpdateOutputsDFF(outputs, obj.raw_DFF, output_DFF_Name, curr_day_linear_comp_index, phoPipelineOptions);
-			elseif strcmpi(output_DFF_Name, 'minusNeuropil_DFF')
+			elseif strcmpi(output_DFF_Name, 'neuropilCorrected_DFF_Structure')
 				[obj.corrected_DFF] = processAndUpdateOutputsDFF(outputs, obj.corrected_DFF, output_DFF_Name, curr_day_linear_comp_index, phoPipelineOptions);
 			else
 				error('Unknown dff type')
@@ -387,10 +399,10 @@ classdef FinalDataExplorer
 
 		function [obj] = onCompleteProcessingDFF(obj, output_DFF_Name, phoPipelineOptions)
 			% onCompleteProcessingDFF(...): process the outputs from processOutputsDFF(...) for a specific comp index and frame type
-			if strcmpi(output_DFF_Name, 'default_DFF')
+			if strcmpi(output_DFF_Name, 'default_DFF_Structure')
 				obj.raw_DFF.componentAggregatePropeties = updateComponentAggregateProperties(obj.raw_DFF.componentAggregatePropeties, phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 				% [obj.raw_DFF] = processOutputsDFF(outputs, obj.raw_DFF, output_DFF_Name, curr_day_linear_comp_index, phoPipelineOptions)
-			elseif strcmpi(output_DFF_Name, 'minusNeuropil_DFF')
+			elseif strcmpi(output_DFF_Name, 'neuropilCorrected_DFF_Structure')
 				obj.corrected_DFF.componentAggregatePropeties = updateComponentAggregateProperties(obj.corrected_DFF.componentAggregatePropeties, phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 				% [obj.corrected_DFF] = processOutputsDFF(outputs, obj.corrected_DFF, output_DFF_Name, curr_day_linear_comp_index, phoPipelineOptions)
 			else
@@ -398,34 +410,9 @@ classdef FinalDataExplorer
 			end
 		end
 
-		function [obj] = allocateDffs(obj, phoPipelineOptions)
-			obj.raw_DFF = obj.allocateNewDff()
+		
 
-			if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
-				obj.corrected_DFF = obj.allocateNewDff()
-			end
-		end
-
-        function [new_DFF] = allocateNewDff(obj)
-           %% getFillRoiMask: convenience method for accessing the fill mask for a given roiIndex.
-           	new_DFF.cellROI_FirstDayTuningMaxPeak = zeros(obj.num_cellROIs, 1); % Just the first day
-			new_DFF.cellROI_SatisfiesFirstDayTuning = zeros(obj.num_cellROIs, 1); % Just the first day
-
-			new_DFF.TracesForAllStimuli.imgDataToPlot = zeros(obj.cellROIIndex_mapper.numCompListEntries, 26, 20, 150);
-			new_DFF.redTraceLinesForAllStimuli = zeros(obj.cellROIIndex_mapper.numCompListEntries, 26, 150);
-			% Build 2D Mesh for each component
-			new_DFF.finalOutPeaksGrid = zeros(obj.cellROIIndex_mapper.numCompListEntries,6,6);
-			% componentAggregatePropeties.maxTuningPeakValue: the maximum peak value for each signal
-			new_DFF.componentAggregatePropeties.maxTuningPeakValue = zeros(obj.cellROIIndex_mapper.numCompListEntries,1);
-			% componentAggregatePropeties.sumTuningPeaksValue: the sum of all peaks
-			new_DFF.componentAggregatePropeties.sumTuningPeaksValue = zeros(obj.cellROIIndex_mapper.numCompListEntries,1);
-
-			% Timing Info:
-			% the relative offset between the start of the sound stimulus and the max peak
-			new_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(obj.cellROIIndex_mapper.numCompListEntries, 26);
-			% timingInfo.Index.trialStartRelative.maxPeakIndex: the relative offset between the start of the trial (not the stimulus) and the max peak. As close to an absolute index as it gets.
-			new_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(obj.cellROIIndex_mapper.numCompListEntries, 26);
-        end
+        
 
         function [obj] = allocateOutputObjects(obj, phoPipelineOptions)
             %% HELPER FUNCTION: allocateOutputObjects
@@ -566,5 +553,43 @@ classdef FinalDataExplorer
         
 		
     end % end methods
+
+	%% Protected Methods Block:
+	methods (Access = protected)
+
+		function [obj] = allocateDffs(obj, phoPipelineOptions)
+			obj.raw_DFF = FinalDataExplorer.allocateNewDff(obj.num_cellROIs, obj.cellROIIndex_mapper.numCompListEntries);
+			if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
+				obj.corrected_DFF = FinalDataExplorer.allocateNewDff(obj.num_cellROIs, obj.cellROIIndex_mapper.numCompListEntries);
+			end
+		end
+
+	end % end private methods
+
+	%% Static Methods Block:
+	methods (Static)
+		function [new_DFF] = allocateNewDff(num_cellROIs, numCompListEntries)
+           %% getFillRoiMask: convenience method for accessing the fill mask for a given roiIndex.
+           	new_DFF.cellROI_FirstDayTuningMaxPeak = zeros(num_cellROIs, 1); % Just the first day
+			new_DFF.cellROI_SatisfiesFirstDayTuning = zeros(num_cellROIs, 1); % Just the first day
+
+			new_DFF.TracesForAllStimuli.meanDFF = zeros(numCompListEntries, 26, 20, 150);
+			new_DFF.redTraceLinesForAllStimuli = zeros(numCompListEntries, 26, 150);
+			% Build 2D Mesh for each component
+			new_DFF.finalOutPeaksGrid = zeros(numCompListEntries,6,6);
+			% componentAggregatePropeties.maxTuningPeakValue: the maximum peak value for each signal
+			new_DFF.componentAggregatePropeties.maxTuningPeakValue = zeros(numCompListEntries,1);
+			% componentAggregatePropeties.sumTuningPeaksValue: the sum of all peaks
+			new_DFF.componentAggregatePropeties.sumTuningPeaksValue = zeros(numCompListEntries,1);
+
+			% Timing Info:
+			% the relative offset between the start of the sound stimulus and the max peak
+			new_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(numCompListEntries, 26);
+			% timingInfo.Index.trialStartRelative.maxPeakIndex: the relative offset between the start of the trial (not the stimulus) and the max peak. As close to an absolute index as it gets.
+			new_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(numCompListEntries, 26);
+        end
+	end % end static methods block
+
+
 end % end class
 

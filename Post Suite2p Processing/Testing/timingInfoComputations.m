@@ -52,7 +52,7 @@ cellROIIndex = 5;
 %     end
 % end
 
-% outputs.TracesForAllStimuli.imgDataToPlot = zeros([outputs.numStimuli, outputs.numStimulusPairTrialRepetitionsPerSession, outputs.numFramesPerTrial]); % raw traces
+% outputs.TracesForAllStimuli.meanDFF = zeros([outputs.numStimuli, outputs.numStimulusPairTrialRepetitionsPerSession, outputs.numFramesPerTrial]); % raw traces
 
 
 

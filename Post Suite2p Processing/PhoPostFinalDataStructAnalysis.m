@@ -35,7 +35,7 @@ end
 
 %% Primary Outputs:
 % multiSessionCellRoi_CompListIndicies
-% default_DFF
+% default_DFF_Structure
 % minusNeuropil
 
 %% DATA STRUCTURES:
@@ -78,7 +78,6 @@ if exist('cellROIIndexMapper','var')
 	clear cellROIIndexMapper;
 end
 cellROIIndexMapper = CellROIIndexMapper(activeSessionList, activeCompList, phoPipelineOptions);
-
 num_cellROIs = cellROIIndexMapper.num_cellROIs;
 
 %% Pre-Allocate:
@@ -87,40 +86,6 @@ compMasks.Edge = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
 
 compNeuropilMasks.Masks = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
 
-% default_DFF.cellROI_FirstDayTuningMaxPeak = zeros(cellROIIndexMapper.num_cellROIs, 1); % Just the first day
-% default_DFF.cellROI_SatisfiesFirstDayTuning = zeros(cellROIIndexMapper.num_cellROIs, 1); % Just the first day
-
-% default_DFF.TracesForAllStimuli.imgDataToPlot = zeros(cellROIIndexMapper.numCompListEntries, 26, 20, 150);
-% default_DFF.redTraceLinesForAllStimuli = zeros(cellROIIndexMapper.numCompListEntries, 26, 150);
-% % Build 2D Mesh for each component
-% default_DFF.finalOutPeaksGrid = zeros(cellROIIndexMapper.numCompListEntries,6,6);
-% % componentAggregatePropeties.maxTuningPeakValue: the maximum peak value for each signal
-% default_DFF.componentAggregatePropeties.maxTuningPeakValue = zeros(cellROIIndexMapper.numCompListEntries,1);
-% % componentAggregatePropeties.sumTuningPeaksValue: the sum of all peaks
-% default_DFF.componentAggregatePropeties.sumTuningPeaksValue = zeros(cellROIIndexMapper.numCompListEntries,1);
-
-
-% % Timing Info:
-%  % the relative offset between the start of the sound stimulus and the max peak
-% default_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(cellROIIndexMapper.numCompListEntries, 26);
-% % timingInfo.Index.trialStartRelative.maxPeakIndex: the relative offset between the start of the trial (not the stimulus) and the max peak. As close to an absolute index as it gets.
-% default_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(cellROIIndexMapper.numCompListEntries, 26);
-		
-
-
-% if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
-% 	 % Generate similar grids for minusNeuropil outputs
-% 	 minusNeuropil.TracesForAllStimuli.imgDataToPlot = default_DFF.TracesForAllStimuli.imgDataToPlot;
-% 	 minusNeuropil.redTraceLinesForAllStimuli = default_DFF.redTraceLinesForAllStimuli;
-% 	 minusNeuropil.finalOutPeaksGrid = default_DFF.finalOutPeaksGrid;
-% 	 minusNeuropil.cellROI_FirstDayTuningMaxPeak = default_DFF.cellROI_FirstDayTuningMaxPeak; % Just the first day
-% 	 minusNeuropil.cellROI_SatisfiesFirstDayTuning = default_DFF.cellROI_SatisfiesFirstDayTuning; % Just the first day
-% 	 minusNeuropil.componentAggregatePropeties.maxTuningPeakValue = default_DFF.componentAggregatePropeties.maxTuningPeakValue;
-% 	 minusNeuropil.componentAggregatePropeties.sumTuningPeaksValue = default_DFF.componentAggregatePropeties.sumTuningPeaksValue;
-% 	 minusNeuropil.timingInfo.Index.startSoundRelative.maxPeakIndex = default_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex;
-% 	 minusNeuropil.timingInfo.Index.startSoundRelative.maxPeakIndex = default_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex;
-% end
-   
 
 if exist('stimuli_mapper','var')
 	clear stimuli_mapper;
@@ -143,7 +108,7 @@ for i = 1:num_cellROIs
 		curr_day_linear_comp_index = curr_cellROI_compListIndicies(j); % The linear comp index, not the unique cellROI index
 		[currentAnm, currentSesh, currentComp] = fnBuildCurrIdentifier(activeCompList, curr_day_linear_comp_index); % TODO: potentially refactor into CellROIIndexMapper?
 		
-		[outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp, phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions);
+		[outputs] = fnProcessCompFromFDS(finalDataStruct, currentAnm, currentSesh, currentComp, phoPipelineOptions);
 		uniqueAmps = outputs.uniqueAmps;
 		uniqueFreqs = outputs.uniqueFreqs; %
 		compMasks.Masks(curr_day_linear_comp_index,:,:) = outputs.referenceMask;
@@ -163,18 +128,18 @@ for i = 1:num_cellROIs
 			% Only allow initialization once, if it doesn't exist.
 			% Initialize the output object once the loop is finished.
 			% final_data_explorer_obj = FinalDataExplorer(uniqueComps, multiSessionCellRoi_CompListIndicies, dateStrings, stimuli_mapper);
-			final_data_explorer_obj = FinalDataExplorer(cellROIIndexMapper, stimuli_mapper);
+			final_data_explorer_obj = FinalDataExplorer(cellROIIndexMapper, stimuli_mapper, phoPipelineOptions);
 			% the value for outputs.traceTimebase_t should be the same for all traces, all cells, and all sessions, so we can just use the last one:
 			final_data_explorer_obj.traceTimebase_t = outputs.traceTimebase_t;
-			final_data_explorer_obj = final_data_explorer_obj.allocateDffs(phoPipelineOptions);
-			% [default_DFF] = final_data_explorer_obj.allocateNewDff();
+			% final_data_explorer_obj = final_data_explorer_obj.allocateDffs(phoPipelineOptions);
+			% [default_DFF_Structure] = final_data_explorer_obj.allocateNewDff();
 
 			% if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
 			% 	[minusNeuropil] = final_data_explorer_obj.allocateNewDff();
 			% end
 		end
 		
-		final_data_explorer_obj = final_data_explorer_obj.processOutputsDFF(outputs, 'default_DFF', curr_day_linear_comp_index, phoPipelineOptions);
+		final_data_explorer_obj = final_data_explorer_obj.processOutputsDFF(outputs, 'default_DFF_Structure', curr_day_linear_comp_index, phoPipelineOptions);
 
 		temp.isFirstSessionInCellRoi = (j == 1);	
 		if temp.isFirstSessionInCellRoi
@@ -188,7 +153,7 @@ for i = 1:num_cellROIs
 
 
 		if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
-			final_data_explorer_obj = final_data_explorer_obj.processOutputsDFF(outputs, 'minusNeuropil_DFF', curr_day_linear_comp_index, phoPipelineOptions);
+			final_data_explorer_obj = final_data_explorer_obj.processOutputsDFF(outputs, 'neuropilCorrected_DFF_Structure', curr_day_linear_comp_index, phoPipelineOptions);
 
 			if temp.isFirstSessionInCellRoi
 				final_data_explorer_obj.corrected_DFF.cellROI_FirstDayTuningMaxPeak(i) = final_data_explorer_obj.corrected_DFF.maxPeakSignal;
@@ -210,27 +175,27 @@ end %% endfor each cellROI
 final_data_explorer_obj.compMasks = compMasks; % Set the compMasks, which contains the masks.
 final_data_explorer_obj.compNeuropilMasks = compNeuropilMasks; % Set the compNeuropilMasks, which contains the masks.
 
-[final_data_explorer_obj] = final_data_explorer_obj.onCompleteProcessingDFF('default_DFF', phoPipelineOptions);
-% default_DFF.cellROI_SatisfiesFirstDayTuning = (default_DFF.cellROI_FirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
+[final_data_explorer_obj] = final_data_explorer_obj.onCompleteProcessingDFF('default_DFF_Structure', phoPipelineOptions);
+% default_DFF_Structure.cellROI_SatisfiesFirstDayTuning = (default_DFF_Structure.cellROI_FirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
 if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
-	[final_data_explorer_obj] = final_data_explorer_obj.onCompleteProcessingDFF('minusNeuropil_DFF', phoPipelineOptions);
+	[final_data_explorer_obj] = final_data_explorer_obj.onCompleteProcessingDFF('neuropilCorrected_DFF_Structure', phoPipelineOptions);
 	% minusNeuropil.cellROI_SatisfiesFirstDayTuning = (minusNeuropil.cellROI_FirstDayTuningMaxPeak > phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 end
 			
 % if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
 % 	fprintf('\t done. INFO: %d of %d (%d of %d for neuropil) cellROIs satisfy the tuning criteria of %f on the first day of the experiment. \n',...
-% 	sum(default_DFF.cellROI_SatisfiesFirstDayTuning), length(default_DFF.cellROI_FirstDayTuningMaxPeak), ...
+% 	sum(default_DFF_Structure.cellROI_SatisfiesFirstDayTuning), length(default_DFF_Structure.cellROI_FirstDayTuningMaxPeak), ...
 % 	sum(minusNeuropil.cellROI_SatisfiesFirstDayTuning), length(minusNeuropil.cellROI_FirstDayTuningMaxPeak), ...
 % 	phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
 % else
 % 	fprintf('\t done. INFO: %d of %d cellROIs satisfy the tuning criteria of %f on the first day of the experiment. \n',...
-% 		sum(default_DFF.cellROI_SatisfiesFirstDayTuning), length(default_DFF.cellROI_FirstDayTuningMaxPeak),...
+% 		sum(default_DFF_Structure.cellROI_SatisfiesFirstDayTuning), length(default_DFF_Structure.cellROI_FirstDayTuningMaxPeak),...
 % 		phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 % end
 
-% default_DFF.componentAggregatePropeties = updateComponentAggregateProperties(default_DFF.componentAggregatePropeties, phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
+% default_DFF_Structure.componentAggregatePropeties = updateComponentAggregateProperties(default_DFF_Structure.componentAggregatePropeties, phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
 
 % if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
 % 	minusNeuropil.componentAggregatePropeties = updateComponentAggregateProperties(minusNeuropil.componentAggregatePropeties, phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria);
@@ -244,7 +209,7 @@ end
 % 	final_data_explorer_obj.active_DFF = minusNeuropil;
 % else
 % 	fprintf('\t Using non-Neuropil Corrected Results...\n');
-% 	final_data_explorer_obj.active_DFF = default_DFF;
+% 	final_data_explorer_obj.active_DFF = default_DFF_Structure;
 % end
 
 final_data_explorer_obj = final_data_explorer_obj.computeCurveAnalysis();

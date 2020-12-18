@@ -7,8 +7,8 @@ function [loaded_DFF] = processAndUpdateOutputsDFF(outputs, prev_loaded_DFF, out
 		loaded_DFF.maxPeakSignal = max(loaded_DFF.peakSignals); % used
 		loaded_DFF.componentAggregatePropeties.maxTuningPeakValue(curr_day_linear_comp_index) = loaded_DFF.maxPeakSignal; 
 		loaded_DFF.componentAggregatePropeties.sumTuningPeaksValue(curr_day_linear_comp_index) = sum(loaded_DFF.peakSignals);   
-		loaded_DFF.TracesForAllStimuli.imgDataToPlot(curr_day_linear_comp_index, :, :, :) = outputs.TracesForAllStimuli.imgDataToPlot;
-		loaded_DFF.redTraceLinesForAllStimuli(curr_day_linear_comp_index, :, :) = outputs.(output_DFF_Name).AMConditions.imgDataToPlot; % [26   150]
+		loaded_DFF.TracesForAllStimuli.meanDFF(curr_day_linear_comp_index, :, :, :) = outputs.TracesForAllStimuli.meanDFF;
+		loaded_DFF.redTraceLinesForAllStimuli(curr_day_linear_comp_index, :, :) = outputs.(output_DFF_Name).AMConditions.meanDFF; % [26   150]
 		% Get timing info for the mean (red) curves for all stimuli.
 		loaded_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex(curr_day_linear_comp_index,:) = outputs.(output_DFF_Name).timingInfo.Index.startSoundRelative.maxPeakIndex;
 		loaded_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex(curr_day_linear_comp_index,:) = outputs.(output_DFF_Name).timingInfo.Index.trialStartRelative.maxPeakIndex;

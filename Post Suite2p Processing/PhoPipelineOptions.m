@@ -10,9 +10,13 @@ phoPipelineOptions.default_interactionManager_backingStorePath = '/Users/pho/rep
 phoPipelineOptions.imageDimensions = [512 512];
 
 % activeNeuropilCompensationMode: specifies which dFF curves to use.
-phoPipelineOptions.ActiveNeuropilCompensationModes = {'none','suite2p','fissa'};
-phoPipelineOptions.activeNeuropilCompensationMode = categorical(phoPipelineOptions.ActiveNeuropilCompensationModes);
+phoPipelineOptions.ActiveNeuropilCompensationModeLabels = {'none','suite2p','fissa'};
+phoPipelineOptions.ActiveNeuropilCompensationModes = categorical(phoPipelineOptions.ActiveNeuropilCompensationModeLabels);
+phoPipelineOptions.activeNeuropilCompensationMode = 'fissa';
 
+
+
+    
 % Used to use: phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
 % phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil = true;
 
@@ -48,7 +52,16 @@ phoPipelineOptions.PhoLoadFinalDataStruct.filtering.specFilePath = fullfile('../
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.numFramesPerTrial = 150; % the trial length in number of frames
 % tuning_max_threshold_criteria: the threshold value for peakDFF
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.tuning_max_threshold_criteria = 0.1;
-phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions = true;
+% Use processingOptions.activeNeuropilCompensationMode instead of the old processingOptions.compute_neuropil_corrected_versions
+if strcmpi(phoPipelineOptions.activeNeuropilCompensationMode, 'none')
+    phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions = false;
+elseif strcmpi(phoPipelineOptions.activeNeuropilCompensationMode, 'suite2p')
+    phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions = true;
+elseif strcmpi(phoPipelineOptions.activeNeuropilCompensationMode, 'fissa')
+    phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions = true;
+else
+    error('Invalid neuropil mode!')
+end
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.startSound = 31;
 phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.endSound = 60;
 % phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.endSound = 90;

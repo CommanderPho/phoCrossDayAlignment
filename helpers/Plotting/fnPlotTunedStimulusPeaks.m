@@ -41,7 +41,7 @@ function [figH, curr_ax] = fnPlotTunedStimulusPeaks(dateStrings, uniqueAmps, uni
         
         % Deal with the 0,0 index:
 %          if uniqueAmps(c)==0
-%             plot(traceTimebase_t, imgDataToPlot(currentAmpIdx,:),'Color','black','Linewidth',2)
+%             plot(traceTimebase_t, meanDFF(currentAmpIdx,:),'Color','black','Linewidth',2)
 % %             text(max(traceTimebase_t),c-1,strcat(num2str(uniqueAmps(c)*100),'%'))
 %          end
          

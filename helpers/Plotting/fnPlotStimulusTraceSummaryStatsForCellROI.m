@@ -80,7 +80,7 @@ function [figH] = fnPlotStimulusTraceSummaryStatsForCellROI(final_data_explorer_
         % Get the index for this session of this cell ROI
         temp.compIndex = currAllSessionCompIndicies(i); 
     
-        % outputs.default_DFF.StimulusCurveSummaryStats: 1x26 struct. Has 4 fields (All, Pre, During, Post), each with 26 entries (one for each stimulus).
+        % outputs.default_DFF_Structure.StimulusCurveSummaryStats: 1x26 struct. Has 4 fields (All, Pre, During, Post), each with 26 entries (one for each stimulus).
         temp.curr_summary_stats = squeeze(final_data_explorer_obj.active_DFF.StimulusCurveSummaryStats(temp.compIndex,:))';
         
         numStimuli = length(temp.curr_summary_stats);
