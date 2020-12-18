@@ -107,6 +107,8 @@ end
 valid_only_quality = phoPipelineOptions.loadedFilteringData.manualRoiFilteringResults.final_quality_of_tuning;
 valid_only_quality(phoPipelineOptions.loadedFilteringData.manualRoiFilteringResults.final_is_Excluded) = []; % remove the excluded entries.
 
+
+
 % slider_controller_build_gui_callback = @(app_obj) fnPhoControllerSlider(app_obj.slider_controller.controller.figH, valid_only_quality', {@(updated_i) app_obj.custom_post_update_function([], updated_i)});
 
 % slider_controller_build_gui_callbacks = {@(app_obj) fnPhoControllerSlider(app_obj.slider_controller.controller.figH, valid_only_quality', {@(updated_i) app_obj.custom_post_update_function([], updated_i)})};

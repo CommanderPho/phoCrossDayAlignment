@@ -50,9 +50,16 @@ classdef SimpleSelectionSyncrhonizer < handle
 
 	methods (Static)
 
-		function out = fnPlotHelper_RegisterSelectionSynchronizingFigure(curr_figure)
+		function out = fnPlotHelper_RegisterSelectionSynchronizingFigure(curr_figure, should_remove)
+            if ~exist('should_remove','var')
+               should_remove = false; 
+            end
+            
 			persistent SynchronizedFiguresList
 			if isempty(SynchronizedFiguresList)
+                if should_remove
+                   error('Tried to remove a figure from an empty SynchronizedFiguresList');
+                end
 				if (nargin > 0)
 					SynchronizedFiguresList = [curr_figure];
 				else
@@ -60,24 +67,63 @@ classdef SimpleSelectionSyncrhonizer < handle
 				end
 			else
 				if (nargin > 0)
-					SynchronizedFiguresList(end+1) = curr_figure; % Add the current figure to the end
+                    if should_remove
+                        figure_index_to_remove = -1;
+                        for i = 1:length(SynchronizedFiguresList)
+                           if (SynchronizedFiguresList(i) == curr_figure)
+                               figure_index_to_remove = i;
+                               break;
+                           end
+                        end
+                        
+                        if figure_index_to_remove > 0
+                            fprintf('Removing figure with index %d from SynchronizedFiguresList.\n', figure_index_to_remove);
+                            SynchronizedFiguresList(figure_index_to_remove) = [];
+                        else
+                            error('could not remove the figure specified!');
+                        end
+                    else
+                        % Otherwise we're adding the figure
+                        SynchronizedFiguresList(end+1) = curr_figure; % Add the current figure to the end
+                    end
 				end
 			end
 			out = SynchronizedFiguresList;
-		end
+        end
 
+        function out = fnPlotHelper_UnregisterSelectionSynchronizingFigure(a_figure)
+			out = SimpleSelectionSyncrhonizer.fnPlotHelper_RegisterSelectionSynchronizingFigure(a_figure, true);
+        end
+
+        % TODO: refactor how this is done
+%         function out = fnPlotHelper_UnregisterAllInvalidSelectionSynchronizingFigures()
+%             curr_registered_figures = SimpleSelectionSyncrhonizer.fnPlotHelper_RegisterSelectionSynchronizingFigure;
+%             is_figure_valid = (isvalid(curr_registered_figures) && isgraphics(curr_registered_figures));
+% 			out = SimpleSelectionSyncrhonizer.fnPlotHelper_RegisterSelectionSynchronizingFigure(a_figure, true);
+%         end                
 
 		function fnPlotHelper_UpdateSelectionsForAllRegisteredFigures(initiating_update_figH)
 			[~, updated_desired_is_selected] = SimpleSelectionSyncrhonizer.fnPlotHelper_FindSelectedSubplots(initiating_update_figH);
 			curr_registered_figures = SimpleSelectionSyncrhonizer.fnPlotHelper_RegisterSelectionSynchronizingFigure;
+            found_invalid_figures = [];
 			for i = 1:length(curr_registered_figures)
 				curr_reg_fig_H = curr_registered_figures(i);
-                if ~isvalid(curr_reg_fig_H) || ~isgraphics(curr_reg_fig_H)
-                    if (initiating_update_figH ~= curr_reg_fig_H)
+                if isvalid(curr_reg_fig_H) && isgraphics(curr_reg_fig_H)
+                    if (initiating_update_figH ~= curr_reg_fig_H) % If it differs from the figure that triggered the update
                         SimpleSelectionSyncrhonizer.fnPlotHelper_SetSubplotSelections(curr_reg_fig_H, updated_desired_is_selected);
                     end
+                else
+                    % Otherwise remove the invalid figure
+                    found_invalid_figures(end+1) = curr_reg_fig_H;
+                    
                 end
-			end
+            end % end for
+            
+            % Remove invalid figures
+            for i = 1:length(found_invalid_figures)
+               curr_reg_invalid_fig_H = found_invalid_figures(i);
+               SimpleSelectionSyncrhonizer.fnPlotHelper_UnregisterSelectionSynchronizingFigure(curr_reg_invalid_fig_H);
+            end
 		end
 
 
