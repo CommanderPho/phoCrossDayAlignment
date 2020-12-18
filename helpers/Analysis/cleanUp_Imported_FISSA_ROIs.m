@@ -39,45 +39,17 @@ function [cleaned_curr_trial_cell_ROI_regions] = cleanUp_Imported_FISSA_ROIs(cur
     end
 
 
-	% function [cleaned_nested_cell_array] = process_nested_cell_array(curr_item)
-    %     % curr_polygon_numeric_array: an N x 2 array
-	% 	if isnumeric(curr_item)
-	% 		cleaned_nested_cell_array = process_final_numeric_array(curr_item);
-			
-	% 	else
-	% 		for i = 1:length(curr_item)
-	% 			process_nested_cell_array(curr_item{i});
-	% 		end
-			
-	% 	end
-
-    % end
-
-
 	function [cleaned] = process_final_numeric_array(an_item)
         cleaned = squeeze(an_item);
         if (isnumeric(cleaned) && (size(cleaned,2) == 2))
             % If it's a numeric array of size 2, it's the lowest level of recursion, we just return
             % We're done!
-			cleaned = an_item;
 			return
         else
 			error('Problem with the numeric array!')      
 			cleaned = [];      
         end
     end
-
-
-	% function [cleaned_nested_cell_array] = process_nested_cell_array(nested_cell_array)
-    %     % curr_polygon_numeric_array: an N x 2 array
-	% 	if isnumeric(nested_cell_array)
-	% 		cleaned_nested_cell_array = cleaned_nested_cell_array
-
-	% 	else
-
-	% 	end
-    % end
-    
 
 
 end
