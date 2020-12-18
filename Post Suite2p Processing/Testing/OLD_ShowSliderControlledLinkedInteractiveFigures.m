@@ -104,8 +104,15 @@ end
 % slider_controller = PhoInteractiveCallbackSliderDefault.getInstance(iscInfo, plot_callbacks);
 
 
-valid_only_quality = phoPipelineOptions.loadedFilteringData.manualRoiFilteringResults.final_quality_of_tuning;
-valid_only_quality(phoPipelineOptions.loadedFilteringData.manualRoiFilteringResults.final_is_Excluded) = []; % remove the excluded entries.
+% valid_only_quality = phoPipelineOptions.loadedFilteringData.manualRoiFilteringResults.final_quality_of_tuning;
+% valid_only_quality(phoPipelineOptions.loadedFilteringData.manualRoiFilteringResults.final_is_Excluded) = []; % remove the excluded entries.
+% valid_only_quality = valid_only_quality';
+
+% phoPipelineOptions.loadedFilteringData.manualRoiFilteringResults.data_table.compID
+temp.is_roiIncluded = ~phoPipelineOptions.loadedFilteringData.manualRoiFilteringResults.data_table.isManuallyExcluded;
+
+currSliderRoiInfo.final_quality_of_tuning = phoPipelineOptions.loadedFilteringData.manualRoiFilteringResults.final_quality_of_tuning(temp.is_roiIncluded)';
+currSliderRoiInfo.compID = phoPipelineOptions.loadedFilteringData.manualRoiFilteringResults.data_table.compID(temp.is_roiIncluded)';
 
 
 
@@ -132,7 +139,7 @@ linked_plots_config.active_plots.should_show_stimulus_summary_stats_plot = shoul
 linked_plots_config.linkedFigureHandles = linkedFigureHandles;
 linked_plots_config.plot_callbacks = plot_callbacks;
 
-slider_controller = PhoInteractiveCallbackSliderCellROI.getInstance(iscInfo, linked_plots_config, valid_only_quality');
+slider_controller = PhoInteractiveCallbackSliderCellROI.getInstance(iscInfo, linked_plots_config, currSliderRoiInfo);
 % Link the selections
 clear SimpleSelectionSyncrhonizer; % Delete the extant link
 for active_fig_i = 1:length(linkedFigureHandles)

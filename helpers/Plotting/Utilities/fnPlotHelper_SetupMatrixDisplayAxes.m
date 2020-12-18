@@ -14,7 +14,7 @@ function [ax] = fnPlotHelper_SetupMatrixDisplayAxes(ax, matrixSize)
         cellSize.halfWidth = (cellSize.width / 2.0);
         cellSize.halfHeight = (cellSize.height / 2.0);
         
-        ax.Toolbar.Visible = 'off';
+        ax.Toolbar.Visible = 'off'; % we know this can be slow, check the actual performance.
         disableDefaultInteractivity(ax);
         
         ax.Layer = 'top'; % Place the ticks and grid lines on top of the plot
