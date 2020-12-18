@@ -88,7 +88,15 @@ function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRo
         figure(figH);
     end    
     clf(figH);
-	
+    
+    set(figH,'factoryAxesTickLabelInterpreter','none')
+    
+% 	set(figH,'defaultSurfaceEdgeColor','g')
+    % Set up the defaults on the figure:
+%     hg = hggroup;
+%     plot(y,'Parent',hg)
+
+    
     %generate the dimensions of the subplots
     numRows = numel(nonzeros(final_data_explorer_obj.uniqueFreqs))+1; %+1 because you have the zero mod condition too
     numCol = numel(nonzeros(final_data_explorer_obj.uniqueAmps));

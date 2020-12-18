@@ -1,4 +1,4 @@
-addpath(genpath('../helpers'));
+addpath(genpath('../../helpers'));
  
 % to clear global variables:
 % clear global plot_manager_cellRoiPlot
