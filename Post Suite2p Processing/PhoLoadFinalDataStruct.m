@@ -101,6 +101,10 @@ function [finalDataStruct, activeSessionList, activeCompList] = fnPhoLoadFinalDa
     % 
     % fprintf('Using %d of %d rows (Ignoring %d): %s.\n', num_cellROIs, temp.numberOriginal, temp.numberIgnored, temp.excludedCompsStatusString);
 
+    %% FISSA Result Info:
+    FISSA_Result_Loading;
+    
+    
 
     %% "FD (final data)" file output:
     if phoPipelineOptions.PhoLoadFinalDataStruct.enable_resave

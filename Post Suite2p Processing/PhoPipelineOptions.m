@@ -2,7 +2,7 @@
 %%% General Options:
 phoPipelineOptions.default_FD_file_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/FDS_anm265.mat'; % If empty, user will be prompted interactively
 % phoPipelineOptions.default_FD_file_path = 'Z:\ICPassiveStim\FDStructs\anm265\FDS_anm265.mat';
-phoPipelineOptions.shouldShowPlots = true;
+phoPipelineOptions.shouldShowPlots = false;
 phoPipelineOptions.shouldSaveFiguresToDisk = false; % Note that this has no effect if phoPipelineOptions.shouldShowPlots is false.
 
 phoPipelineOptions.default_interactionManager_backingStorePath = '/Users/pho/repo/phoCrossDayAlignment/Post Suite2p Processing/Testing/UAnnotations-CellROI-0.mat';
@@ -36,8 +36,6 @@ phoPipelineOptions.PhoLoadFinalDataStruct.finalDataStruct_DFF_baselineFrames = [
 
 %% Filtering:
 phoPipelineOptions.PhoLoadFinalDataStruct.filtering.specFilePath = fullfile('../data','manualRoiFilteringResults-12_04_2020.mat');
-phoPipelineOptions.loadedFilteringData = load(phoPipelineOptions.PhoLoadFinalDataStruct.filtering.specFilePath, 'manualRoiFilteringResults');
-phoPipelineOptions.loadedFilteringData.curr_animal = 'anm265';
 
 
 %%% PhoPostFinalDataStructAnalysis Options:
@@ -64,7 +62,6 @@ phoPipelineOptions.PhoTuningMeshExplorer.numToCompare = 0;
 
 % phoPipelineOptions.PhoTuningMeshExplorer.cellRoisToPlot = [];
 
-
 %%% PhoBuildSpatialTuning Options:
 % phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures/cellROI_General';
 phoPipelineOptions.PhoBuildSpatialTuning.fig_export_parent_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/ROI Results/Figures/New';
@@ -76,7 +73,9 @@ phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawC
 phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.shouldDrawCellROILabels = false;
 
 
-
-phoPipelineOptions.fissa.load_fissa_data_and_update_FDS = true;
+phoPipelineOptions.fissa.load_fissa_data_and_update_FDS = false;
 phoPipelineOptions.fissa.included_cellROIs_only = false;
 phoPipelineOptions.fissa.default_fissa_file_path = '/Users/pho/Dropbox/Classes/Fall 2020/PIBS 600 - Rotations/Rotation_2_Pierre Apostolides Lab/data/fissa_suite2p_example/experiment_matlab.mat';
+
+
+[phoPipelineOptions] = fnLoadFilteringData(phoPipelineOptions);
