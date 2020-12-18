@@ -120,6 +120,11 @@ function [finalDataStruct] = fnPhoBuildUpdatedFDS_FromFISSA(fissa_outputs, final
      % Divide intial into blocks of 78000.
     % Then Divide Each Block into blocks of 150.
     
+    % The ROI Regions are the same for every session, and furthermore for every trial in every session
+    curr_session_data.ROI_regions = fissa_outputs.results.ROI_regions;
+    curr_session_trial_data.ROI_regions = fissa_outputs.results.ROI_regions;
+    
+    
     % Need to convert (session_index, trial_index, trial_frame_index) into a linear index into 234000
    for session_index = 1:numSessions
         curr_session_field = sessionFields{session_index};
@@ -155,12 +160,9 @@ function [finalDataStruct] = fnPhoBuildUpdatedFDS_FromFISSA(fissa_outputs, final
                 
         end % end for comps
             
-            
         for session_trial_index = 1:num_trials_per_session
             curr_session_trial_frame_first_index = cum_session_relative_trial_first_index_array(session_trial_index);
             curr_session_trial_frame_last_index = cum_session_relative_trial_last_index_array(session_trial_index);
-            curr_absolute_session_trial_frame_first_index = curr_session_data.curr_absolute_session_trial_frame_first_index_array(session_trial_index);
-            curr_absolute_session_trial_frame_last_index = curr_session_data.curr_absolute_session_trial_frame_last_index_array(session_trial_index);
             
             % Using Relative Indexing:
             curr_session_trial_data.df_raw = squeeze(curr_session_data.df_raw(:,curr_session_trial_frame_first_index:curr_session_trial_frame_last_index)); % 82x150
@@ -174,6 +176,7 @@ function [finalDataStruct] = fnPhoBuildUpdatedFDS_FromFISSA(fissa_outputs, final
             for comp_index = 1:numComps
                 currentComp = fds_compNames{comp_index}; %get the current component
             
+                finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_ROI_regions = curr_session_trial_data.ROI_regions(comp_index, :); % 1x5 cell
                 finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_df_raw(session_trial_index,:) = squeeze(curr_session_trial_data.df_raw(comp_index,:)); % 1x150 
 %                 finalDataStruct.(anmID).(curr_session_field).imgData.(currentComp).fissa_df_result(session_trial_index,:,:) = squeeze(curr_session_trial_data.df_result(comp_index,:,:)); % 5x150 
 
@@ -287,28 +290,47 @@ function [fissa_outputs] = process_loaded_FISSA_result(fissa_data, phoPipelineOp
         % - `raw.cell0.trial0(2,:)` raw signal from first neuropil region
         
         %% For the ROIs:
+        % [cellRoi, trial, region, "part"]
+        %   region should always be 5, with 1 being the ROI and 2:5 being the neuropil
         % Each trial field
          % The ROIs are the same across all trials (for the same ROI)
-        curr_cell_ROIs_temp = fissa_data.ROIs.(curr_cell_id_name);
+%         figure(1);
+%         axis square
+%         xlim('manual');
+%         ylim('manual');
+%         transparency=0.3;  % values between 0 and 1
+
+        
         trial_index = 1;
 %         for trial_index = 1:fissa_outputs.numTifImages
             curr_trial_fieldname = fissa_outputs.tifIdentifierNames{trial_index};
-            curr_trial_cell_ROIs = curr_cell_ROIs_temp.(curr_trial_fieldname);
-            fprintf('length(curr_trial_cell_ROIs): %d\n', length(curr_trial_cell_ROIs));
-%             temp_sizes(trial_index) = size(curr_trial_cell_ROIs);
-            for item_index = 1:length(curr_trial_cell_ROIs)
-               curr_item = curr_trial_cell_ROIs{item_index};
-               fprintf('\t length(curr_item): %d\n', length(curr_item));
-               for sub_item_index = 1:length(curr_item)
-                   curr_sub_item = curr_item{sub_item_index};
-                   fprintf('\t\t length(curr_sub_item): %d\n', length(curr_sub_item));
-               end
-            
-%                disp(size(curr_item))
-            end
+            curr_trial_cell_ROI_regions = fissa_data.ROIs.(curr_cell_id_name).(curr_trial_fieldname);
+%             fprintf('length(curr_trial_cell_ROIs): %d\n', length(curr_trial_cell_ROI_regions));
+% %             temp_sizes(trial_index) = size(curr_trial_cell_ROIs);
+%             for region_index = 1:length(curr_trial_cell_ROI_regions)
+%                curr_region = curr_trial_cell_ROI_regions{region_index};
+%                fprintf('\t length(curr_region): %d\n', length(curr_region));
+%                for sub_part_index = 1:length(curr_region)
+%                    curr_sub_part = curr_region{sub_part_index};
+%                    x = curr_sub_part(:, 2);
+%                    y = curr_sub_part(:, 1);
+%                    plot(x,y)
+%                    fill(x,y,'r')
+%                    alpha(transparency);
+%                    
+%                     xlim([1 512]);
+%                     ylim([1 512]);
+%         
+%                    fprintf('\t\t length(curr_sub_part): %d\n', length(curr_sub_part));
+%                end
+%             
+% %                disp(size(curr_item))
+%             end
 %         end 
-        
 
+        % The regions for this ROI, always 1x5 cell
+        curr_cell.ROI_regions = curr_trial_cell_ROI_regions;
+        
         [~, ~, curr_cell.df_raw] = flattenAllFields(fissa_data.df_raw.(curr_cell_id_name), 2);
         numCombinedDatapoints = length(curr_cell.df_raw);
         [~, ~, curr_cell.df_result] = flattenAllFields(fissa_data.df_result.(curr_cell_id_name), 2);        
@@ -319,12 +341,14 @@ function [fissa_outputs] = process_loaded_FISSA_result(fissa_data, phoPipelineOp
         
         if is_first_cell
             % Pre-allocate the output structures now that we know how big they are:
+            fissa_outputs.results.ROI_regions = cell([filteredNumCells length(curr_cell.ROI_regions)]);
             fissa_outputs.results.df_raw = zeros([filteredNumCells numCombinedDatapoints]); 
             fissa_outputs.results.df_result = zeros([filteredNumCells size(curr_cell.df_result,1) size(curr_cell.df_result,2)]);
             fissa_outputs.results.raw = zeros([filteredNumCells size(curr_cell.raw,1) size(curr_cell.raw,2)]); 
             fissa_outputs.results.result = zeros([filteredNumCells size(curr_cell.result,1) size(curr_cell.result,2)]);
         end
         
+        fissa_outputs.results.ROI_regions(i,:) = curr_cell.ROI_regions;
         fissa_outputs.results.df_raw(i,:) = curr_cell.df_raw;
         fissa_outputs.results.df_result(i,:,:) = curr_cell.df_result;
         fissa_outputs.results.raw(i,:,:) = curr_cell.raw;
@@ -337,3 +361,34 @@ function [fissa_outputs] = process_loaded_FISSA_result(fissa_data, phoPipelineOp
 
 end
 
+function [figH] = plot_ROI_polygon(fissa_data, phoPipelineOptions)
+% process_loaded_FISSA_result: Loads the data exported from fissa 
+    figH = figure(1);
+    axis square
+    xlim('manual');
+    ylim('manual');
+    transparency=0.3;  % values between 0 and 1
+
+    curr_trial_cell_ROI_regions = fissa_data.ROIs.(curr_cell_id_name).(curr_trial_fieldname);
+    fprintf('length(curr_trial_cell_ROIs): %d\n', length(curr_trial_cell_ROI_regions));
+
+    for region_index = 1:length(curr_trial_cell_ROI_regions)
+       curr_region = curr_trial_cell_ROI_regions{region_index};
+       fprintf('\t length(curr_region): %d\n', length(curr_region));
+       for sub_part_index = 1:length(curr_region)
+           curr_sub_part = curr_region{sub_part_index};
+           x = curr_sub_part(:, 2);
+           y = curr_sub_part(:, 1);
+           plot(x,y)
+           fill(x,y,'r')
+           alpha(transparency);
+
+            xlim([1 512]);
+            ylim([1 512]);
+
+           fprintf('\t\t length(curr_sub_part): %d\n', length(curr_sub_part));
+       end % end for sub_part
+
+    end % end for region
+
+end
