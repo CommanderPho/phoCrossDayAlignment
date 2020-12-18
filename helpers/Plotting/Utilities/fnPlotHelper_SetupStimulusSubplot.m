@@ -6,7 +6,7 @@ function fnPlotHelper_SetupStimulusSubplot(final_data_explorer_obj, numRows, num
     end
 
 	if plotting_options.disableAxesInteractivity
-		curr_subplot_axes.Toolbar.Visible = 'off';
+		% curr_subplot_axes.Toolbar.Visible = 'off'; # Disabled, as this takes 6+ seconds
 		disableDefaultInteractivity(curr_subplot_axes);
 	end
 
