@@ -11,7 +11,7 @@ phoPipelineOptions.imageDimensions = [512 512];
 
 % activeNeuropilCompensationMode: specifies which dFF curves to use.
 phoPipelineOptions.ActiveNeuropilCompensationModes = {'none','suite2p','fissa'};
-phoPipelineOptions.activeNeuropilCompensationMode = categorical(ActiveNeuropilCompensationModes);
+phoPipelineOptions.activeNeuropilCompensationMode = categorical(phoPipelineOptions.ActiveNeuropilCompensationModes);
 
 % Used to use: phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
 % phoPipelineOptions.PhoLoadFinalDataStruct.processingOptions.use_neuropil = true;
