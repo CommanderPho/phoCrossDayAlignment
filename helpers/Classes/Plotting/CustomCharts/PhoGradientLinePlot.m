@@ -1,6 +1,6 @@
-% PhoCustomPlotComponentBase.m
-classdef PhoCustomPlotComponentBase < Chart
-    %PhoCustomPlotComponentBase Chart for managing a variable-color curve plotted against
+% PhoGradientLinePlot.m
+classdef PhoGradientLinePlot < Chart
+    %PhoGradientLinePlot Chart for managing a variable-color curve plotted against
     %a date/time vector.
     %
     % Copyright 2018 The MathWorks, Inc.
@@ -45,7 +45,7 @@ classdef PhoCustomPlotComponentBase < Chart
     
     methods
         
-        function obj = PhoCustomPlotComponentBase( varargin )
+        function obj = PhoGradientLinePlot( varargin )
             
             % Create the axes.
             obj.Axes = axes( "Parent", obj.Panel, ...
@@ -72,9 +72,9 @@ classdef PhoCustomPlotComponentBase < Chart
             
             % Perform basic validation.
             validateattributes( proposedXData, {'datetime'}, ...
-                {'vector'}, 'PhoCustomPlotComponentBase/set.XData', 'the x-data' )
+                {'vector'}, 'PhoGradientLinePlot/set.XData', 'the x-data' )
             if ~issorted( proposedXData )
-                error( 'PhoCustomPlotComponentBase:DecreasingData', ...
+                error( 'PhoGradientLinePlot:DecreasingData', ...
                     'Chart x-data must be nondecreasing.' )
             end % if
             % Decide how to modify the chart data.
@@ -105,7 +105,7 @@ classdef PhoCustomPlotComponentBase < Chart
             
             % Perform basic validation.
             validateattributes( proposedYData, {'double'}, ...
-                {'real', 'vector'}, 'PhoCustomPlotComponentBase/set.YData', 'the y-data' )            
+                {'real', 'vector'}, 'PhoGradientLinePlot/set.YData', 'the y-data' )            
             
             % Decide how to modify the chart data.
             nY = numel( proposedYData );
