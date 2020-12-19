@@ -2,6 +2,7 @@
 classdef PhoGradientLinePlot < Chart
     %PhoGradientLinePlot Chart for managing a variable-color curve plotted against
     %a date/time vector.
+	%% NOTE: OLDER FORMAT
     %
     % Copyright 2018 The MathWorks, Inc.
     

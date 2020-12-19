@@ -8,7 +8,7 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
     end
     properties(Access = private,Transient,NonCopyable)
         LineObject
-        PatchObject
+        PolygonObjects
     end
     methods(Access = protected)
         function setup(obj)

@@ -3,8 +3,9 @@ addpath(genpath('Interactive'));
 addpath(genpath('Pre-Suite2p Alignment'));
 addpath(genpath('Post Suite2p Processing'));
 
+PhoPipelineOptions;
 
-use_interactive_pipeline_gui = true;
+use_interactive_pipeline_gui = false;
 
 if use_interactive_pipeline_gui
     if ~exist('pipelineInteractionObject','var')
@@ -18,5 +19,6 @@ else
     PhoLoadFinalDataStruct %% If the PhoPostSuite2pSessionSplitting script has already been ran and produced a combined data struct, you can load this from disk.
     PhoPostFinalDataStructAnalysis
     PhoBuildSpatialTuning
+    error('Run the Main.m script in the "Post Suite2p Processing" folder instead');
 end
 

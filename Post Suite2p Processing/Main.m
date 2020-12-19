@@ -1,6 +1,7 @@
 % Runs the entire pho processing pipeline:
 addpath(genpath('../helpers'));
 addpath(genpath('../data'));
+addpath('../');
 
 PhoPipelineOptions; % Get the pipeline options
 

@@ -1,6 +1,6 @@
 classdef PhoSmoothLegendPlot < matlab.graphics.chartcontainer.ChartContainer & ...
         matlab.graphics.chartcontainer.mixin.Legend
-    
+	%% Most Modern 2020b Format
     properties
         XData (1,:) double = NaN
         YData (1,:) double = NaN
