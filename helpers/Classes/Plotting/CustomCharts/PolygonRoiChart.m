@@ -1,13 +1,18 @@
 classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 	properties
-		XData = NaN
-		YData = NaN
+		% XData = NaN
+		% YData = NaN
 		MarkerSymbol = 'o'
 		Color = [1 0 0]
 
 		PlotData (:,1) PlotData_Cartesian
-	end
+    end
 
+    properties (Access = protected)
+		numInitializedPlots = 0;
+    end
+
+    
 	%% Computed Properties:
 	properties (Dependent)
 		num_of_dataSeries % FinalDataExplorer
@@ -33,9 +38,9 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 	%    end
 	end
 
-	properties(Access = private,Transient,NonCopyable)
-		OutlineBordersLineArray (:,1)
-		PolygonObjects
+	properties(Access = private, Transient, NonCopyable)
+		OutlineBordersLineArray (:,1) matlab.graphics.chart.primitive.Line
+		PolygonObjects (:,1) matlab.graphics.primitive.Patch
 	end
 
 
@@ -64,31 +69,20 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 
 
 	methods(Access = protected)
-		function setup(obj)
+		function setup(~)
 			% get the axes
-			ax = getAxes(obj);
-
-			% Preallocate the objects array
-% 			obj.OutlineBordersLineArray = gobjects(obj.num_of_dataSeries, 1);
-% 			obj.PolygonObjects = gobjects(obj.num_of_dataSeries, 1);
-
-			for i = 1:obj.num_of_dataSeries
-				% Create Patch and Line objects
-				obj.PolygonObjects(i) = patch(ax, NaN, NaN, 'r', 'FaceAlpha', 0.2,...
-					'EdgeColor','none');
-
-				hold(ax,'on')
-				obj.OutlineBordersLineArray(i) = plot(ax, NaN, NaN, 'DisplayName','Original');
-			end % end for loop
-
-			% Turn hold state off
-			hold(ax,'off')
+% 			obj.buildNeededPlots();
 		end
 		function update(obj)
 			% Update XData and YData of Line
 			
 			% obj.OutlineBordersLineArray = plot(ax,obj.XData,obj.YData);
 			% hold(ax,'on')
+
+			obj.buildNeededPlots();
+            
+            isvalid(obj.OutlineBordersLineArray);
+            
 
 			for i = 1:obj.num_of_dataSeries
                 curr_x = obj.PlotData(i).XData;
@@ -113,8 +107,59 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 			end % end for loop
 
 			drawnow;
-
 		end
+
+		function buildNeededPlots(obj)
+
+            obj.numInitializedPlots;
+            curr_needed_plots = obj.num_of_dataSeries - obj.numInitializedPlots;
+            
+            fprintf('buildNeededPlots()\n');
+            fprintf('\t curr_needed_plots: %d\n', curr_needed_plots);
+            
+%             fprintf('\t obj.OutlineBordersLineArray: ');
+%             disp(obj.OutlineBordersLineArray);
+%             fprintf('\t obj.PolygonObjects: ');
+%             disp(obj.PolygonObjects);
+            
+			ax = getAxes(obj);
+			% Preallocate the objects array
+% 			obj.OutlineBordersLineArray = gobjects(obj.num_of_dataSeries, 1);
+% 			obj.PolygonObjects = gobjects(obj.num_of_dataSeries, 1);
+
+%             clear obj.PolygonObjects;
+%             clear obj.OutlineBordersLineArray;
+            
+			for i = 1:curr_needed_plots
+				% Create Patch and Line objects
+				obj.PolygonObjects(i) = patch(ax, NaN, NaN, 'r', 'FaceAlpha', 0.2,'EdgeColor','none');
+				hold(ax,'on')
+				obj.OutlineBordersLineArray(i) = plot(ax, NaN, NaN, 'DisplayName','Original');
+                
+                obj.numInitializedPlots = obj.numInitializedPlots + 1;
+                fprintf('\t initialized one plot!\n');
+                fprintf('\t\t obj.numInitializedPlots: %d\n', obj.numInitializedPlots);
+			end % end for loop
+
+			% Turn hold state off
+			hold(ax,'off')
+        end
+        
+        
+        % Called when this class is displayed
+        function propgrp = getPropertyGroups(obj)
+            if ~isscalar(obj)
+                % List for array of objects
+                propgrp = getPropertyGroups@matlab.mixin.CustomDisplay(obj);    
+            else
+                % List for scalar object
+                propList = {'PlotData','dataSeries_labels','num_of_dataSeries','numInitializedPlots','PolygonObjects','PolygonObjects','OutlineBordersLineArray'};
+                propgrp = matlab.mixin.util.PropertyGroup(propList);
+            end
+        end % end getPropertyGroups(...)
+
+        
+
 	end % end main protected method block
 
 	methods(Access = public)
@@ -134,7 +179,7 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 				obj.PlotData(arg_i).updateData(curr_x, curr_y);
 			end
 
-			obj.update();
+% 			obj.update();
 
 			% drawnow;
 			%update_comp_polys:
@@ -154,6 +199,9 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 			% end % end for i
 
 		end % end function update_comp_polys
+        
+
+        
 
 
 	end % end public methods block

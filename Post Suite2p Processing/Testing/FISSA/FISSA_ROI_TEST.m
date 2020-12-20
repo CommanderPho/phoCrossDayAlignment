@@ -5,16 +5,15 @@
 dataSeries = [PlotData_Cartesian('cellROI', true, 'r'),...
     PlotData_Cartesian('neuropil', true, 'b')];
 
-clear chart;
+% clear chart;
 
 % hold off;
 % hold off;
 chart = PolygonRoiChart(dataSeries);
 
-chart.dataSeries_labels
+% chart.dataSeries_labels
 
-activeCellROIIndex = 21;
-
+activeCellROIIndex = 25;
 
 plottingInfo.roi_alpha = 0.4;
 plottingInfo.other_alpha = 0.3;
@@ -43,5 +42,5 @@ for i = 1:numLoop
     end
 end
 
-chart
+% chart
 
