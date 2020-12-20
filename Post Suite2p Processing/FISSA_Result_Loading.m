@@ -296,7 +296,7 @@ function [figH] = plot_ROI_polygon(fissa_data, phoPipelineOptions)
            fill(x,y,'r')
            alpha(transparency);
 
-            xlim([1 512]);
+        	xlim([1 512]);
             ylim([1 512]);
 
            fprintf('\t\t length(curr_sub_part): %d\n', length(curr_sub_part));
