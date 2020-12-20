@@ -81,7 +81,7 @@
 %
 
 %%%+S- compMasks
-    %= Masks - the binary mask for each component. zeros(numCompListEntries, 512, 512)
+    %= Masks - the binary mask for each component. zeros(num_CompListEntries, 512, 512)
     %= Edge - the binary edge corresponding to each component in Masks
 %
 

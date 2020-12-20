@@ -56,7 +56,7 @@ end
 %
 
 %%%+S- compMasks
-	%= Masks - the binary mask for each component. zeros(numCompListEntries, 512, 512)
+	%= Masks - the binary mask for each component. zeros(num_CompListEntries, 512, 512)
 	%= Edge - the binary edge corresponding to each component in Masks
 %
 
@@ -79,10 +79,10 @@ cellROIIndexMapper = CellROIIndexMapper(activeSessionList, activeCompList, phoPi
 num_cellROIs = cellROIIndexMapper.num_cellROIs;
 
 % %% Pre-Allocate:
-% compMasks.Masks = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
-% compMasks.Edge = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
+% compMasks.Masks = zeros(cellROIIndexMapper.num_CompListEntries, 512, 512);
+% compMasks.Edge = zeros(cellROIIndexMapper.num_CompListEntries, 512, 512);
 
-% compNeuropilMasks.Masks = zeros(cellROIIndexMapper.numCompListEntries, 512, 512);
+% compNeuropilMasks.Masks = zeros(cellROIIndexMapper.num_CompListEntries, 512, 512);
 
 
 if exist('stimuli_mapper','var')

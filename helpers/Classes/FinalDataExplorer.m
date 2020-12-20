@@ -1,100 +1,100 @@
 classdef FinalDataExplorer
-    %FINALDATAEXPLORER Summary of this class goes here
-    %   Detailed explanation goes here
-    
-    %% Used in FinalDataExplorer:
-    %%%+S- preferredStimulusInfo
-        %- DidPreferredStimulusChange - keeps track of whether the preferredStimulus amplitude or frequency changed for a cellROI between sessions.
-        %- PreferredStimulus - 
-        %- PreferredStimulus_LinearStimulusIndex - 
-        %- PreferredStimulusAmplitude - 
-        %- PreferredStimulusFreq - 
+	%FINALDATAEXPLORER Summary of this class goes here
+	%   Detailed explanation goes here
+	
+	%% Used in FinalDataExplorer:
+	%%%+S- preferredStimulusInfo
+		%- DidPreferredStimulusChange - keeps track of whether the preferredStimulus amplitude or frequency changed for a cellROI between sessions.
+		%- PreferredStimulus - 
+		%- PreferredStimulus_LinearStimulusIndex - 
+		%- PreferredStimulusAmplitude - 
+		%- PreferredStimulusFreq - 
 		%- ChangeScores: the number of changes in preferred tuning between sessions
 		%- InterSessionConsistencyScores: the number of consistently tuned sessions
-    %
+	%
 
-    %%%+S- roiComputedProperties
-        %- areas - 
-        %- boundingBoxes - 
-        %- centroids - 
-    %
+	%%%+S- roiComputedProperties
+		%- areas - 
+		%- boundingBoxes - 
+		%- centroids - 
+	%
 
-    %%%+S- roiMasks
-        %- Fill - 
-        %- Edge - 
-        %- OutsetEdge0 - 
-        %- OutsetEdge1 - 
-        %- OutsetEdge2 - 
-        %- InsetEdge0 - 
-        %- InsetEdge1 - 
-        %- InsetEdge2 - 
-    %
+	%%%+S- roiMasks
+		%- Fill - 
+		%- Edge - 
+		%- OutsetEdge0 - 
+		%- OutsetEdge1 - 
+		%- OutsetEdge2 - 
+		%- InsetEdge0 - 
+		%- InsetEdge1 - 
+		%- InsetEdge2 - 
+	%
 
 	properties (Constant)
 		num_to_include = 9; % returns the num_to_include-largest stimulus autotuning values for each comp.
 	end
 
-    properties
+	properties
 
-        cellROIIndex_mapper % a CellROIIndexMapper object
-        
-        stimuli_mapper
-        
-        %% Outputs:
-        finalOutComponentSegment
-        
+		cellROIIndex_mapper % a CellROIIndexMapper object
+		
+		stimuli_mapper
+		
+		%% Outputs:
+		finalOutComponentSegment
+		
 		compMasks % struct containing sessionRoiMask fields. sessionRoiMask: *one for each ROI in each session*: matricies the size of the original images (512x512 for example) that specify specific pixels related to the ROIs.
-        compNeuropilMasks
-        
+		compNeuropilMasks
+		
 		activeNeuropilCompensationMode
 		raw_DFF
 		corrected_DFF
 
-        traceTimebase_t
-        
-        %% Processed Outputs: Computed by running obj.buildSpatialTuningInfo(...)
-        amalgamationMasks  % struct containing amalgamationMask fields. amalgamationMask: *only one that includes all ROIs*: matiricies the size of the original images (512x512 for example) that include all pixels related to ANY ROI.
-        roiMasks  % struct containing mask fields. masks: *one for each ROI*: matricies the size of the original images (512x512 for example) that specify specific pixels related to the ROIs.
-        roiComputedProperties
-               
-        preferredStimulusInfo
-        computedRedTraceLinesAnalyses = struct; % Analysis done for the red mean tracelines
+		traceTimebase_t
+		
+		%% Processed Outputs: Computed by running obj.buildSpatialTuningInfo(...)
+		amalgamationMasks  % struct containing amalgamationMask fields. amalgamationMask: *only one that includes all ROIs*: matiricies the size of the original images (512x512 for example) that include all pixels related to ANY ROI.
+		roiMasks  % struct containing mask fields. masks: *one for each ROI*: matricies the size of the original images (512x512 for example) that specify specific pixels related to the ROIs.
+		roiComputedProperties
+			   
+		preferredStimulusInfo
+		computedRedTraceLinesAnalyses = struct; % Analysis done for the red mean tracelines
 		computedAllTraceLinesAnalyses % Analyses done for all trace lines
 		
 		autoTuningDetection % Used to auto-determine the tuning for a given cellROI
-        
-    end
+		
+	end
 
-    methods
-    %    function obj = set.active_DFF(obj, value)
-    %        obj.active_DFF = value;
-    %    end
-    %    function obj = set.compMasks(obj, value)
-    %        obj.compMasks = value;
-    %    end  
-       
-    end
-    
-    
-    %% Computed Properties:
-    properties (Dependent)
-        dateStrings
-        uniqueComps       
-        multiSessionCellRoi_CompListIndicies
-        
-        num_cellROIs
-        numOfSessions
-        componentAggregatePropeties
-        finalOutPeaksGrid
-        redTraceLinesForAllStimuli
+	methods
+	%    function obj = set.active_DFF(obj, value)
+	%        obj.active_DFF = value;
+	%    end
+	%    function obj = set.compMasks(obj, value)
+	%        obj.compMasks = value;
+	%    end  
+	   
+	end
+	
+	
+	%% Computed Properties:
+	properties (Dependent)
+		dateStrings
+		uniqueComps       
+		multiSessionCellRoi_CompListIndicies
+		
+		num_cellROIs
+		numOfSessions
+		componentAggregatePropeties
+		finalOutPeaksGrid
+		redTraceLinesForAllStimuli
 		tracesForAllStimuli
-        uniqueAmps
-        uniqueFreqs
-        uniqueStimuli
+		uniqueAmps
+		uniqueFreqs
+		uniqueStimuli
 
 		active_DFF
-    end
-    methods
+	end
+	methods
 		function active_DFF = get.active_DFF(obj)
 			%% TODO: decide which DFF is active by a setting
 			if strcmpi(obj.activeNeuropilCompensationMode, 'none')
@@ -106,110 +106,111 @@ classdef FinalDataExplorer
 			else
 				error('Invalid neuropil mode!')
 			end
-       end
+	   end
 
-       function dateStrings = get.dateStrings(obj)
-          dateStrings = obj.cellROIIndex_mapper.dateStrings;
-       end
-       function uniqueComps = get.uniqueComps(obj)
-          uniqueComps = obj.cellROIIndex_mapper.uniqueComps;
-       end
-       function multiSessionCellRoi_CompListIndicies = get.multiSessionCellRoi_CompListIndicies(obj)
-          multiSessionCellRoi_CompListIndicies = obj.cellROIIndex_mapper.multiSessionCellRoi_CompListIndicies;
-       end
-       function num_cellROIs = get.num_cellROIs(obj)
-          num_cellROIs = length(obj.uniqueComps);
-       end
-       function numOfSessions = get.numOfSessions(obj)
-          numOfSessions = length(obj.dateStrings);
-       end
-       function componentAggregatePropeties = get.componentAggregatePropeties(obj)
-          componentAggregatePropeties = obj.active_DFF.componentAggregatePropeties;
-       end
-       function finalOutPeaksGrid = get.finalOutPeaksGrid(obj)
-          finalOutPeaksGrid = obj.active_DFF.finalOutPeaksGrid;
-       end
-       function redTraceLinesForAllStimuli = get.redTraceLinesForAllStimuli(obj)
-          redTraceLinesForAllStimuli = obj.active_DFF.redTraceLinesForAllStimuli;
-       end
-       function tracesForAllStimuli = get.tracesForAllStimuli(obj)
-          tracesForAllStimuli = obj.active_DFF.TracesForAllStimuli.meanDFF;
-       end
+	   function dateStrings = get.dateStrings(obj)
+		  dateStrings = obj.cellROIIndex_mapper.dateStrings;
+	   end
+	   function uniqueComps = get.uniqueComps(obj)
+		  uniqueComps = obj.cellROIIndex_mapper.uniqueComps;
+	   end
+	   function multiSessionCellRoi_CompListIndicies = get.multiSessionCellRoi_CompListIndicies(obj)
+		  multiSessionCellRoi_CompListIndicies = obj.cellROIIndex_mapper.multiSessionCellRoi_CompListIndicies;
+	   end
+	   function num_cellROIs = get.num_cellROIs(obj)
+		  num_cellROIs = length(obj.uniqueComps);
+	   end
+	   function numOfSessions = get.numOfSessions(obj)
+		  numOfSessions = length(obj.dateStrings);
+	   end
+	   function componentAggregatePropeties = get.componentAggregatePropeties(obj)
+		  componentAggregatePropeties = obj.active_DFF.componentAggregatePropeties;
+	   end
+	   function finalOutPeaksGrid = get.finalOutPeaksGrid(obj)
+		  finalOutPeaksGrid = obj.active_DFF.finalOutPeaksGrid;
+	   end
+	   function redTraceLinesForAllStimuli = get.redTraceLinesForAllStimuli(obj)
+		  redTraceLinesForAllStimuli = obj.active_DFF.redTraceLinesForAllStimuli;
+	   end
+	   function tracesForAllStimuli = get.tracesForAllStimuli(obj)
+		  tracesForAllStimuli = obj.active_DFF.TracesForAllStimuli.meanDFF;
+	   end
 
-       function uniqueAmps = get.uniqueAmps(obj)
-          uniqueAmps = obj.stimuli_mapper.uniqueAmps;
-       end
-       function uniqueFreqs = get.uniqueFreqs(obj)
-          uniqueFreqs = obj.stimuli_mapper.uniqueFreqs;
-       end
-       function uniqueStimuli = get.uniqueStimuli(obj)
-          uniqueStimuli = obj.stimuli_mapper.uniqueStimuli;
-       end
+	   function uniqueAmps = get.uniqueAmps(obj)
+		  uniqueAmps = obj.stimuli_mapper.uniqueAmps;
+	   end
+	   function uniqueFreqs = get.uniqueFreqs(obj)
+		  uniqueFreqs = obj.stimuli_mapper.uniqueFreqs;
+	   end
+	   function uniqueStimuli = get.uniqueStimuli(obj)
+		  uniqueStimuli = obj.stimuli_mapper.uniqueStimuli;
+	   end
 
-    end
-    
-    methods
-        function obj = FinalDataExplorer(cellROIIndex_mapper, stimuli_mapper, phoPipelineOptions)
-            %FINALDATAEXPLORER Construct an instance of this class
-            %   Detailed explanation goes here
+	end
+	
+	methods
+		function obj = FinalDataExplorer(cellROIIndex_mapper, stimuli_mapper, phoPipelineOptions)
+			%FINALDATAEXPLORER Construct an instance of this class
+			%   Detailed explanation goes here
    
-            obj.cellROIIndex_mapper = cellROIIndex_mapper;
+			obj.cellROIIndex_mapper = cellROIIndex_mapper;
 
-            obj.stimuli_mapper = stimuli_mapper;
+			obj.stimuli_mapper = stimuli_mapper;
 
 			obj.activeNeuropilCompensationMode = phoPipelineOptions.activeNeuropilCompensationMode;
-    
+	
 			obj = obj.allocateDffs(phoPipelineOptions);
 			obj = obj.allocateComponentMasks(phoPipelineOptions);
 
-        end
-        
+		end
+		
 
-        function [mask] = getFillRoiMask(obj, roiIndex)
-           %% getFillRoiMask: convenience method for accessing the fill mask for a given roiIndex.
-           mask = squeeze(obj.roiMasks.Fill(roiIndex,:,:));
-        end
-        
+
+		function [mask] = getFillRoiMask(obj, roiIndex)
+		   %% getFillRoiMask: convenience method for accessing the fill mask for a given roiIndex.
+		   mask = squeeze(obj.roiMasks.Fill(roiIndex,:,:));
+		end
+		
 		function [mask] = getNeuropilRoiMask(obj, roiIndex)
-           %% getNeuropilRoiMask: convenience method for accessing the fill mask of the neuropil mask for a given roiIndex.
-           mask = squeeze(obj.roiMasks.NeuropilFill(roiIndex,:,:));
-        end
+		   %% getNeuropilRoiMask: convenience method for accessing the fill mask of the neuropil mask for a given roiIndex.
+		   mask = squeeze(obj.roiMasks.NeuropilFill(roiIndex,:,:));
+		end
 
-        
-        function [mask] = getEdgeOffsetRoiMasks(obj, offsetIndex, roiIndex)
-           %% getEdgeOffsetRoiMasks: convenience method for accessing the inset/offset masks by an offset index.
-           switch offsetIndex
-               case -3
-                    mask = obj.roiMasks.InsetEdge2;
-               case -2
-                    mask = obj.roiMasks.InsetEdge1;
-               case -1
-                    mask = obj.roiMasks.InsetEdge0;
-               case 0
-                    mask = obj.roiMasks.Edge;
-               case 1
-                    mask = obj.roiMasks.OutsetEdge0;
-               case 2
-                   mask = obj.roiMasks.OutsetEdge1;
-               case 3
-                   mask = obj.roiMasks.OutsetEdge2;
-               otherwise
-                    error(['Invalid offset index: ' num2str(offsetIndex) '! Index must correspond to one of the inset [-3, -1] edge [0] or outset [1, 3] masks.']);
-           end % end switch
-           
-           % If we have an roiIndex that we want to access directly, return the squeezed matrix for that component, otherwise, return all masks
-           if exist('roiIndex','var')
-               mask = squeeze(mask(roiIndex,:,:));             
-           end
-           
-        end
+		
+		function [mask] = getEdgeOffsetRoiMasks(obj, offsetIndex, roiIndex)
+		   %% getEdgeOffsetRoiMasks: convenience method for accessing the inset/offset masks by an offset index.
+		   switch offsetIndex
+			   case -3
+					mask = obj.roiMasks.InsetEdge2;
+			   case -2
+					mask = obj.roiMasks.InsetEdge1;
+			   case -1
+					mask = obj.roiMasks.InsetEdge0;
+			   case 0
+					mask = obj.roiMasks.Edge;
+			   case 1
+					mask = obj.roiMasks.OutsetEdge0;
+			   case 2
+				   mask = obj.roiMasks.OutsetEdge1;
+			   case 3
+				   mask = obj.roiMasks.OutsetEdge2;
+			   otherwise
+					error(['Invalid offset index: ' num2str(offsetIndex) '! Index must correspond to one of the inset [-3, -1] edge [0] or outset [1, 3] masks.']);
+		   end % end switch
+		   
+		   % If we have an roiIndex that we want to access directly, return the squeezed matrix for that component, otherwise, return all masks
+		   if exist('roiIndex','var')
+			   mask = squeeze(mask(roiIndex,:,:));             
+		   end
+		   
+		end
 
-    
-              
-        function [obj] = buildSpatialTuningInfo(obj, phoPipelineOptions)
-            %buildSpatialTuningInfo Builds the spatial tuning objects
-            %   Detailed explanation goes here
-            % should_enable_edge_layering_mode: if true, uses the borders surrounding each cell to reflect the preferred tuning at a given day.
+	
+			  
+		function [obj] = buildSpatialTuningInfo(obj, phoPipelineOptions)
+			%buildSpatialTuningInfo Builds the spatial tuning objects
+			%   Detailed explanation goes here
+			% should_enable_edge_layering_mode: if true, uses the borders surrounding each cell to reflect the preferred tuning at a given day.
 			should_enable_edge_layering_mode = phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.should_enable_edge_layering_mode;
 			edge_layering_is_outset_mode = phoPipelineOptions.PhoBuildSpatialTuning.spatialTuningAnalysisFigure.edge_layering_is_outset_mode; % edge_layering_is_outset_mode: if true, it uses the outer borders to draw; % edge_layering_is_outset_mode: if true, it uses the outer borders to draw
 			%     temp.structuring_element = strel('disk', 2);
@@ -217,19 +218,19 @@ classdef FinalDataExplorer
 			temp.structuring_element = strel('square', 3);
 
 			%% Sort based on tuning score:
-	 		% [sortedTuningScores, cellRoiSortIndex] = sort(obj.componentAggregatePropeties.tuningScore, 'descend');
+			 % [sortedTuningScores, cellRoiSortIndex] = sort(obj.componentAggregatePropeties.tuningScore, 'descend');
 
-            % Perform allocations:
-            obj = obj.allocateOutputObjects(phoPipelineOptions);
+			% Perform allocations:
+			obj = obj.allocateOutputObjects(phoPipelineOptions);
 
-            % Iterate through each cellROI:
+			% Iterate through each cellROI:
 			for i = 1:obj.num_cellROIs
 				%% Plot the grid as a test
- 				%temp.cellRoiIndex = cellRoiSortIndex(i); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
-                temp.cellRoiIndex = i;
-                
-                temp.currAllSessionCompIndicies = obj.cellROIIndex_mapper.getCompListIndicies(temp.cellRoiIndex); % Gets all sessions for the current ROI
-                
+				 %temp.cellRoiIndex = cellRoiSortIndex(i); %% TODO: Should this be uniqueComps(i) instead? RESOLVED: No, this is correct!
+				temp.cellRoiIndex = i;
+				
+				temp.currAllSessionCompIndicies = obj.cellROIIndex_mapper.getCompListIndicies(temp.cellRoiIndex); % Gets all sessions for the current ROI
+				
 				%% cellROI Specific Score:
 				temp.currRoiTuningScore = obj.componentAggregatePropeties.tuningScore(temp.cellRoiIndex); % currently only uses first session? TODO: CHECK
 				temp.numSessions = length(temp.currAllSessionCompIndicies);
@@ -272,19 +273,19 @@ classdef FinalDataExplorer
 					% Returns the linearCompIndex
 					temp.currCompSessionIndex = temp.currAllSessionCompIndicies(j);
 					
-                    isFirstSession = (j == 1);
+					isFirstSession = (j == 1);
 					%% Results common across all sessions of this cellROI:
 					% Check if this is the first session for this cellROI as not to recompute it needlessly when it doesn't change across sessions.
 					if isFirstSession
 						temp.currCompSessionFill = logical(squeeze(obj.compMasks.Masks(temp.currCompSessionIndex,:,:)));
 						temp.currCompSessionEdge = logical(squeeze(obj.compMasks.Edge(temp.currCompSessionIndex,:,:)));
-                        temp.currCompSessionNeuropilMaskFill = logical(squeeze(obj.compNeuropilMasks.Masks(temp.currCompSessionIndex,:,:)));
-                        
+						temp.currCompSessionNeuropilMaskFill = logical(squeeze(obj.compNeuropilMasks.Masks(temp.currCompSessionIndex,:,:)));
+						
 						
 						obj.roiMasks.Fill(temp.cellRoiIndex,:,:) = temp.currCompSessionFill;
 						obj.roiMasks.Edge(temp.cellRoiIndex,:,:) = temp.currCompSessionEdge;
-                        
-                        obj.roiMasks.NeuropilFill(temp.cellRoiIndex,:,:) = temp.currCompSessionNeuropilMaskFill;
+						
+						obj.roiMasks.NeuropilFill(temp.cellRoiIndex,:,:) = temp.currCompSessionNeuropilMaskFill;
 						
 						BW2_Inner = imerode(temp.currCompSessionFill, temp.structuring_element);
 						BW3_Inner = imerode(BW2_Inner, temp.structuring_element);
@@ -299,11 +300,11 @@ classdef FinalDataExplorer
 						BW2_Outer = imdilate(temp.currCompSessionFill, temp.structuring_element);
 						BW3_Outer = imdilate(BW2_Outer, temp.structuring_element);
 						BW4_Outer = imdilate(BW3_Outer, temp.structuring_element);
-                        
+						
 						obj.roiMasks.OutsetEdge0(temp.cellRoiIndex,:,:) = BW2_Outer - temp.currCompSessionFill; % OutsetEdge0: accidentally includes inside (fill) as well.
 						obj.roiMasks.OutsetEdge1(temp.cellRoiIndex,:,:) = BW3_Outer - BW2_Outer;
 						obj.roiMasks.OutsetEdge2(temp.cellRoiIndex,:,:) = BW4_Outer - BW3_Outer;
-                        
+						
 						%                 temp.currCompSessionMask = temp.currCompSessionEdge; % Use the edges instead of the fills
 						temp.currCompSessionMask = temp.currCompSessionFill; % Use the fills
 						
@@ -373,9 +374,9 @@ classdef FinalDataExplorer
 							% Fill in the main fill with nothing
 							obj.amalgamationMasks.PreferredStimulusAmplitudes(j, temp.currCompSessionFill) = -1.0; % obj.amalgamationMasks.PreferredStimulusAmplitude: a numSessions x
 							obj.amalgamationMasks.PreferredStimulusFreqs(j, temp.currCompSessionFill) = -1.0;
-                        end
-                        
-                    else % else (NOT should_enable_edge_layering_mode)
+						end
+						
+					else % else (NOT should_enable_edge_layering_mode)
 						obj.amalgamationMasks.PreferredStimulusAmplitudes(j, temp.currCompSessionMask) = double(temp.maxPrefAmpIndex);
 						obj.amalgamationMasks.PreferredStimulusFreqs(j, temp.currCompSessionMask) = double(temp.maxPrefFreqIndex);
 					end
@@ -384,9 +385,9 @@ classdef FinalDataExplorer
 				
 			end % end for each cell ROI
 
-            
-        end % end function buildSpatialTuningInfo
-        
+			
+		end % end function buildSpatialTuningInfo
+		
 
 		function [obj] = processComponentMasks(obj, outputs, curr_day_linear_comp_index, phoPipelineOptions)
 			% processComponentMasks: currently called in obj.processOutputsDFF(...) which is itself called by PhoPostFinalDataStructAnalysis.m
@@ -402,21 +403,16 @@ classdef FinalDataExplorer
 				end
 
 			elseif strcmpi(obj.activeNeuropilCompensationMode, 'fissa')
-				%% TODO:
+				%% Builds the standard 512x512 boolean component masks from the Polygon inputs:
 				obj.compMasks.Polygons{curr_day_linear_comp_index} = outputs.referenceMask;
 				obj.compNeuropilMasks.Polygons{curr_day_linear_comp_index} = outputs.referenceMaskNeuropil;
 				% obj.compNeuropilMasks.Polygons(curr_day_linear_comp_index,:) = outputs.referenceMaskNeuropil;
 				%% TODO: Need to calculate obj.compMasks.Masks from obj.compMasks.Polygons
-
-% 				[obj.compMasks.Masks(curr_day_linear_comp_index,:,:)] = build_ROI_binaryMasks_from_polygon(obj.compMasks.Polygons{curr_day_linear_comp_index}); % 1-by-512-by-512 and the size of the right side is 4-by-512-by-512
-               
-                [obj.compMasks.Masks(curr_day_linear_comp_index,:,:)] = sum(build_ROI_binaryMasks_from_polygon(obj.compMasks.Polygons{curr_day_linear_comp_index}), 1); % 1-by-512-by-512 and the size of the right side is 4-by-512-by-512             
+			  
+				[obj.compMasks.Masks(curr_day_linear_comp_index,:,:)] = sum(build_ROI_binaryMasks_from_polygon(obj.compMasks.Polygons{curr_day_linear_comp_index}), 1); % 1-by-512-by-512 and the size of the right side is 4-by-512-by-512             
 				obj.compMasks.Edge(curr_day_linear_comp_index,:,:) = edge(squeeze(obj.compMasks.Masks(curr_day_linear_comp_index,:,:))); %sobel by default;
 				
-% 				[obj.compNeuropilMasks.Masks(curr_day_linear_comp_index,:,:)] = {build_ROI_binaryMasks_from_polygon(obj.compNeuropilMasks.Polygons{curr_day_linear_comp_index})}; % 1-by-512-by-512 and the size of the right side is 4-by-512-by-512
-                [obj.compNeuropilMasks.Masks(curr_day_linear_comp_index,:,:)] = sum(build_ROI_binaryMasks_from_polygon(obj.compNeuropilMasks.Polygons{curr_day_linear_comp_index}), 1); % 1-by-512-by-512 and the size of the right side is 4-by-512-by-512
-
-% 				warning('Not implemented: Need to calculate obj.compMasks.Masks from obj.compMasks.Polygons');
+				 [obj.compNeuropilMasks.Masks(curr_day_linear_comp_index,:,:)] = sum(build_ROI_binaryMasks_from_polygon(obj.compNeuropilMasks.Polygons{curr_day_linear_comp_index}), 1); % 1-by-512-by-512 and the size of the right side is 4-by-512-by-512
 
 			else
 				error('Invalid neuropil mode!')
@@ -425,7 +421,7 @@ classdef FinalDataExplorer
 		end
 
 
-        function [obj] = processOutputsDFF(obj, outputs, output_DFF_Name, curr_day_linear_comp_index, phoPipelineOptions)
+		function [obj] = processOutputsDFF(obj, outputs, output_DFF_Name, curr_day_linear_comp_index, phoPipelineOptions)
 			% processOutputsDFF(...): process the outputs from processOutputsDFF(...) for a specific comp index and frame type
 			% also calls obj.processComponentMasks(...) to update the masks from the output as well
 			
@@ -454,68 +450,6 @@ classdef FinalDataExplorer
 
 		
 
-        
-
-        function [obj] = allocateOutputObjects(obj, phoPipelineOptions)
-            %% HELPER FUNCTION: allocateOutputObjects
-            % Allocates the computed output objects.
-            % masks: *one for each ROI*: matricies the size of the original images (512x512 for example) that specify specific pixels related to the ROIs.
-            % amalgamationMasks: *only one that includes all ROIs*: matiricies the size of the original images (512x512 for example) that include all pixels related to ANY ROI.
-
-            if exist('phoPipelineOptions','var')
-                if isfield(phoPipelineOptions, 'imageDimensions')
-                    imageDimensions = phoPipelineOptions.imageDimensions;
-                else
-                    imageDimensions = [512 512];
-                end
-            else
-                imageDimensions = [512 512];
-            end
-
-            % obj.roiMasks: one for each cellROI
-            obj.roiMasks.Fill = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
-            obj.roiMasks.Edge = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
-            
-            obj.roiMasks.NeuropilFill = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
-            
-            obj.roiMasks.OutsetEdge0 = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
-            obj.roiMasks.OutsetEdge1 = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
-            obj.roiMasks.OutsetEdge2 = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
-
-            obj.roiMasks.InsetEdge0 = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
-            obj.roiMasks.InsetEdge1 = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
-            obj.roiMasks.InsetEdge2 = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
-
-
-            % Amalgamation Masks:
-            obj.amalgamationMasks.cellROI_LookupMask = zeros(imageDimensions(1), imageDimensions(2)); % Maps every pixel in the image to the cellROI index of the cell it belongs to, if one exists.
-
-            obj.amalgamationMasks.AlphaConjunctionMask = zeros(imageDimensions(1), imageDimensions(2));
-            obj.amalgamationMasks.AlphaRoiTuningScoreMask = zeros(imageDimensions(1), imageDimensions(2));
-            obj.amalgamationMasks.NumberOfTunedDays = zeros(imageDimensions(1), imageDimensions(2));
-
-			obj.amalgamationMasks.AlphaRoiConsistencyScoreMask = zeros(obj.numOfSessions, imageDimensions(1), imageDimensions(2));
-
-            % an amalgamationMask that will store the preferred stimuli for all cell ROIs, to be represented as colors
-            obj.amalgamationMasks.PreferredStimulusAmplitudes = ones(obj.numOfSessions, imageDimensions(1), imageDimensions(2)) * -1;
-            obj.amalgamationMasks.PreferredStimulusFreqs = ones(obj.numOfSessions, imageDimensions(1), imageDimensions(2)) * -1;
-
-
-            obj.preferredStimulusInfo.PreferredStimulus = zeros(obj.num_cellROIs, obj.numOfSessions, 2);
-            obj.preferredStimulusInfo.PreferredStimulus_LinearStimulusIndex = zeros(obj.num_cellROIs, obj.numOfSessions); % Instead of a tuple, it holds a value 1-26 that serves as a unique stimulus identity.
-
-            % outputMaps.DidPreferredStimulusChange: keeps track of whether the preferredStimulus amplitude or frequency changed for a cellROI between sessions.
-            obj.preferredStimulusInfo.DidPreferredStimulusChange = zeros(obj.num_cellROIs, (obj.numOfSessions-1));
-			obj.preferredStimulusInfo.ChangeScores = zeros(obj.num_cellROIs, 1);
-			obj.preferredStimulusInfo.InterSessionConsistencyScores = zeros(obj.num_cellROIs, 1);
-			
-            obj.roiComputedProperties.areas = zeros(obj.num_cellROIs, 1);
-            obj.roiComputedProperties.boundingBoxes = zeros(obj.num_cellROIs, 4);
-            obj.roiComputedProperties.centroids = zeros(obj.num_cellROIs, 2);
-
-        end % end function allocateOutputObjects
-
-
 		function [obj] = computeCurveAnalysis(obj)
 			% Computes the derivatives and other meta information from the red line traces objects.
 			% obj.redTraceLinesForAllStimuli is a 159x26x150 double
@@ -536,7 +470,7 @@ classdef FinalDataExplorer
 
 			% isInhibitory: True if the absolute value of the min_extrema is greater than that of the max_extrema. Check this.
 			obj.computedRedTraceLinesAnalyses.isInhibitory = (abs(obj.computedRedTraceLinesAnalyses.Extrema.local_min_extrema) >= ...
-    			abs(obj.computedRedTraceLinesAnalyses.Extrema.local_max_peaks));
+				abs(obj.computedRedTraceLinesAnalyses.Extrema.local_max_peaks));
 
 			obj.computedRedTraceLinesAnalyses.Normalized = obj.redTraceLinesForAllStimuli ./ obj.computedRedTraceLinesAnalyses.Extrema.LargestMagnitudeExtrema; % Normalize each one by its highest extrema.
 
@@ -579,8 +513,8 @@ classdef FinalDataExplorer
 					% Need to use the normalized value so the outputs are comparible:
 					obj.computedRedTraceLinesAnalyses.autotuning.StimulusAutotuningValues(i, j) = dot(obj.autoTuningDetection.detectionCurve, squeeze(obj.computedRedTraceLinesAnalyses.Normalized(i, j, :)));
 				end
-            end
-            
+			end
+			
 			
 			[obj.computedRedTraceLinesAnalyses.autotuning.topStimuliValues, obj.computedRedTraceLinesAnalyses.autotuning.topStimuliIndicies] = maxk(obj.computedRedTraceLinesAnalyses.autotuning.StimulusAutotuningValues, obj.num_to_include, 2);
 			obj.computedRedTraceLinesAnalyses.autotuning.compTotalAutotuning = sum(obj.computedRedTraceLinesAnalyses.autotuning.StimulusAutotuningValues, 2); % Sum over the autotuning values for all stimuli to get a general value for the comp
@@ -590,63 +524,124 @@ classdef FinalDataExplorer
 			% [val,icol] = max(val);
 			% irow = irow(icol)
 
-        
-        end
-        
 		
-    end % end methods
+		end
+		
+		
+	end % end methods
 
 	%% Protected Methods Block:
 	methods (Access = protected)
 
 		function [obj] = allocateComponentMasks(obj, phoPipelineOptions)
 			%% Pre-Allocate:
-			obj.compMasks.Masks = zeros(obj.cellROIIndex_mapper.numCompListEntries, 512, 512);
-			obj.compMasks.Edge = zeros(obj.cellROIIndex_mapper.numCompListEntries, 512, 512);
+			obj.compMasks.Masks = zeros(obj.cellROIIndex_mapper.num_CompListEntries, 512, 512);
+			obj.compMasks.Edge = zeros(obj.cellROIIndex_mapper.num_CompListEntries, 512, 512);
 			if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
-				obj.compNeuropilMasks.Masks = zeros(obj.cellROIIndex_mapper.numCompListEntries, 512, 512);
+				obj.compNeuropilMasks.Masks = zeros(obj.cellROIIndex_mapper.num_CompListEntries, 512, 512);
 			end
 
 			if strcmpi(obj.activeNeuropilCompensationMode, 'fissa')
-				obj.compMasks.Polygons = cell([obj.cellROIIndex_mapper.numCompListEntries, 1]);
-				obj.compNeuropilMasks.Polygons = cell([obj.cellROIIndex_mapper.numCompListEntries, 1]); % This uses a flat cell array to hold the 1x4 cells from the neuropil mask
-				% obj.compNeuropilMasks.Polygons = cell([obj.cellROIIndex_mapper.numCompListEntries, 4]);
+				obj.compMasks.Polygons = cell([obj.cellROIIndex_mapper.num_CompListEntries, 1]);
+				obj.compNeuropilMasks.Polygons = cell([obj.cellROIIndex_mapper.num_CompListEntries, 1]); % This uses a flat cell array to hold the 1x4 cells from the neuropil mask
+				% obj.compNeuropilMasks.Polygons = cell([obj.cellROIIndex_mapper.num_CompListEntries, 4]);
 			end
 
 		end
 
 
 		function [obj] = allocateDffs(obj, phoPipelineOptions)
-			obj.raw_DFF = FinalDataExplorer.allocateNewDff(obj.num_cellROIs, obj.cellROIIndex_mapper.numCompListEntries);
+			obj.raw_DFF = FinalDataExplorer.allocateNewDff(obj.num_cellROIs, obj.cellROIIndex_mapper.num_CompListEntries);
 			if phoPipelineOptions.PhoPostFinalDataStructAnalysis.processingOptions.compute_neuropil_corrected_versions
-				obj.corrected_DFF = FinalDataExplorer.allocateNewDff(obj.num_cellROIs, obj.cellROIIndex_mapper.numCompListEntries);
+				obj.corrected_DFF = FinalDataExplorer.allocateNewDff(obj.num_cellROIs, obj.cellROIIndex_mapper.num_CompListEntries);
 			end
 		end
+
+		function [obj] = allocateOutputObjects(obj, phoPipelineOptions)
+			%% HELPER FUNCTION: allocateOutputObjects
+			% Allocates the computed output objects.
+			% masks: *one for each ROI*: matricies the size of the original images (512x512 for example) that specify specific pixels related to the ROIs.
+			% amalgamationMasks: *only one that includes all ROIs*: matiricies the size of the original images (512x512 for example) that include all pixels related to ANY ROI.
+
+			if exist('phoPipelineOptions','var')
+				if isfield(phoPipelineOptions, 'imageDimensions')
+					imageDimensions = phoPipelineOptions.imageDimensions;
+				else
+					imageDimensions = [512 512];
+				end
+			else
+				imageDimensions = [512 512];
+			end
+
+			% obj.roiMasks: one for each cellROI
+			obj.roiMasks.Fill = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
+			obj.roiMasks.Edge = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
+			
+			obj.roiMasks.NeuropilFill = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
+			
+			obj.roiMasks.OutsetEdge0 = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
+			obj.roiMasks.OutsetEdge1 = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
+			obj.roiMasks.OutsetEdge2 = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
+
+			obj.roiMasks.InsetEdge0 = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
+			obj.roiMasks.InsetEdge1 = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
+			obj.roiMasks.InsetEdge2 = zeros(obj.num_cellROIs, imageDimensions(1), imageDimensions(2));
+
+
+			% Amalgamation Masks:
+			obj.amalgamationMasks.cellROI_LookupMask = zeros(imageDimensions(1), imageDimensions(2)); % Maps every pixel in the image to the cellROI index of the cell it belongs to, if one exists.
+
+			obj.amalgamationMasks.AlphaConjunctionMask = zeros(imageDimensions(1), imageDimensions(2));
+			obj.amalgamationMasks.AlphaRoiTuningScoreMask = zeros(imageDimensions(1), imageDimensions(2));
+			obj.amalgamationMasks.NumberOfTunedDays = zeros(imageDimensions(1), imageDimensions(2));
+
+			obj.amalgamationMasks.AlphaRoiConsistencyScoreMask = zeros(obj.numOfSessions, imageDimensions(1), imageDimensions(2));
+
+			% an amalgamationMask that will store the preferred stimuli for all cell ROIs, to be represented as colors
+			obj.amalgamationMasks.PreferredStimulusAmplitudes = ones(obj.numOfSessions, imageDimensions(1), imageDimensions(2)) * -1;
+			obj.amalgamationMasks.PreferredStimulusFreqs = ones(obj.numOfSessions, imageDimensions(1), imageDimensions(2)) * -1;
+
+
+			obj.preferredStimulusInfo.PreferredStimulus = zeros(obj.num_cellROIs, obj.numOfSessions, 2);
+			obj.preferredStimulusInfo.PreferredStimulus_LinearStimulusIndex = zeros(obj.num_cellROIs, obj.numOfSessions); % Instead of a tuple, it holds a value 1-26 that serves as a unique stimulus identity.
+
+			% outputMaps.DidPreferredStimulusChange: keeps track of whether the preferredStimulus amplitude or frequency changed for a cellROI between sessions.
+			obj.preferredStimulusInfo.DidPreferredStimulusChange = zeros(obj.num_cellROIs, (obj.numOfSessions-1));
+			obj.preferredStimulusInfo.ChangeScores = zeros(obj.num_cellROIs, 1);
+			obj.preferredStimulusInfo.InterSessionConsistencyScores = zeros(obj.num_cellROIs, 1);
+			
+			obj.roiComputedProperties.areas = zeros(obj.num_cellROIs, 1);
+			obj.roiComputedProperties.boundingBoxes = zeros(obj.num_cellROIs, 4);
+			obj.roiComputedProperties.centroids = zeros(obj.num_cellROIs, 2);
+
+		end % end function allocateOutputObjects
+
+
 
 	end % end private methods
 
 	%% Static Methods Block:
 	methods (Static)
-		function [new_DFF] = allocateNewDff(num_cellROIs, numCompListEntries)
-           %% getFillRoiMask: convenience method for accessing the fill mask for a given roiIndex.
-           	new_DFF.cellROI_FirstDayTuningMaxPeak = zeros(num_cellROIs, 1); % Just the first day
+		function [new_DFF] = allocateNewDff(num_cellROIs, num_CompListEntries)
+		   %% getFillRoiMask: convenience method for accessing the fill mask for a given roiIndex.
+			   new_DFF.cellROI_FirstDayTuningMaxPeak = zeros(num_cellROIs, 1); % Just the first day
 			new_DFF.cellROI_SatisfiesFirstDayTuning = zeros(num_cellROIs, 1); % Just the first day
 
-			new_DFF.TracesForAllStimuli.meanDFF = zeros(numCompListEntries, 26, 20, 150);
-			new_DFF.redTraceLinesForAllStimuli = zeros(numCompListEntries, 26, 150);
+			new_DFF.TracesForAllStimuli.meanDFF = zeros(num_CompListEntries, 26, 20, 150);
+			new_DFF.redTraceLinesForAllStimuli = zeros(num_CompListEntries, 26, 150);
 			% Build 2D Mesh for each component
-			new_DFF.finalOutPeaksGrid = zeros(numCompListEntries,6,6);
+			new_DFF.finalOutPeaksGrid = zeros(num_CompListEntries,6,6);
 			% componentAggregatePropeties.maxTuningPeakValue: the maximum peak value for each signal
-			new_DFF.componentAggregatePropeties.maxTuningPeakValue = zeros(numCompListEntries,1);
+			new_DFF.componentAggregatePropeties.maxTuningPeakValue = zeros(num_CompListEntries,1);
 			% componentAggregatePropeties.sumTuningPeaksValue: the sum of all peaks
-			new_DFF.componentAggregatePropeties.sumTuningPeaksValue = zeros(numCompListEntries,1);
+			new_DFF.componentAggregatePropeties.sumTuningPeaksValue = zeros(num_CompListEntries,1);
 
 			% Timing Info:
 			% the relative offset between the start of the sound stimulus and the max peak
-			new_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(numCompListEntries, 26);
+			new_DFF.timingInfo.Index.startSoundRelative.maxPeakIndex = zeros(num_CompListEntries, 26);
 			% timingInfo.Index.trialStartRelative.maxPeakIndex: the relative offset between the start of the trial (not the stimulus) and the max peak. As close to an absolute index as it gets.
-			new_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(numCompListEntries, 26);
-        end
+			new_DFF.timingInfo.Index.trialStartRelative.maxPeakIndex = zeros(num_CompListEntries, 26);
+		end
 	end % end static methods block
 
 
