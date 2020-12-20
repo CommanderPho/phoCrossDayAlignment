@@ -5,43 +5,47 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 		MarkerSymbol = 'o'
 		Color = [1 0 0]
 
-		PlotData (:,1) PlotData_Cartesian
+		PlotData (:,:) PlotData_Cartesian
     end
-
+	properties(Access = private, Transient, NonCopyable)
+		OutlineBordersLineArray (:,:) matlab.graphics.chart.primitive.Line
+		PolygonObjects (:,:) matlab.graphics.primitive.Patch
+    end
+    
+    
     properties (Access = protected)
-		numInitializedPlots = 0;
+		numInitializedPlots = [0 0];
     end
 
     
 	%% Computed Properties:
 	properties (Dependent)
 		num_of_dataSeries % FinalDataExplorer
-		% number_of_cellROI_plotSubGraphics % The number of graphics objects belonging to each cellROI. For example, these might be the fill, the edge, and several inset/outset edge objects
+		number_of_dataSeries_SubGraphics % The number of graphics objects belonging to each cellROI. For example, these might be the fill, the edge, and several inset/outset edge objects
 		dataSeries_labels
 
 	end
 	methods
 	   function num_of_dataSeries = get.num_of_dataSeries(obj)
-		  num_of_dataSeries = length(obj.PlotData);
-	   	end
+		  num_of_dataSeries = size(obj.PlotData, 1);
+       end
+        
+       
 		function dataSeries_labels = get.dataSeries_labels(obj)
 			dataSeries_labels = cell([obj.num_of_dataSeries 1]);
 			for i = 1:obj.num_of_dataSeries
 				dataSeries_labels{i} = obj.PlotData(i).plot_identifier;
 			end
 		end
-	%    function number_of_cellROI_plotSubGraphics = get.number_of_cellROI_plotSubGraphics(obj)
-	%       number_of_cellROI_plotSubGraphics = length(obj.activeOffsetInsetIndicies);
-	% 	  if obj.plotting_options.should_plot_neuropil_masks
-	% 		number_of_cellROI_plotSubGraphics = number_of_cellROI_plotSubGraphics + 1;
-	% 	  end
-	%    end
+	   function number_of_dataSeries_SubGraphics = get.number_of_dataSeries_SubGraphics(obj)
+          number_of_dataSeries_SubGraphics = zeros([obj.num_of_dataSeries 1]);
+          for i = 1:size(obj.PlotData, 1)
+            number_of_dataSeries_SubGraphics(i) = length(obj.PlotData(i,:));
+          end
+	   end
 	end
 
-	properties(Access = private, Transient, NonCopyable)
-		OutlineBordersLineArray (:,1) matlab.graphics.chart.primitive.Line
-		PolygonObjects (:,1) matlab.graphics.primitive.Patch
-	end
+
 
 
 	methods
@@ -61,7 +65,7 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 			% Call superclass constructor method
 			obj@matlab.graphics.chartcontainer.ChartContainer(args{:});
 
-			obj.PlotData = plotDataSeries;
+			obj.PlotData(:,1) = plotDataSeries;
 
 		end
 	end
@@ -81,68 +85,107 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 
 			obj.buildNeededPlots();
             
-            isvalid(obj.OutlineBordersLineArray);
+%             isvalid(obj.OutlineBordersLineArray);
             
 
 			for i = 1:obj.num_of_dataSeries
-                curr_x = obj.PlotData(i).XData;
-                curr_y = obj.PlotData(i).YData;
-                 
-				obj.OutlineBordersLineArray(i).XData = curr_x;
-				obj.OutlineBordersLineArray(i).YData = curr_y;
-				
-				% Update patch XData and YData
-				x = curr_x;
-				obj.PolygonObjects(i).XData = [x x(end:-1:1)];
-				y = curr_y;
-				% c = obj.ConfidenceMargin;
-				obj.PolygonObjects(i).YData = [y y(end:-1:1)];
-				
-				% Update colors
-				obj.OutlineBordersLineArray(i).Color = obj.PlotData(i).Color;
-				obj.PolygonObjects(i).FaceColor = obj.PlotData(i).Color;
-				
-				% Update markers
-				% obj.OutlineBordersLineArray(i).Marker = obj.MarkerSymbol;
-			end % end for loop
+                curr_data = obj.PlotData(i,:);
+                for j = 1:length(curr_data)
+                
+                    curr_plot_is_visible = obj.PlotData(i,j).should_show;
+
+                    if curr_plot_is_visible
+                        curr_x = obj.PlotData(i).XData;
+                        curr_y = obj.PlotData(i).YData;
+
+                        obj.OutlineBordersLineArray(i).XData = curr_x;
+                        obj.OutlineBordersLineArray(i).YData = curr_y;
+
+                        % Update patch XData and YData
+                        x = curr_x;
+                        obj.PolygonObjects(i).XData = [x x(end:-1:1)];
+                        y = curr_y;
+                        % c = obj.ConfidenceMargin;
+                        obj.PolygonObjects(i).YData = [y y(end:-1:1)];
+
+                        % Update colors
+                        obj.OutlineBordersLineArray(i).Color = obj.PlotData(i).Color;
+                        obj.PolygonObjects(i).FaceColor = obj.PlotData(i).Color;
+
+                        obj.OutlineBordersLineArray(i).Visible = 'on';
+                        obj.PolygonObjects(i).Visible = 'on';
+                    else
+                        obj.OutlineBordersLineArray(i).Visible = 'off';
+                        obj.PolygonObjects(i).Visible = 'off';
+                    end
+
+                
+                end % end for length(curr_data) loop
+                
+			end % end for num_of_dataSeries loop
 
 			drawnow;
 		end
 
 		function buildNeededPlots(obj)
-
-            obj.numInitializedPlots;
-            curr_needed_plots = obj.num_of_dataSeries - obj.numInitializedPlots;
-            
             fprintf('buildNeededPlots()\n');
-            fprintf('\t curr_needed_plots: %d\n', curr_needed_plots);
+            curr_num_additional_plot_rows = obj.num_of_dataSeries - obj.numInitializedPlots(1);
+            fprintf('\t curr_num_additional_plot_rows: %d\n', curr_num_additional_plot_rows);
             
-%             fprintf('\t obj.OutlineBordersLineArray: ');
-%             disp(obj.OutlineBordersLineArray);
-%             fprintf('\t obj.PolygonObjects: ');
-%             disp(obj.PolygonObjects);
-            
-			ax = getAxes(obj);
-			% Preallocate the objects array
-% 			obj.OutlineBordersLineArray = gobjects(obj.num_of_dataSeries, 1);
-% 			obj.PolygonObjects = gobjects(obj.num_of_dataSeries, 1);
-
-%             clear obj.PolygonObjects;
-%             clear obj.OutlineBordersLineArray;
-            
-			for i = 1:curr_needed_plots
-				% Create Patch and Line objects
-				obj.PolygonObjects(i) = patch(ax, NaN, NaN, 'r', 'FaceAlpha', 0.2,'EdgeColor','none');
-				hold(ax,'on')
-				obj.OutlineBordersLineArray(i) = plot(ax, NaN, NaN, 'DisplayName','Original');
+            ax = getAxes(obj);
+            for row_index = 1:obj.num_of_dataSeries
                 
-                obj.numInitializedPlots = obj.numInitializedPlots + 1;
-                fprintf('\t initialized one plot!\n');
-                fprintf('\t\t obj.numInitializedPlots: %d\n', obj.numInitializedPlots);
-			end % end for loop
+                if row_index > size(obj.numInitializedPlots,1)
+                   % Allocate a whole new row: 
+                   obj.numInitializedPlots(row_index) = 0;
+                end
+                
+                curr_row_data = obj.PlotData(row_index,:);
+                curr_row_num_initialized_plots = obj.numInitializedPlots(row_index);
+                curr_row_num_required_plots = length(curr_row_data);
+                curr_row_num_additional_plots = curr_row_num_required_plots - curr_row_num_initialized_plots;
+                fprintf('\t curr_row_num_additional_plots[%d]: %d\n', row_index, curr_num_additional_plot_rows);
+                            
+                for new_col_index = 1:curr_row_num_additional_plots
+                    % Create Patch and Line objects
+                    col_index = curr_row_num_initialized_plots + new_col_index;
+%                     [obj, ax] = perform_allocate_specific_subgraphics_plot(obj, ax, row_index, col_index);                    
+                    obj.PolygonObjects(row_index, col_index) = patch(ax, NaN, NaN, 'r', 'FaceAlpha', 0.2,'EdgeColor','none');
+                    hold(ax,'on')
+                    obj.OutlineBordersLineArray(row_index, col_index) = plot(ax, NaN, NaN, 'DisplayName','Original');
+                    obj.numInitializedPlots(row_index) = obj.numInitializedPlots(row_index) + 1;
+                    fprintf('\t initialized one plot!\n');
 
-			% Turn hold state off
+                end
+                
+            end % end for loop
+            
+			% Preallocate the objects array
+            
+% 			for i = 1:curr_needed_plots  
+% % 				% Create Patch and Line objects
+% % 				obj.PolygonObjects(i) = patch(ax, NaN, NaN, 'r', 'FaceAlpha', 0.2,'EdgeColor','none');
+% % 				hold(ax,'on')
+% % 				obj.OutlineBordersLineArray(i) = plot(ax, NaN, NaN, 'DisplayName','Original');
+% %                 
+% %                 obj.numInitializedPlots = obj.numInitializedPlots + 1;
+% %                 fprintf('\t initialized one plot!\n');
+% %                 fprintf('\t\t obj.numInitializedPlots: %d\n', obj.numInitializedPlots);
+% 			end % end for loop
+
+%             Turn hold state off
 			hold(ax,'off')
+            
+%             function [obj, ax] = perform_allocate_specific_subgraphics_plot(obj, ax, row_index, col_index)
+%                % Create Patch and Line objects
+% 				obj.PolygonObjects(row_index, col_index) = patch(ax, NaN, NaN, 'r', 'FaceAlpha', 0.2,'EdgeColor','none');
+% 				hold(ax,'on')
+% 				obj.OutlineBordersLineArray(row_index, col_index) = plot(ax, NaN, NaN, 'DisplayName','Original');
+%                 obj.numInitializedPlots(row_index) = obj.numInitializedPlots(row_index) + 1;
+%                 fprintf('\t initialized one plot!\n');
+% %                 fprintf('\t\t obj.numInitializedPlots: %d\n', obj.numInitializedPlots);
+%             end
+
         end
         
         
@@ -170,33 +213,39 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 				error('Not enough inputs');
             end
 
+%             numInitializedPlots
+%             updatedRequiredPlots = zeros([length(varargin), 1]);
+            
             % nargin: This returns 3 for some reason!
 			for arg_i = 1:length(varargin)	
 				activePolys = varargin{arg_i};
 				[coord_data, coord_polys, total_num_points, num_polys] = PolygonRoiChart.extractCellPolyCoordinates(activePolys);
-				curr_x = coord_data(:, 2);
-				curr_y = coord_data(:, 1);
-				obj.PlotData(arg_i).updateData(curr_x, curr_y);
+                
+%                 updatedRequiredPlots(arg_i) = num_polys;
+                
+                for poly_i = 1:num_polys
+                    active_coord_data = coord_data(coord_polys == poly_i, :);
+                    curr_x = active_coord_data(:, 2);
+                    curr_y = active_coord_data(:, 1);
+                    obj.PlotData(arg_i, poly_i).updateData(curr_x, curr_y);
+                end
+                
+%                 if isprop(obj,'PlotData')
+%                     curr_width = size(obj.PlotData, 2);
+%                     if curr_width < num_polys)
+%                        % Allocate more polys!
+%                        fprintf('need to allocate more polys for arg[%d]\n', arg_i);
+%                     end
+%                 else
+%                     
+%                     
+%                 end
+%                 
+%                 
+% 				curr_x = coord_data(:, 2);
+% 				curr_y = coord_data(:, 1);
+% 				obj.PlotData(arg_i).updateData(curr_x, curr_y);
 			end
-
-% 			obj.update();
-
-			% drawnow;
-			%update_comp_polys:
-			% for i = 1:length(activeRoiCells)
-			% 	currCellPolys = activeRoiCells{i};
-			% 	for j = 1:length(currCellPolys)
-			% 		curr_poly = currCellPolys{j};
-			% 		x = curr_poly(:, 2);
-			% 		y = curr_poly(:, 1);
-			% 		plot(x,y)
-			% 		fill(x,y,'r')
-			% %         alpha(transparency);
-			% 		xlim([1 512]);
-			% 		ylim([1 512]);
-					
-			% 	end % end for j
-			% end % end for i
 
 		end % end function update_comp_polys
         
@@ -228,56 +277,6 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 			end % end for
 		end
 
-
-
-		% function [last_patches, last_lines, num_polys] = plotCellPolys(polys, plottingInfo)
-		% 		% plotCellPolys:
-		% 		num_polys = length(polys);
-		% 		last_lines = gobjects(num_polys, 1);
-		% 		last_patches = gobjects(num_polys, 1);
-				
-				
-		% 		% Loop through all polygons within this cellROI
-		% 		for j = 1:num_polys
-		% 			curr_poly = polys{j};
-		% 			if iscell(curr_poly)
-		% 				fprintf('\t WARNING: poly[%d] is double wrapped!\n', j);
-		% 				curr_poly = curr_poly{1}; 
-		% 			end
-		% 			x = curr_poly(:, 2);
-		% 			y = curr_poly(:, 1);
-		% 			% Can add the x and y vectors as the next column of the deferred_plotting_matricies
-		% 			%%% on second thought, building x and y data vectors won't work well because the returned x and y are of variable size!
-		% 			%%%%%  True, but an almagamation mask can be added easily!
-		% 			%%%%%  OR, could concatenate all of them into x, y vectors. Nah, they'd still be of different length
-					
-		% 			num_points = length(x);
-		% 			fprintf('\t poly[%d]: %d\n', j, num_points);
-					
-		% 			is_first_poly_in_cell = (j == 1);
-		% 			if is_first_poly_in_cell
-		% 				last_patches(j) = fill(x, y, plottingInfo.patch_color, 'Tag', plottingInfo.curr_cell_name);
-		% 				alpha(plottingInfo.roi_alpha);
-		% 			else
-		% 				last_patches(j) = fill(x, y, plottingInfo.patch_color, 'Tag', plottingInfo.curr_cell_name);
-		% 				alpha(plottingInfo.other_alpha); 
-		% 			end
-					
-		% 			if plottingInfo.plot_lines
-		% 				last_lines(j) = plot(x,y,'black','Tag', plottingInfo.curr_cell_name);
-		% 			else
-		% 				set(last_patches(j), 'EdgeColor','none');
-		% 			end
-					
-		% 			if plottingInfo.prevent_zoom_in
-		% 				xlim([1 512]);
-		% 				ylim([1 512]);
-		% 			else
-		% 				axis square
-		% 			end
-					
-		% 		end % end for
-		% end
 		
 	end % end Static methods block
 
