@@ -96,21 +96,12 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 
                     % Update patch XData and YData
 					if show_patch
-						x = curr_x(:,1);
-						active_x = [x x(end:-1:1)];
-						y = curr_y(:,1);
-						% c = obj.ConfidenceMargin;
-                        active_y = [y y(end:-1:1)];
-                        
-                        curr_color_data = repmat(obj.PlotData(i).CData, size(curr_x));
-                        
-%                         obj.PolygonObjects(i).XData = active_x;
-% 						obj.PolygonObjects(i).YData = active_y;
+                        curr_color_data = repmat(obj.PlotData(i).CData, size(curr_x));                        
                         obj.PolygonObjects(i).XData = curr_x;
 						obj.PolygonObjects(i).YData = curr_y;
                         obj.PolygonObjects(i).CData = curr_color_data;
                         
-%                         set(obj.PolygonObjects(i), 'FaceAlpha', obj.PlotData(i).main_alpha, 'EdgeColor', obj.PlotData(i).EdgeColor);
+                        set(obj.PolygonObjects(i), 'FaceAlpha', obj.PlotData(i).main_alpha, 'EdgeColor', obj.PlotData(i).EdgeColor);
                         
 					end
 
