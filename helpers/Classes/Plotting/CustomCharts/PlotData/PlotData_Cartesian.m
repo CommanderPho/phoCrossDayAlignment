@@ -1,4 +1,4 @@
-classdef PlotData_Cartesian < PlotDataBase
+classdef PlotData_Cartesian < PlotDataBase % & PlotData_Mixin_Selectable
     %PlotData_Cartesian Contains information about the potentially displayed plots
     %   Detailed explanation goes here
 
@@ -40,6 +40,7 @@ classdef PlotData_Cartesian < PlotDataBase
 			% Call superclass constructor method
 			args = varargin;
 			obj@PlotDataBase(plot_identifier, should_show, aColor, args{:});
+
 
 			if exist('XData','var')
 				obj.XData = XData;

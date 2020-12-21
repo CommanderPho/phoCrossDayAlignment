@@ -1,4 +1,4 @@
-classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer %& ...
+classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & Chart_Mixin_Selectable %&...
         %     matlab.graphics.chartcontainer.mixin.Legend
         
     events (HasCallbackProperty, NotifyAccess = protected) 
@@ -59,8 +59,9 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer %& ...
 			% Check for at least three inputs
 			if nargin < 2
 				error('Not enough inputs');
-			end
+            end
 				
+            
 			% Convert x, y, and margin into name-value pairs
 			% args = {'plotDataSeries', plotDataSeries};
 				
@@ -70,10 +71,12 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer %& ...
 				
 			% Call superclass constructor method
 			obj@matlab.graphics.chartcontainer.ChartContainer(args{:});
-
+			obj@Chart_Mixin_Selectable(@() (obj.num_of_dataSeries));
+			
 			obj.PlotConfig = plotConfig;
 			
 			obj.PlotData = plotDataSeries;
+
             
 		end
 
@@ -286,7 +289,7 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer %& ...
 		function onClickCallback(obj, src, eventData)
 			fprintf('PolygonRoiChart.onClickCallback(...)\n');
 			% cp = src.Parent.CurrentPoint; % Get get the location in the parent like this
-
+			% xline(app.UIAxes,cp(1,1));
 
             hit_event_data.Button = eventData.Button; % 1 (left click)
             hit_event_data.Point = eventData.IntersectionPoint;
