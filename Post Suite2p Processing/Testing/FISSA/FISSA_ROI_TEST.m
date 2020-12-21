@@ -168,7 +168,7 @@ function [chart] = plotFissaRoiNewChart(final_data_explorer_obj, extantFigH)
     end
     chart = PolygonRoiChart(dataSeries, curr_chart_config, 'Parent', extantFigH);
 %     chart = InteractivePolygonRoiChart(dataSeries, curr_chart_config);
-    openvar('chart')
+%     openvar('chart')
     
     
 end

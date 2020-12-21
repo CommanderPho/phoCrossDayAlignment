@@ -226,9 +226,8 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer %& ...
 		function buildNeededPlots(obj, ax)
             % buildNeededPlots: Used to build the graphics objects corresponding to the current number of data series
 			fprintf('buildNeededPlots()\n');
-            curr_needed_plots = obj.num_of_dataSeries - obj.numInitializedPlots;
-            fprintf('\t curr_needed_plots: %d\n', curr_needed_plots);
-
+			nNew = obj.num_of_dataSeries;
+			nOld = numel(obj.PolygonObjects);
 
 			ax.FontSmoothing = 'off';       % turn off axes font smoothing
 			% Disable pan/zoom on the axes.
@@ -241,20 +240,35 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer %& ...
 
 			recently_initialized_plots = [];
             
-			for i = 1:curr_needed_plots
-				% Create Patch and Line objects
-				obj.PolygonObjects(i) = patch(ax, NaN, NaN, 'g');
-				obj.PolygonObjects(i).ButtonDownFcn = @obj.onClickCallback;
+			if nNew > nOld
+				nToCreate = nNew - nOld;
+				fprintf('\t creating %d new plots...\n', nToCreate);
 
-				hold(ax,'on')
-				obj.OutlineBordersLineArray(i) = plot(ax, NaN, NaN, 'DisplayName','Original');
-                
-				recently_initialized_plots(end+1) = i;
+				for k = 1:nToCreate
+					creating_index = nOld + k;
+					% Create Patch and Line objects
+					obj.PolygonObjects(creating_index) = patch(ax, NaN, NaN, 'g');
+					obj.PolygonObjects(creating_index).ButtonDownFcn = @obj.onClickCallback;
 
-                obj.numInitializedPlots = obj.numInitializedPlots + 1;
-                % fprintf('\t initialized one plot!\n');
-                % fprintf('\t\t obj.numInitializedPlots: %d\n', obj.numInitializedPlots);
-			end % end for loop
+					hold(ax,'on')
+					obj.OutlineBordersLineArray(creating_index) = plot(ax, NaN, NaN, 'DisplayName','Original');
+					
+					recently_initialized_plots(end+1) = creating_index;
+					obj.numInitializedPlots = obj.numInitializedPlots + 1;
+					% fprintf('\t initialized one plot!\n');
+					% fprintf('\t\t obj.numInitializedPlots: %d\n', obj.numInitializedPlots);
+				end % end for loop
+
+			elseif nNew < nOld
+				% curr_needed_plots = nNew - nOld;
+				curr_excess_plots = nOld - (nNew+1);
+				fprintf('\t WARNING: destorying %d excess (uneeded) plots...\n', curr_excess_plots);
+				% Remove the unnecessary objects.
+                delete( obj.PolygonObjects(nNew+1:nOld) );
+				delete( obj.OutlineBordersLineArray(nNew+1:nOld) );
+                obj.PolygonObjects(nNew+1:nOld) = [];
+                obj.OutlineBordersLineArray(nNew+1:nOld) = [];
+			end
             
 			if obj.PlotConfig.prevent_zoom_in
 				xlim(ax, [1 512]);
@@ -271,6 +285,9 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer %& ...
 
 		function onClickCallback(obj, src, eventData)
 			fprintf('PolygonRoiChart.onClickCallback(...)\n');
+			% cp = src.Parent.CurrentPoint; % Get get the location in the parent like this
+
+
             hit_event_data.Button = eventData.Button; % 1 (left click)
             hit_event_data.Point = eventData.IntersectionPoint;
             hit_patch_user_data = src.UserData;
