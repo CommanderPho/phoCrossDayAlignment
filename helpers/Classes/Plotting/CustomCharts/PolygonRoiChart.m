@@ -15,7 +15,15 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 
     
 	%% Computed Properties:
-	properties (Dependent)
+
+
+	properties(Access = private, Transient, NonCopyable)
+		OutlineBordersLineArray (:,1) matlab.graphics.chart.primitive.Line
+		PolygonObjects (:,1) matlab.graphics.primitive.Patch
+    end
+
+    
+    properties (Dependent)
 		num_of_dataSeries
 		dataSeries_labels
 
@@ -30,13 +38,10 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 				dataSeries_labels{i} = obj.PlotData(i).plot_identifier;
 			end
         end
-	end
-
-	properties(Access = private, Transient, NonCopyable)
-		OutlineBordersLineArray (:,1) matlab.graphics.chart.primitive.Line
-		PolygonObjects (:,1) matlab.graphics.primitive.Patch
-	end
-
+    end
+    
+    
+    
 
 	methods
 		function obj = PolygonRoiChart(plotDataSeries, varargin)
@@ -97,12 +102,15 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 						% c = obj.ConfidenceMargin;
                         active_y = [y y(end:-1:1)];
                         
+                        curr_color_data = repmat(obj.PlotData(i).CData, size(curr_x));
+                        
 %                         obj.PolygonObjects(i).XData = active_x;
 % 						obj.PolygonObjects(i).YData = active_y;
                         obj.PolygonObjects(i).XData = curr_x;
 						obj.PolygonObjects(i).YData = curr_y;
+                        obj.PolygonObjects(i).CData = curr_color_data;
                         
-                        set(obj.PolygonObjects(i), 'FaceAlpha', obj.PlotData(i).main_alpha, 'EdgeColor', obj.PlotData(i).EdgeColor);
+%                         set(obj.PolygonObjects(i), 'FaceAlpha', obj.PlotData(i).main_alpha, 'EdgeColor', obj.PlotData(i).EdgeColor);
                         
 					end
 
@@ -157,7 +165,9 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
                 fprintf('\t initialized one plot!\n');
                 fprintf('\t\t obj.numInitializedPlots: %d\n', obj.numInitializedPlots);
 			end % end for loop
-
+            
+            axis(ax, 'square');
+%             axis(ax, [-1, 1, -1, 1] * 1.3);
 			% Turn hold state off
 			hold(ax,'off')
         end
@@ -226,28 +236,33 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
             % nargin: This returns 3 for some reason!
 			for arg_i = 1:length(varargin)	
 				activePolys = varargin{arg_i};
-				[coord_data, coord_polys, num_points_per_poly, num_polys] = PolygonRoiChart.extractCellPolyCoordinates(activePolys);
+				[coord_data, coord_polys, num_points_per_poly, num_polys] = PolygonRoiChart.extractCellPolyCoordinates(activePolys, true);
+                
+                [x_array, y_array, num_polys] = PolygonRoiChart.computeFilledCellPolyCoordinates(activePolys);
+                
+%                 [poly_coord_data, num_points_per_poly, num_polys] = PolygonRoiChart.extractCellPolyCoordinates(activePolys, true);
                 
                 % Use max_num_points to allocate an array filled with NaNs
-                max_num_points = max(num_points_per_poly,[],'all');
-                
-                x_array = zeros([max_num_points, num_polys]);
-                y_array = zeros([max_num_points, num_polys]);
-                
-                for poly_i = 1:num_polys
-                    active_coord_data = coord_data(coord_polys == poly_i, :);
-                    curr_size = size(active_coord_data, 1);
-                    
-                    curr_remaining_points = max_num_points - curr_size;
-                    remaining_column_points = nan([curr_remaining_points, 1]);
-                    
-                    curr_x = active_coord_data(:, 2);
-                    curr_y = active_coord_data(:, 1);
-                                        
-                    x_array(:,poly_i) = [curr_x; remaining_column_points];
-                    y_array(:,poly_i) = [curr_y; remaining_column_points];
-                    
-                end
+%                 max_num_points = max(num_points_per_poly,[],'all');
+%                 
+%                 x_array = zeros([max_num_points, num_polys]);
+%                 y_array = zeros([max_num_points, num_polys]);
+%                 
+%                 for poly_i = 1:num_polys
+% %                     active_coord_data = poly_coord_data{poly_i};
+%                     active_coord_data = coord_data(coord_polys == poly_i, :);
+%                     curr_size = size(active_coord_data, 1);
+%                     
+%                     curr_remaining_points = max_num_points - curr_size;
+%                     remaining_column_points = nan([curr_remaining_points, 1]);
+%                     
+%                     curr_x = active_coord_data(:, 2);
+%                     curr_y = active_coord_data(:, 1);
+%                                         
+%                     x_array(:,poly_i) = [curr_x; remaining_column_points];
+%                     y_array(:,poly_i) = [curr_y; remaining_column_points];
+%                     
+%                 end
  
                 % The x-coordinates of the patch vertices, specified as a vector or a matrix. If XData is a matrix, then each column represents the x-coordinates of a single face of the patch. In this case, XData, YData, and ZData must have the same dimensions.
 				obj.PlotData(arg_i).updateData(x_array, y_array);
@@ -264,7 +279,53 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 
 	methods(Static)
 
-		function [coord_data, coord_polys, num_points_per_poly, num_polys] = extractCellPolyCoordinates(polys)
+        function [x_array, y_array, num_polys] = computeFilledCellPolyCoordinates(polys)
+            %             fill_mode = 'nan';
+            fill_mode = 'repeat_last';
+            
+			[coord_data, coord_polys, num_points_per_poly, num_polys] = PolygonRoiChart.extractCellPolyCoordinates(polys, true);
+            %                 [poly_coord_data, num_points_per_poly, num_polys] = PolygonRoiChart.extractCellPolyCoordinates(activePolys, true);
+                
+            % Use max_num_points to allocate an array filled with NaNs
+            max_num_points = max(num_points_per_poly,[],'all');
+
+            x_array = zeros([max_num_points, num_polys]);
+            y_array = zeros([max_num_points, num_polys]);
+
+            for poly_i = 1:num_polys
+                %                     active_coord_data = poly_coord_data{poly_i};
+                active_coord_data = coord_data(coord_polys == poly_i, :);
+                curr_size = size(active_coord_data, 1);
+
+                curr_remaining_points = max_num_points - curr_size;
+
+                if strcmpi(fill_mode,'repeat_last')
+                    last_row = active_coord_data(end,:);                    
+                    remaining_column_points = repmat(last_row, [curr_remaining_points, 1]);
+
+                    active_coord_data  = [active_coord_data; remaining_column_points];
+                    fprintf('poly[%d]: Adding %d rows\n', poly_i, curr_remaining_points);
+                    curr_x = active_coord_data(:, 2);
+                    curr_y = active_coord_data(:, 1);
+                    x_array(:,poly_i) = curr_x;
+                    y_array(:,poly_i) = curr_y;
+
+                else
+                    remaining_column_points = nan([curr_remaining_points, 1]);
+                    curr_x = active_coord_data(:, 2);
+                    curr_y = active_coord_data(:, 1);
+
+                    x_array(:,poly_i) = [curr_x; remaining_column_points];
+                    y_array(:,poly_i) = [curr_y; remaining_column_points];
+                end
+
+            end % end for num_polys
+%             x_array = fillmissing(x_array,'previous'); % replace NaNs with the previous value
+%             y_array = fillmissing(y_array,'previous'); % replace NaNs with the previous value
+        end % end function computeFilledCellPolyCoordinates(...)
+        
+        
+		function [coord_data, coord_polys, num_points_per_poly, num_polys] = extractCellPolyCoordinates(polys, shouldEnsureClosedPolys)
 			% plotCellPolys:
 			num_polys = length(polys);
 			
@@ -279,7 +340,17 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 				if iscell(curr_poly)
 					fprintf('\t WARNING: poly[%d] is double wrapped!\n', j);
 					curr_poly = curr_poly{1}; 
-				end
+                end
+                
+                if shouldEnsureClosedPolys
+                    first_point = curr_poly(1,:);
+                    last_point = curr_poly(end,:);
+                    if (first_point ~= last_point)
+                        curr_poly(end+1,:) = first_point; % Add the first_point back at the end of the array to make it closed
+                        fprintf('Adding point to close polygon!\n');
+                    end
+                end
+                
 				num_points_per_poly(j) = size(curr_poly, 1);
 				coord_polys = [coord_polys; repmat(j, [num_points_per_poly(j) 1])];
 				coord_data = [coord_data; curr_poly];
@@ -288,6 +359,33 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 		end
 
 
+		function [poly_coord_data, num_points_per_poly, num_polys] = extractCellPerPolyCoordinates(polys, shouldEnsureClosedPolys)
+			% plotCellPolys:
+			num_polys = length(polys);
+			
+            num_points_per_poly = zeros([1 num_polys]);            
+			poly_coord_data = cell([1, num_polys]);
+			% Loop through all polygons within this cellROI
+			for j = 1:num_polys
+				curr_poly = polys{j};
+				if iscell(curr_poly)
+					fprintf('\t WARNING: poly[%d] is double wrapped!\n', j);
+					curr_poly = curr_poly{1}; 
+				end
+				
+                
+                if shouldEnsureClosedPolys
+                    first_point = curr_poly(1,:);
+                    last_point = curr_poly(end,:);
+                    if (first_point ~= last_point)
+                        curr_poly(end+1,:) = first_point; % Add the first_point back at the end of the array to make it closed
+                    end
+                end
+                
+                poly_coord_data{j} = curr_poly;
+                num_points_per_poly(j) = size(curr_poly, 1);
+			end % end for
+        end
 
 		% function [last_patches, last_lines, num_polys] = plotCellPolys(polys, plottingInfo)
 		% 		% plotCellPolys:

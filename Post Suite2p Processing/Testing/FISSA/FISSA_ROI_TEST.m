@@ -9,10 +9,11 @@ cellROI_plottingOptionsStruct.prevent_zoom_in = false;
 cellROI_plottingOptionsStruct.show_outline_line = false;
 cellROI_plottingOptionsStruct.show_patch = true;
 
+cellROI_plottingOptionsStruct.CData = [1 0 0];
 cellROI_plottingOptionsStruct.EdgeColor = 'black';
 
 neuropil_plottingOptionsStruct = cellROI_plottingOptionsStruct;
-
+neuropil_plottingOptionsStruct.CData = [0 0 1];
 % neuropil_plottingOptionsStruct.show_outline_line = false;
 % neuropil_plottingOptionsStruct.show_patch = true;
 
