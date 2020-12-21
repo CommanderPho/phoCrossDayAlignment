@@ -2,6 +2,8 @@
 addpath(genpath('../../../helpers'));
 
 % PlotData_Cartesian(plot_identifier, should_show, aColor, XData, YData, Colormap)
+clear phoFinalChartFigure;
+
 phoFinalChartFigure = PlotFigureState('phoFinalChartFigure_FissaRoi', true, ...
     @(extantFigH, ~) (plotFissaRoiNewChart(final_data_explorer_obj, extantFigH)));
 

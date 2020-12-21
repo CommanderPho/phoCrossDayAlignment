@@ -1,17 +1,14 @@
 classdef Chart_Mixin_Selectable < matlab.mixin.SetGet
     %Chart_Mixin_Selectable Contains information about the potentially displayed plots
     %   Detailed explanation goes here
-	% properties (Hidden)
-    %   propertyAddedListener
-	%   propertyRemovedListener
-   	% end
 
-	events (HasCallbackProperty, NotifyAccess = protected) 
+
+	events (ListenAccess = public, NotifyAccess = protected) 
 		% GraphicsObjectCreated
 
 		% GraphicsObjectAdded
-		SelectionUpdated % c = InteractivePolygonRoiChart(f,'SelectionChangedFcn',@(o,e)disp('Changed'))
-	%     LineObjectAdded % c = MyChart('ClickedFcn',@myfunction)
+		SelectionUpdated % c = InteractivePolygonRoiChart(f,'SelectionUpdatedFcn',@(o,e)disp('Changed'))
+	%     LineObjectAdded % c = MyChart('SelectionUpdatedFcn',@myfunction)
 		% GraphicsObjectDeleted
 		%  % Execute User callbacks and listeners
     	% notify(obj,'SelectionUpdated');
@@ -21,9 +18,18 @@ classdef Chart_Mixin_Selectable < matlab.mixin.SetGet
 
 
 
+	% properties (Abstract)
+	% 	Selectables
+	% end
+
+	methods (Abstract)
+		% Abstract method without implementation
+		result = get_selectables(obj)
+   	end
+
     properties (SetAccess = protected)
 
-		get_selectables_callback
+		% get_selectables_callback
 	
 		%% Selection
 		% SelectedIndicies (:, 1)
@@ -32,12 +38,12 @@ classdef Chart_Mixin_Selectable < matlab.mixin.SetGet
     end
 
 	methods %% Setters Method block
-       function obj = set.get_selectables_callback(obj, value)
-           obj.get_selectables_callback = value;
+    %    function obj = set.get_selectables_callback(obj, value)
+    %        obj.get_selectables_callback = value;
 
-           % When the get_selectables_callback is set, rebuild the variables.
-           obj.rebuildSelectables();
-       end  
+    %        % When the get_selectables_callback is set, rebuild the variables.
+    %        obj.rebuildSelectables();
+    %    end  
     end % end setters method block
 
 
@@ -57,12 +63,6 @@ classdef Chart_Mixin_Selectable < matlab.mixin.SetGet
        function num_selected_items = get.num_selected_items(obj)
           num_selected_items = sum(obj.isItemSelected, 'all');
        end
-    %    function selected_cellROI_uniqueCompListIndicies = get.selected_cellROI_uniqueCompListIndicies(obj)
-    %       selected_cellROI_uniqueCompListIndicies = find(obj.isCellRoiSelected);
-    %    end
-    %    function selected_cellROI_roiNames = get.selected_cellROI_roiNames(obj)
-    %       selected_cellROI_roiNames = obj.final_data_explorer_obj.cellROIIndex_mapper.getRoiNameFromUniqueCompIndex(obj.selected_cellROI_uniqueCompListIndicies);
-    %    end
     end
 
 
@@ -77,8 +77,8 @@ classdef Chart_Mixin_Selectable < matlab.mixin.SetGet
 
 	methods (Access = public)
 
-		function obj = Chart_Mixin_Selectable(obj, get_selectables_callback)
-			obj.get_selectables_callback = get_selectables_callback;
+		function obj = Chart_Mixin_Selectable(obj)
+			% obj.get_selectables_callback = get_selectables_callback;
 		end
 
     end % end Public Methods block
@@ -118,7 +118,9 @@ classdef Chart_Mixin_Selectable < matlab.mixin.SetGet
 	methods(Access = protected)
 
 		function [obj] = rebuildSelectables(obj)
-			num_new_selectables = length(obj.get_selectables_callback());
+			curr_selectables = obj.get_selectables();
+			num_new_selectables = length(curr_selectables);
+			% num_new_selectables = length(obj.get_selectables_callback());
 			obj.isItemSelected = zeros([num_new_selectables 1], 'logical');
 			notify(obj,'SelectionUpdated');
 		end

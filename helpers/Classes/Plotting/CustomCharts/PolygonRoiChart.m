@@ -1,6 +1,10 @@
 classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & Chart_Mixin_Selectable %&...
         %     matlab.graphics.chartcontainer.mixin.Legend
-        
+       
+    properties (Hidden)
+      selectionUpdatedListener
+	end
+    
     events (HasCallbackProperty, NotifyAccess = protected) 
 		% GraphicsObjectCreated
 
@@ -15,6 +19,22 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & Chart
 		
 	end 
 
+
+	methods (Access = public)
+		% Abstract method without implementation
+		function result = get_selectables(obj)
+			result = obj.PolygonObjects;
+		end
+
+   	end
+	methods %% Setters Method block
+    %    function obj = set.get_selectables_callback(obj, value)
+    %        obj.get_selectables_callback = value;
+
+    %        % When the get_selectables_callback is set, rebuild the variables.
+    %        obj.rebuildSelectables();
+    %    end  
+    end % end setters method block
 
 	properties
 		Color = [1 0 0]
@@ -71,13 +91,22 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & Chart
 				
 			% Call superclass constructor method
 			obj@matlab.graphics.chartcontainer.ChartContainer(args{:});
-			obj@Chart_Mixin_Selectable(@() (obj.num_of_dataSeries));
+% 			obj@Chart_Mixin_Selectable('SelectionUpdatedFcn', @(o,e) obj.onSelectedItemsChangedCallback(o, e));
+            obj@Chart_Mixin_Selectable();
 			
 			obj.PlotConfig = plotConfig;
-			
 			obj.PlotData = plotDataSeries;
 
+%             SelectionUpdatedFcn@Chart_Mixin_Selectable =  = @(o,e) obj.onSelectedItemsChangedCallback(o, e);
             
+            obj.selectionUpdatedListener = addlistener(obj,'SelectionUpdated', @obj.onSelectedItemsChangedCallback);
+            
+% 			obj.SelectionUpdatedFcn = @(o,e) obj.onSelectedItemsChangedCallback(o, e);
+
+
+			% obj.propertyAddedListener = addlistener(obj,'PropertyAdded',@DyPropEvtCb);
+			% obj.ValueChangedFcn = @(o,e) disp('Color changed');
+% 			obj.rebuildSelectables();
 		end
 
 
@@ -261,7 +290,9 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & Chart
 					% fprintf('\t initialized one plot!\n');
 					% fprintf('\t\t obj.numInitializedPlots: %d\n', obj.numInitializedPlots);
 				end % end for loop
-
+                
+                obj.rebuildSelectables();
+                
 			elseif nNew < nOld
 				% curr_needed_plots = nNew - nOld;
 				curr_excess_plots = nOld - (nNew+1);
@@ -284,13 +315,16 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & Chart
 
         end % end buildNeededPlots(...)
         
-
+		function onSelectedItemsChangedCallback(obj, src, eventData)
+			fprintf('PolygonRoiChart.onSelectedItemsChangedCallback(...)\n');
+			disp(src)
+			disp(eventData);
+		end
 
 		function onClickCallback(obj, src, eventData)
 			fprintf('PolygonRoiChart.onClickCallback(...)\n');
 			% cp = src.Parent.CurrentPoint; % Get get the location in the parent like this
-			% xline(app.UIAxes,cp(1,1));
-
+			% xline(app.UIAxes, cp(1,1));
             hit_event_data.Button = eventData.Button; % 1 (left click)
             hit_event_data.Point = eventData.IntersectionPoint;
             hit_patch_user_data = src.UserData;
@@ -303,7 +337,10 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & Chart
             %uniqueRoiIndex: 50
             %roiName: 'comp522'
            
-            
+		    % Determine the index of the selected line.
+            selectedIdx = find( obj.PolygonObjects == src );
+			obj.toggleItemIsSelected(selectedIdx)
+
 			notify(obj,'Clicked');
 		end
 
