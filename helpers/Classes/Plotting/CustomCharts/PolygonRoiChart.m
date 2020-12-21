@@ -1,8 +1,5 @@
 classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 	properties
-		% XData = NaN
-		% YData = NaN
-		MarkerSymbol = 'o'
 		Color = [1 0 0]
 
 		PlotData (:,1) PlotData_Cartesian
@@ -15,8 +12,7 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
     
 	%% Computed Properties:
 	properties (Dependent)
-		num_of_dataSeries % FinalDataExplorer
-		% number_of_cellROI_plotSubGraphics % The number of graphics objects belonging to each cellROI. For example, these might be the fill, the edge, and several inset/outset edge objects
+		num_of_dataSeries
 		dataSeries_labels
 
 	end
@@ -29,13 +25,7 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 			for i = 1:obj.num_of_dataSeries
 				dataSeries_labels{i} = obj.PlotData(i).plot_identifier;
 			end
-		end
-	%    function number_of_cellROI_plotSubGraphics = get.number_of_cellROI_plotSubGraphics(obj)
-	%       number_of_cellROI_plotSubGraphics = length(obj.activeOffsetInsetIndicies);
-	% 	  if obj.plotting_options.should_plot_neuropil_masks
-	% 		number_of_cellROI_plotSubGraphics = number_of_cellROI_plotSubGraphics + 1;
-	% 	  end
-	%    end
+        end
 	end
 
 	properties(Access = private, Transient, NonCopyable)
@@ -81,9 +71,6 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 
 			obj.buildNeededPlots();
             
-            isvalid(obj.OutlineBordersLineArray);
-            
-
 			for i = 1:obj.num_of_dataSeries
                 curr_x = obj.PlotData(i).XData;
                 curr_y = obj.PlotData(i).YData;
