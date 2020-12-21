@@ -41,11 +41,6 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & Chart
 		PlotData (:,1) PlotData_Cartesian
 		PlotConfig (1,1) DynamicPlottingOptionsContainer
     end
-	properties(Access = private, Transient, NonCopyable)
-		OutlineBordersLineArray (:,:) matlab.graphics.chart.primitive.Line
-		PolygonObjects (:,:) matlab.graphics.primitive.Patch
-    end
-    
     
     properties (Access = protected)
 		numInitializedPlots = [];
