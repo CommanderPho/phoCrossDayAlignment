@@ -6,6 +6,7 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 	properties
 		Color = [1 0 0]
 		PlotData (:,1) PlotData_Cartesian
+		PlotConfig (1,1) DynamicPlottingOptionsContainer
     end
 
     properties (Access = protected)
@@ -37,9 +38,9 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
     
 
 	methods(Access = public)
-		function obj = PolygonRoiChart(plotDataSeries, varargin)
+		function obj = PolygonRoiChart(plotDataSeries, plotConfig, varargin)
 			% Check for at least three inputs
-			if nargin < 1
+			if nargin < 2
 				error('Not enough inputs');
 			end
 				
@@ -53,6 +54,8 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 			% Call superclass constructor method
 			obj@matlab.graphics.chartcontainer.ChartContainer(args{:});
 
+			obj.PlotConfig = plotConfig;
+			
 			obj.PlotData = plotDataSeries;
             
 		end
@@ -160,6 +163,11 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
             
 			ax = getAxes(obj);
 
+			if obj.PlotConfig.prevent_zoom_in
+				xlim(ax, 'manual');
+				ylim(ax, 'manual');
+			end
+
 			for i = 1:curr_needed_plots
 				% Create Patch and Line objects
 				obj.PolygonObjects(i) = patch(ax, NaN, NaN, 'g');
@@ -171,8 +179,19 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
                 fprintf('\t\t obj.numInitializedPlots: %d\n', obj.numInitializedPlots);
 			end % end for loop
             
-            axis(ax, 'square');
+            % axis(ax, 'square');
 			%             axis(ax, [-1, 1, -1, 1] * 1.3);
+
+			if obj.PlotConfig.prevent_zoom_in
+				xlim(ax, [1 512]);
+				ylim(ax, [1 512]);
+			else
+				axis(ax, 'square');
+            end
+
+%             ax.GridAlpha
+            set(ax, obj.PlotConfig.Axis);
+
 			% Turn hold state off
 			hold(ax,'off')
         end % end buildNeededPlots(...)
@@ -242,8 +261,6 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
                 end
 
             end % end for num_polys
-%             x_array = fillmissing(x_array,'previous'); % replace NaNs with the previous value
-%             y_array = fillmissing(y_array,'previous'); % replace NaNs with the previous value
         end % end function computeFilledCellPolyCoordinates(...)
         
         
@@ -252,7 +269,6 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 			num_polys = length(polys);
 			
             num_points_per_poly = zeros([1 num_polys]);
-%             total_num_points = 0;
             
 			coord_polys = [];
 			coord_data = [];
@@ -276,59 +292,9 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 				num_points_per_poly(j) = size(curr_poly, 1);
 				coord_polys = [coord_polys; repmat(j, [num_points_per_poly(j) 1])];
 				coord_data = [coord_data; curr_poly];
-% 				total_num_points = total_num_points + num_points_per_poly(j);
 			end % end for
 		end
 
-		% function [last_patches, last_lines, num_polys] = plotCellPolys(polys, plottingInfo)
-		% 		% plotCellPolys:
-		% 		num_polys = length(polys);
-		% 		last_lines = gobjects(num_polys, 1);
-		% 		last_patches = gobjects(num_polys, 1);
-				
-				
-		% 		% Loop through all polygons within this cellROI
-		% 		for j = 1:num_polys
-		% 			curr_poly = polys{j};
-		% 			if iscell(curr_poly)
-		% 				fprintf('\t WARNING: poly[%d] is double wrapped!\n', j);
-		% 				curr_poly = curr_poly{1}; 
-		% 			end
-		% 			x = curr_poly(:, 2);
-		% 			y = curr_poly(:, 1);
-		% 			% Can add the x and y vectors as the next column of the deferred_plotting_matricies
-		% 			%%% on second thought, building x and y data vectors won't work well because the returned x and y are of variable size!
-		% 			%%%%%  True, but an almagamation mask can be added easily!
-		% 			%%%%%  OR, could concatenate all of them into x, y vectors. Nah, they'd still be of different length
-					
-		% 			num_points = length(x);
-		% 			fprintf('\t poly[%d]: %d\n', j, num_points);
-					
-		% 			is_first_poly_in_cell = (j == 1);
-		% 			if is_first_poly_in_cell
-		% 				last_patches(j) = fill(x, y, plottingInfo.patch_color, 'Tag', plottingInfo.curr_cell_name);
-		% 				alpha(plottingInfo.roi_alpha);
-		% 			else
-		% 				last_patches(j) = fill(x, y, plottingInfo.patch_color, 'Tag', plottingInfo.curr_cell_name);
-		% 				alpha(plottingInfo.other_alpha); 
-		% 			end
-					
-		% 			if plottingInfo.plot_lines
-		% 				last_lines(j) = plot(x,y,'black','Tag', plottingInfo.curr_cell_name);
-		% 			else
-		% 				set(last_patches(j), 'EdgeColor','none');
-		% 			end
-					
-		% 			if plottingInfo.prevent_zoom_in
-		% 				xlim([1 512]);
-		% 				ylim([1 512]);
-		% 			else
-		% 				axis square
-		% 			end
-					
-		% 		end % end for
-		% end
-		
 	end % end Static methods block
 
 end % end classdef

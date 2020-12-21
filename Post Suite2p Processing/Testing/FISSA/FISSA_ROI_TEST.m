@@ -1,7 +1,33 @@
 % 
 
 % PlotData_Cartesian(plot_identifier, should_show, aColor, XData, YData, Colormap)
+clear chart chartConfigStruct curr_chart_config;
 
+chartConfigStruct.prevent_zoom_in = true;
+
+num_pixels = 512;
+grid_line_offsets = num_pixels / 16;
+
+% chartConfigStruct.Axis.Layer = 'top'; % Place the ticks and grid lines on top of the plot
+chartConfigStruct.Axis.GridAlpha = 0.5;
+chartConfigStruct.Axis.Box = 'on';
+chartConfigStruct.Axis.BoxStyle = 'full'; % Only affects 3D views
+% chartConfigStruct.Axis.YDir = 'reverse'; % Reverse the y-axis direction, so the origin is at the top left corner.
+chartConfigStruct.Axis.XTick = 1:grid_line_offsets:num_pixels;
+chartConfigStruct.Axis.XTickLabel = {};
+chartConfigStruct.Axis.YTick = 1:grid_line_offsets:num_pixels;
+chartConfigStruct.Axis.YTickLabel = {};
+chartConfigStruct.Axis.YLim = [1 num_pixels];
+chartConfigStruct.Axis.YGrid = 'on';
+chartConfigStruct.Axis.XLim = [1 num_pixels];
+chartConfigStruct.Axis.XGrid = 'on';
+% chartConfigStruct.Axis.Toolbar.Visible = 'off'; % we know this can be slow, check the actual performance.
+
+curr_chart_config = DynamicPlottingOptionsContainer();
+curr_chart_config.addStructAsDynamicProperties(chartConfigStruct);
+
+
+% plotConfig = DynamicPlottingOptionsContainer({}, plotConfig);
 
 cellROI_plottingOptionsStruct.main_alpha = 0.4;
 cellROI_plottingOptionsStruct.other_alpha = 0.3;
@@ -21,7 +47,6 @@ neuropil_plottingOptionsStruct.CData = [0 0 1];
 
 % test = PlotData_Mixin_PlottingOptions(plottingOptionsStruct);
 
-
 dataSeries = [PlotData_Cartesian('cellROI', true, 'r', [], [], [], cellROI_plottingOptionsStruct),...
     PlotData_Cartesian('neuropil', true, 'b', [], [], [], neuropil_plottingOptionsStruct)];
 
@@ -34,7 +59,7 @@ plottingInfo.prevent_zoom_in = false;
 
 % hold off;
 % hold off;
-chart = PolygonRoiChart(dataSeries);
+chart = PolygonRoiChart(dataSeries, curr_chart_config);
 openvar('chart')
 % chart.dataSeries_labels
 

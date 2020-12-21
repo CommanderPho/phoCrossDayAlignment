@@ -1,4 +1,4 @@
-classdef PlotData_Mixin_PlottingOptions < handle
+classdef PlotData_Mixin_PlottingOptions < matlab.mixin.SetGet
     %PlotData_Mixin_PlottingOptions Contains information about the potentially displayed plots
     %   Detailed explanation goes here
 	% properties (Hidden)
@@ -7,7 +7,7 @@ classdef PlotData_Mixin_PlottingOptions < handle
    	% end
 
     properties
-        plottingOptions
+        plottingOptions (:,1) DynamicPlottingOptionsContainer
     end
 
 	%% Internal Properties
@@ -28,9 +28,9 @@ classdef PlotData_Mixin_PlottingOptions < handle
 			% args = [args varargin];
 			args = varargin;
 			% obj.plottingOptions = DynamicPlottingOptionsContainer(@(src, evt) (obj.mixinContainerDyPropEvtCb(src, evt)), args{:});
-			% obj.plottingOptions = DynamicPlottingOptionsContainer(@(src, evt) (obj.mixinContainerDyPropEvtCb(src, evt)));
+			obj.plottingOptions = DynamicPlottingOptionsContainer( {@(src, evt) obj.mixinContainerDyPropEvtCb(src, evt)} );
 
-			obj.plottingOptions = DynamicPlottingOptionsContainer(@mixinContainerDyPropEvtCb);
+			% obj.plottingOptions = DynamicPlottingOptionsContainer(@mixinContainerDyPropEvtCb);
 			% obj.plottingOptions = DynamicPlottingOptionsContainer();
 			obj.plottingOptions.addVariableArgumentsList(args{:});
 		end
@@ -40,8 +40,8 @@ classdef PlotData_Mixin_PlottingOptions < handle
 
 	methods(Access = public)
 
-		function mixinContainerDyPropEvtCb(src, evt)
-			fprintf('callback in plottingOptions!');
+		function mixinContainerDyPropEvtCb(obj, src, evt)
+			fprintf('callback in plottingOptions!\n');
 		end
 
 		% function [obj] = mixinContainerDyPropEvtCb(obj, src, evt)

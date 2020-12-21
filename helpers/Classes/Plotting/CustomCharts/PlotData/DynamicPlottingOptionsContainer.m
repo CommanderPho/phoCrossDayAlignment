@@ -13,11 +13,10 @@ classdef DynamicPlottingOptionsContainer < dynamicprops
 	methods (Access = public)
 
 		function obj = DynamicPlottingOptionsContainer(ownerCallback, varargin)
-            if iscell(ownerCallback)
-                obj.registeredCallbacks = ownerCallback;
-            else
-                obj.registeredCallbacks = {ownerCallback};
-            end
+			
+			if (exist('ownerCallback','var') && ~isempty(ownerCallback))
+				obj.registerPropertyAddRemoveCallback(ownerCallback);
+			end
 
 			obj.propertyAddedListener = addlistener(obj,'PropertyAdded',@DyPropEvtCb);
 			obj.propertyRemovedListener = addlistener(obj,'PropertyRemoved',@DyPropEvtCb);
@@ -28,8 +27,26 @@ classdef DynamicPlottingOptionsContainer < dynamicprops
 				obj.addVariableArgumentsList(args{:});
             end
 			
-
 		end % end constructor
+
+		function registerPropertyAddRemoveCallback(obj, ownerCallback)
+			if isprop(obj, 'registeredCallbacks')
+				% obj.registeredCallbacks{end+1} = ownerCallback;
+				if iscell(ownerCallback)
+					additional_callback_cells = ownerCallback;
+				else
+					additional_callback_cells = {ownerCallback};
+				end
+				obj.registeredCallbacks = [obj.registeredCallbacks additional_callback_cells];
+				
+			else
+				if iscell(ownerCallback)
+					obj.registeredCallbacks = ownerCallback;
+				else
+					obj.registeredCallbacks = {ownerCallback};
+				end
+			end
+		end
 
 		function addVariableArgumentsList(obj, varargin)
 			num_args = length(varargin);
@@ -111,11 +128,12 @@ classdef DynamicPlottingOptionsContainer < dynamicprops
 			end % end switch
 
 			% Perform the owner callback
-			for anOwnerCallbackIndex = 1:length(obj.registeredCallbacks)
-				currCallback = obj.registeredCallbacks{anOwnerCallbackIndex};
-				currCallback(src, evt);
-			end % end for 
-
+			if isprop(src, 'registeredCallbacks')
+				for anOwnerCallbackIndex = 1:length(src.registeredCallbacks)
+					currCallback = src.registeredCallbacks{anOwnerCallbackIndex};
+					currCallback(src, evt);
+				end % end for 
+			end
 		end % end DyPropEvtCb
 
 	end % end protected Methods block
