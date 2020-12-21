@@ -60,7 +60,24 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
             
 		end
 
-		function [obj] = update_comp_polys(obj, varargin)
+
+% 		function [obj] = reload_comp_polys(obj)
+% 		% update_comp_polys: main update function called with a new PlotData object.
+% 			% Check for at least three inputs
+% 			if nargin < 1
+% 				error('Not enough inputs');
+%             end
+%             % nargin: This returns 3 for some reason!
+% 			for arg_i = 1:length(varargin)	
+% 				activePolys = varargin{arg_i};
+%                 [x_array, y_array, num_polys] = PolygonRoiChart.computeFilledCellPolyCoordinates(activePolys);
+%                 % The x-coordinates of the patch vertices, specified as a vector or a matrix. If XData is a matrix, then each column represents the x-coordinates of a single face of the patch. In this case, XData, YData, and ZData must have the same dimensions.
+% 				obj.PlotData(arg_i).updateData(x_array, y_array);
+% 			end
+% 		end % end function update_comp_polys
+
+
+		function [obj] = update_comp_polys_variable_args(obj, varargin)
 		% update_comp_polys: main update function called with a new PlotData object.
 			% Check for at least three inputs
 			if nargin < 1
@@ -189,7 +206,7 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 				axis(ax, 'square');
             end
 
-%             ax.GridAlpha
+
             set(ax, obj.PlotConfig.Axis);
 
 			% Turn hold state off
