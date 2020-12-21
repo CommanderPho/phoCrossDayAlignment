@@ -66,34 +66,38 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 		function update(obj)
 			% Update XData and YData of Line
 			
-			% obj.OutlineBordersLineArray = plot(ax,obj.XData,obj.YData);
-			% hold(ax,'on')
-
 			obj.buildNeededPlots();
             
-			for i = 1:obj.num_of_dataSeries
-                curr_x = obj.PlotData(i).XData;
-                curr_y = obj.PlotData(i).YData;
-                 
-				obj.OutlineBordersLineArray(i).XData = curr_x;
-				obj.OutlineBordersLineArray(i).YData = curr_y;
-				
-				% Update patch XData and YData
-				x = curr_x;
-				obj.PolygonObjects(i).XData = [x x(end:-1:1)];
-				y = curr_y;
-				% c = obj.ConfidenceMargin;
-				obj.PolygonObjects(i).YData = [y y(end:-1:1)];
-				
-				% Update colors
-				obj.OutlineBordersLineArray(i).Color = obj.PlotData(i).Color;
-				obj.PolygonObjects(i).FaceColor = obj.PlotData(i).Color;
-				
-				% Update markers
-				% obj.OutlineBordersLineArray(i).Marker = obj.MarkerSymbol;
-			end % end for loop
+			for i = 1:obj.num_of_dataSeries               
+                curr_plot_is_visible = obj.PlotData(i).should_show;
 
-			drawnow;
+                if curr_plot_is_visible
+                    curr_x = obj.PlotData(i).XData;
+                    curr_y = obj.PlotData(i).YData;
+
+                    obj.OutlineBordersLineArray(i).XData = curr_x;
+                    obj.OutlineBordersLineArray(i).YData = curr_y;
+
+                    % Update patch XData and YData
+                    x = curr_x;
+                    obj.PolygonObjects(i).XData = [x x(end:-1:1)];
+                    y = curr_y;
+                    % c = obj.ConfidenceMargin;
+                    obj.PolygonObjects(i).YData = [y y(end:-1:1)];
+
+                    % Update colors
+                    obj.OutlineBordersLineArray(i).Color = obj.PlotData(i).Color;
+                    obj.PolygonObjects(i).FaceColor = obj.PlotData(i).Color;
+
+                    obj.OutlineBordersLineArray(i).Visible = 'on';
+                    obj.PolygonObjects(i).Visible = 'on';
+                else
+                    obj.OutlineBordersLineArray(i).Visible = 'off';
+                    obj.PolygonObjects(i).Visible = 'off';
+                end
+                
+			end % end for num_of_dataSeries loop
+
 		end
 
 		function buildNeededPlots(obj)
@@ -104,19 +108,8 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
             fprintf('buildNeededPlots()\n');
             fprintf('\t curr_needed_plots: %d\n', curr_needed_plots);
             
-%             fprintf('\t obj.OutlineBordersLineArray: ');
-%             disp(obj.OutlineBordersLineArray);
-%             fprintf('\t obj.PolygonObjects: ');
-%             disp(obj.PolygonObjects);
-            
 			ax = getAxes(obj);
-			% Preallocate the objects array
-% 			obj.OutlineBordersLineArray = gobjects(obj.num_of_dataSeries, 1);
-% 			obj.PolygonObjects = gobjects(obj.num_of_dataSeries, 1);
 
-%             clear obj.PolygonObjects;
-%             clear obj.OutlineBordersLineArray;
-            
 			for i = 1:curr_needed_plots
 				% Create Patch and Line objects
 				obj.PolygonObjects(i) = patch(ax, NaN, NaN, 'r', 'FaceAlpha', 0.2,'EdgeColor','none');
@@ -140,7 +133,7 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
                 propgrp = getPropertyGroups@matlab.mixin.CustomDisplay(obj);    
             else
                 % List for scalar object
-                propList = {'PlotData','dataSeries_labels','num_of_dataSeries','numInitializedPlots','PolygonObjects','PolygonObjects','OutlineBordersLineArray'};
+                propList = {'PlotData','dataSeries_labels','num_of_dataSeries','numInitializedPlots','PolygonObjects','OutlineBordersLineArray'};
                 propgrp = matlab.mixin.util.PropertyGroup(propList);
             end
         end % end getPropertyGroups(...)
@@ -165,25 +158,6 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 				curr_y = coord_data(:, 1);
 				obj.PlotData(arg_i).updateData(curr_x, curr_y);
 			end
-
-% 			obj.update();
-
-			% drawnow;
-			%update_comp_polys:
-			% for i = 1:length(activeRoiCells)
-			% 	currCellPolys = activeRoiCells{i};
-			% 	for j = 1:length(currCellPolys)
-			% 		curr_poly = currCellPolys{j};
-			% 		x = curr_poly(:, 2);
-			% 		y = curr_poly(:, 1);
-			% 		plot(x,y)
-			% 		fill(x,y,'r')
-			% %         alpha(transparency);
-			% 		xlim([1 512]);
-			% 		ylim([1 512]);
-					
-			% 	end % end for j
-			% end % end for i
 
 		end % end function update_comp_polys
         
