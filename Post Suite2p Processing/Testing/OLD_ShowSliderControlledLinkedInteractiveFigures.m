@@ -15,7 +15,7 @@ should_show_3d_mesh_plot = false;
 should_show_masking_plot = false;
 should_show_stimulus_traces_plot = true;
 should_show_stimulus_traces_custom_data_plot = false;
-should_show_stimulus_heatmaps_plot = true;
+should_show_stimulus_heatmaps_plot = false;
 should_show_stimulus_summary_stats_plot = false;
 should_show_cellROI_table = false;
 
@@ -74,6 +74,14 @@ if should_show_stimulus_traces_plot
 	stimulus_traces_plot_callback = @(curr_i) (pho_plot_stimulus_traces(final_data_explorer_obj, extantFigH_plot_stimulus_traces, curr_i));
     plot_callbacks{end+1} = stimulus_traces_plot_callback;
 end
+
+
+% extantFigH_plot_stimulus_traces_pre = createFigureWithTagIfNeeded('iscStimulusTracesPlot_pre');
+% linkedFigureHandles(end+1) = extantFigH_plot_stimulus_traces_pre;
+% stimulus_traces_plot_callback = @(curr_i) (pho_plot_stimulus_traces_pre(final_data_explorer_obj, extantFigH_plot_stimulus_traces_pre, curr_i));
+% plot_callbacks{end+1} = stimulus_traces_plot_callback;
+%     
+    
 
 if should_show_stimulus_traces_custom_data_plot
     extantFigH_plot_stimulus_traces_extra = createFigureWithTagIfNeeded('iscStimulusTracesExtendedInfoPlot');
@@ -187,6 +195,30 @@ function [callbackOutput] = pho_plot_cell_mask(dateStrings, compMasks, multiSess
     end
 end
 
+
+
+function [callbackOutput] = pho_plot_stimulus_traces_pre(final_data_explorer_obj, extantFigH, curr_cellRoiIndex)
+    % COMPUTED
+    callbackOutput.shouldRemoveCallback = false;
+    % temp.currAllSessionCompIndicies = multiSessionCellRoi_CompListIndicies(curr_cellRoiIndex,:); % Gets all sessions for the current ROI
+
+    if isvalid(extantFigH)
+        % Cell Mask Plots:
+        plotting_options.should_plot_all_traces = true; % plotting_options.should_plot_all_traces: if true, line traces for all trials are plotted in addition the mean line
+        plotting_options.should_plot_vertical_sound_start_stop_lines = true; % plotting_options.should_plot_vertical_sound_start_stop_lines: if true, vertical start/stop lines are drawn to show when the sound started and stopped.
+        plotting_options.should_normalize_to_local_peak = true; % plotting_options.should_normalize_to_local_peak: if true, the y-values are normalized across all stimuli and sessions for a cellRoi to the maximal peak value.
+        plotting_options.should_plot_titles_for_each_subplot = false; % plotting_options.should_plot_titles_for_each_subplot: if true, a title is added to each subplot (although it's redundent)
+        
+        [callbackOutput.plotted_figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, curr_cellRoiIndex, plotting_options, extantFigH);
+        set(callbackOutput.plotted_figH, 'Name', sprintf('Slider Controlled Stimuli Traces Plot: cellROI - %d', curr_cellRoiIndex)); % Update the title to reflect the cell ROI plotted 
+    else
+        callbackOutput.plotted_figH = extantFigH;
+        callbackOutput.shouldRemoveCallback = true;
+    end
+end
+
+
+
 function [callbackOutput] = pho_plot_stimulus_traces(final_data_explorer_obj, extantFigH, curr_cellRoiIndex)
     % COMPUTED
     callbackOutput.shouldRemoveCallback = false;
@@ -196,7 +228,7 @@ function [callbackOutput] = pho_plot_stimulus_traces(final_data_explorer_obj, ex
         % Cell Mask Plots:
         plotting_options.should_plot_all_traces = false; % plotting_options.should_plot_all_traces: if true, line traces for all trials are plotted in addition the mean line
         plotting_options.should_plot_vertical_sound_start_stop_lines = true; % plotting_options.should_plot_vertical_sound_start_stop_lines: if true, vertical start/stop lines are drawn to show when the sound started and stopped.
-        plotting_options.should_normalize_to_local_peak = true; % plotting_options.should_normalize_to_local_peak: if true, the y-values are normalized across all stimuli and sessions for a cellRoi to the maximal peak value.
+        plotting_options.should_normalize_to_local_peak = false; % plotting_options.should_normalize_to_local_peak: if true, the y-values are normalized across all stimuli and sessions for a cellRoi to the maximal peak value.
         plotting_options.should_plot_titles_for_each_subplot = false; % plotting_options.should_plot_titles_for_each_subplot: if true, a title is added to each subplot (although it's redundent)
         
         [callbackOutput.plotted_figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, curr_cellRoiIndex, plotting_options, extantFigH);

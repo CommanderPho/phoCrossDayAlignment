@@ -1,4 +1,4 @@
-classdef PlotDataBase < handle
+classdef PlotDataBase < handle & PlotData_Mixin_PlottingOptions
     %PlotDataBase Contains information about the potentially displayed plots
     %   Detailed explanation goes here
 
@@ -20,9 +20,12 @@ classdef PlotDataBase < handle
 	methods (Access = public)
 
 		% function obj = PlotDataBase(plot_identifier, plot_callback, plot_figure_handle)
-		function obj = PlotDataBase(plot_identifier, should_show, aColor)
+		function obj = PlotDataBase(plot_identifier, should_show, aColor, varargin)
 			%PlotDataBase Construct an instance of this class
 			%   Detailed explanation goes here
+			args = varargin;
+			obj@PlotData_Mixin_PlottingOptions(args{:});
+
 			obj.plot_identifier = plot_identifier;
 			obj.should_show = should_show;
 			if exist('aColor','var')
