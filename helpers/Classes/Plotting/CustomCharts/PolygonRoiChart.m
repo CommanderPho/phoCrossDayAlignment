@@ -1,8 +1,21 @@
-classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
-        matlab.mixin.CustomDisplay %& ...
+classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer %& ...
         %     matlab.graphics.chartcontainer.mixin.Legend
         
-    
+    events (HasCallbackProperty, NotifyAccess = protected) 
+		% GraphicsObjectCreated
+
+		% GraphicsObjectAdded
+		PatchObjectAdded % c = InteractivePolygonRoiChart(f,'SelectionChangedFcn',@(o,e)disp('Changed'))
+	%     LineObjectAdded % c = MyChart('ClickedFcn',@myfunction)
+		Clicked
+		% GraphicsObjectDeleted
+		%  % Execute User callbacks and listeners
+    	% notify(obj,'ValueChanged');
+
+		
+	end 
+
+
 	properties
 		Color = [1 0 0]
 		PlotData (:,1) PlotData_Cartesian
@@ -13,7 +26,7 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 		numInitializedPlots = 0;
     end
 
-	properties(Access = private, Transient, NonCopyable)
+	properties(Access = protected, Transient, NonCopyable)
 		OutlineBordersLineArray (:,1) matlab.graphics.chart.primitive.Line
 		PolygonObjects (:,1) matlab.graphics.primitive.Patch
     end
@@ -23,6 +36,7 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
     properties (Dependent)
 		num_of_dataSeries
 		dataSeries_labels
+        polygonPatches
 	end
 	methods
 	   function num_of_dataSeries = get.num_of_dataSeries(obj)
@@ -33,6 +47,9 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 			for i = 1:obj.num_of_dataSeries
 				dataSeries_labels{i} = obj.PlotData(i).plot_identifier;
 			end
+        end
+        function polygonPatches = get.polygonPatches(obj)
+            polygonPatches = obj.PolygonObjects;
         end
     end
     
@@ -125,13 +142,16 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 
                     % Update patch XData and YData
 					if show_patch
-                        curr_color_data = repmat(obj.PlotData(i).plottingOptions.CData, size(curr_x));                
-                        obj.PolygonObjects(i).XData = curr_x;
+						if size(obj.PlotData(i).plottingOptions.CData) == size(curr_x)
+							curr_color_data = obj.PlotData(i).plottingOptions.CData;
+						else
+                        	curr_color_data = repmat(obj.PlotData(i).plottingOptions.CData, size(curr_x));                
+                        end
+						obj.PolygonObjects(i).XData = curr_x;
 						obj.PolygonObjects(i).YData = curr_y;
                         obj.PolygonObjects(i).CData = curr_color_data;
                         
 						set(obj.PolygonObjects(i), obj.PlotData(i).plottingOptions.Patch);
-
 					end
 
                     % Update colors
@@ -172,13 +192,42 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 	%% Secondary protected methods block
 	methods(Access = protected)
 
+		% function onPlotAdded(obj, added_index, recently_added_graphics_object)
+		% 	fprintf('PolygonRoiChart.onPlotAdded(added_index: %d, ...)\n', added_index);
+		% end
+
+
+		% function onPlotsAdded(obj, recently_initialized_plot_indicies)
+		% 	for i = 1:length(recently_initialized_plot_indicies)
+		% 		curr_new_plot_index = recently_initialized_plot_indicies(i);
+		% 		fprintf('Created plot with index %d\n', curr_new_plot_index);
+		% 		curr_new_patch_plot = obj.PolygonObjects(curr_new_plot_index);
+		% 		obj.onPlotAdded(curr_new_plot_index, curr_new_patch_plot);
+		% 		notify(obj, 'PatchObjectAdded');
+
+		% 		curr_new_line_plot = obj.OutlineBordersLineArray(curr_new_plot_index);
+		% 		% obj.onPlotAdded(curr_new_plot_index, curr_new_line_plot);
+		% 		% notify(obj, 'LineObjectAdded');
+
+		% 		% curr_new_patch_plot.DisplayName =
+		% 		% go.Annotation.LegendInformation.IconDisplayStyle = 'off'; % Do not include the object in the legend.
+		% 		% curr_new_patch_plot.ButtonDownFcn
+		% 	end
+
+		% end
+
 		function buildNeededPlots(obj)
             % buildNeededPlots: Used to build the graphics objects corresponding to the current number of data series
 			fprintf('buildNeededPlots()\n');
             curr_needed_plots = obj.num_of_dataSeries - obj.numInitializedPlots;
             fprintf('\t curr_needed_plots: %d\n', curr_needed_plots);
+                
+			recently_initialized_plots = [];
             
 			ax = getAxes(obj);
+
+			% Disable pan/zoom on the axes.
+%             ax.Interactions = [];
 
 			if obj.PlotConfig.prevent_zoom_in
 				xlim(ax, 'manual');
@@ -188,15 +237,18 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 			for i = 1:curr_needed_plots
 				% Create Patch and Line objects
 				obj.PolygonObjects(i) = patch(ax, NaN, NaN, 'g');
+				obj.PolygonObjects(i).ButtonDownFcn = @obj.onClickCallback;
+
 				hold(ax,'on')
 				obj.OutlineBordersLineArray(i) = plot(ax, NaN, NaN, 'DisplayName','Original');
                 
+				recently_initialized_plots(end+1) = i;
+
                 obj.numInitializedPlots = obj.numInitializedPlots + 1;
                 % fprintf('\t initialized one plot!\n');
                 fprintf('\t\t obj.numInitializedPlots: %d\n', obj.numInitializedPlots);
 			end % end for loop
             
-
 			if obj.PlotConfig.prevent_zoom_in
 				xlim(ax, [1 512]);
 				ylim(ax, [1 512]);
@@ -211,22 +263,25 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
         end % end buildNeededPlots(...)
         
 
-		function propgrp = getPropertyGroups(obj)
-			% getPropertyGroups: Called when this class is displayed
-			if ~isscalar(obj)
-				% List for array of objects
-				propgrp = getPropertyGroups@matlab.mixin.CustomDisplay(obj);
-			else
-				% List for scalar object
-				propList = {'PlotData','dataSeries_labels','num_of_dataSeries','numInitializedPlots','PolygonObjects','OutlineBordersLineArray'};
-				% propList = struct('PlotData',obj.Department,...
-				% 	'dataSeries_labels',obj.JobTitle,...
-				% 	'num_of_dataSeries',obj.Name,...
-				% 	'numInitializedPlots','Not available',...
-				% 	'Password',pd);
-				propgrp = matlab.mixin.util.PropertyGroup(propList);
-			end
-		end % end getPropertyGroups(...)
+
+		function onClickCallback(obj, src, eventData)
+			fprintf('PolygonRoiChart.onClickCallback(...)\n');
+            hit_event_data.Button = eventData.Button; % 1 (left click)
+            hit_event_data.Point = eventData.IntersectionPoint;
+            hit_patch_user_data = src.UserData;
+            hit_patch_info.type = hit_patch_user_data.type; % 'NeuropilMask', 
+            hit_patch_info.cell_roi = hit_patch_user_data.cellROIIdentifier.uniqueRoiIndex; % 50
+            hit_patch_info.comp_name = hit_patch_user_data.cellROIIdentifier.roiName; % 'comp522'
+            fprintf('\t clicked MouseButton[%d]: %s of cellROI[%d] (%s)\n', hit_event_data.Button, hit_patch_info.type, hit_patch_info.cell_roi, hit_patch_info.comp_name);
+%             hit_patch_user_data.cellROIIdentifier %
+%             src.UserData.cellROIIdentifier
+            %uniqueRoiIndex: 50
+            %roiName: 'comp522'
+           
+            
+			notify(obj,'Clicked');
+		end
+
 
 	end % end main protected methods block
 

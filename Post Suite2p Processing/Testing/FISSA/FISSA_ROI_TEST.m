@@ -157,8 +157,8 @@ function [chart] = plotFissaRoiNewChart(final_data_explorer_obj)
 %     chart = chart.update_comp_polys(currCellPolys, currCellNeuropilPolys);
     
     dataSeries = reshape(dataSeries, [(num_cell_rois * 2), 1]);
-%     chart = PolygonRoiChart(dataSeries, curr_chart_config);
-    chart = InteractivePolygonRoiChart(dataSeries, curr_chart_config);
+    chart = PolygonRoiChart(dataSeries, curr_chart_config);
+%     chart = InteractivePolygonRoiChart(dataSeries, curr_chart_config);
     openvar('chart')
     
     
