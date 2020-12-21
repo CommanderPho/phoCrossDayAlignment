@@ -3,11 +3,13 @@
 % PlotData_Cartesian(plot_identifier, should_show, aColor, XData, YData, Colormap)
 
 
-cellROI_plottingOptionsStruct.roi_alpha = 0.4;
+cellROI_plottingOptionsStruct.main_alpha = 0.4;
 cellROI_plottingOptionsStruct.other_alpha = 0.3;
 cellROI_plottingOptionsStruct.prevent_zoom_in = false;
 cellROI_plottingOptionsStruct.show_outline_line = false;
 cellROI_plottingOptionsStruct.show_patch = true;
+
+cellROI_plottingOptionsStruct.EdgeColor = 'black';
 
 neuropil_plottingOptionsStruct = cellROI_plottingOptionsStruct;
 
@@ -30,10 +32,10 @@ plottingInfo.prevent_zoom_in = false;
 % hold off;
 % hold off;
 chart = PolygonRoiChart(dataSeries);
-
+openvar('chart')
 % chart.dataSeries_labels
 
-activeCellROIIndex = 25;
+activeCellROIIndex = 29;
 
 
 

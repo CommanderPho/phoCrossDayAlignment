@@ -102,6 +102,8 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
                         obj.PolygonObjects(i).XData = curr_x;
 						obj.PolygonObjects(i).YData = curr_y;
                         
+                        set(obj.PolygonObjects(i), 'FaceAlpha', obj.PlotData(i).main_alpha, 'EdgeColor', obj.PlotData(i).EdgeColor);
+                        
 					end
 
                     % Update colors
@@ -138,17 +140,16 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 
 		function buildNeededPlots(obj)
 
-            obj.numInitializedPlots;
-            curr_needed_plots = obj.num_of_dataSeries - obj.numInitializedPlots;
-            
             fprintf('buildNeededPlots()\n');
+            
+            curr_needed_plots = obj.num_of_dataSeries - obj.numInitializedPlots;
             fprintf('\t curr_needed_plots: %d\n', curr_needed_plots);
             
 			ax = getAxes(obj);
 
 			for i = 1:curr_needed_plots
 				% Create Patch and Line objects
-				obj.PolygonObjects(i) = patch(ax, NaN, NaN, 'r', 'FaceAlpha', 0.2,'EdgeColor','none');
+				obj.PolygonObjects(i) = patch(ax, NaN, NaN, 'g');
 				hold(ax,'on')
 				obj.OutlineBordersLineArray(i) = plot(ax, NaN, NaN, 'DisplayName','Original');
                 
@@ -246,16 +247,11 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
                     x_array(:,poly_i) = [curr_x; remaining_column_points];
                     y_array(:,poly_i) = [curr_y; remaining_column_points];
                     
-%                     obj.PlotData(arg_i, poly_i).updateData(curr_x, curr_y);
                 end
-
-                
+ 
                 % The x-coordinates of the patch vertices, specified as a vector or a matrix. If XData is a matrix, then each column represents the x-coordinates of a single face of the patch. In this case, XData, YData, and ZData must have the same dimensions.
 				obj.PlotData(arg_i).updateData(x_array, y_array);
-                
-% 				curr_x = coord_data(:, 2);
-% 				curr_y = coord_data(:, 1);
-% 				obj.PlotData(arg_i).updateData(curr_x, curr_y);
+
 			end
 
 		end % end function update_comp_polys
