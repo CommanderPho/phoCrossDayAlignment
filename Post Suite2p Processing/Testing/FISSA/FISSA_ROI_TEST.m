@@ -9,10 +9,12 @@ cellROI_plottingOptionsStruct.prevent_zoom_in = false;
 cellROI_plottingOptionsStruct.show_outline_line = false;
 cellROI_plottingOptionsStruct.show_patch = true;
 
+cellROI_plottingOptionsStruct.Color = [1 0 0];
 cellROI_plottingOptionsStruct.CData = [1 0 0];
 cellROI_plottingOptionsStruct.EdgeColor = 'black';
 
 neuropil_plottingOptionsStruct = cellROI_plottingOptionsStruct;
+neuropil_plottingOptionsStruct.Color = [0 0 1];
 neuropil_plottingOptionsStruct.CData = [0 0 1];
 % neuropil_plottingOptionsStruct.show_outline_line = false;
 % neuropil_plottingOptionsStruct.show_patch = true;
@@ -23,8 +25,8 @@ neuropil_plottingOptionsStruct.CData = [0 0 1];
 dataSeries = [PlotData_Cartesian('cellROI', true, 'r', [], [], [], cellROI_plottingOptionsStruct),...
     PlotData_Cartesian('neuropil', true, 'b', [], [], [], neuropil_plottingOptionsStruct)];
 
-plottingInfo.roi_alpha = 0.4;
-plottingInfo.other_alpha = 0.3;
+% plottingInfo.roi_alpha = 0.4;
+% plottingInfo.other_alpha = 0.3;
 % plottingInfo.prevent_zoom_in = false;
 plottingInfo.prevent_zoom_in = false;
 
