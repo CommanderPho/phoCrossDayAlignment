@@ -41,7 +41,7 @@ classdef PlotData_Mixin_PlottingOptions < matlab.mixin.SetGet
 	methods(Access = public)
 
 		function mixinContainerDyPropEvtCb(obj, src, evt)
-			fprintf('callback in plottingOptions!\n');
+			% fprintf('callback in plottingOptions!\n');
 		end
 
 		% function [obj] = mixinContainerDyPropEvtCb(obj, src, evt)

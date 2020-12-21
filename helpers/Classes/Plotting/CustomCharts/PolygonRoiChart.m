@@ -139,9 +139,9 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
                     	obj.OutlineBordersLineArray(i).Color = obj.PlotData(i).plottingOptions.Color;
 					end
 
-					if show_patch
-                    	obj.PolygonObjects(i).FaceColor = obj.PlotData(i).plottingOptions.Color;
-                    end
+					% if show_patch
+                    % 	obj.PolygonObjects(i).FaceColor = obj.PlotData(i).plottingOptions.Color;
+                    % end
 
                     if (show_line)
                         obj.OutlineBordersLineArray(i).Visible = 'on';
