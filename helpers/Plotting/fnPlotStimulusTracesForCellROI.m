@@ -89,7 +89,7 @@ function [figH] = fnPlotStimulusTracesForCellROI(final_data_explorer_obj, cellRo
     end    
     clf(figH);
     
-    set(figH,'factoryAxesTickLabelInterpreter','none')
+%     set(figH,'factoryAxesTickLabelInterpreter','none')
     
 % 	set(figH,'defaultSurfaceEdgeColor','g')
     % Set up the defaults on the figure:
