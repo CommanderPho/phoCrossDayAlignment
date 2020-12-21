@@ -116,14 +116,21 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer %& ...
 	methods(Access = protected)
 		function setup(~)
 			% Don't do anything in setup(~) because Mathworks broke it!
+			% f.GraphicsSmoothing = 'off';    % turn off figure graphics smoothing
+
+			% ax = getAxes(obj);
 		end
 	
 		function update(obj)
-			% Update XData and YData of Line
-			is_visible_array = {'off','on'};
 
-			obj.buildNeededPlots();
-            
+			ax = getAxes(obj);
+
+			obj.buildNeededPlots(ax);
+
+            % Turn hold state off
+			hold(ax,'off')
+
+
 			for i = 1:obj.num_of_dataSeries               
                 curr_plot_is_visible = obj.PlotData(i).should_show;
 
@@ -216,24 +223,24 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer %& ...
 
 		% end
 
-		function buildNeededPlots(obj)
+		function buildNeededPlots(obj, ax)
             % buildNeededPlots: Used to build the graphics objects corresponding to the current number of data series
 			fprintf('buildNeededPlots()\n');
             curr_needed_plots = obj.num_of_dataSeries - obj.numInitializedPlots;
             fprintf('\t curr_needed_plots: %d\n', curr_needed_plots);
-                
-			recently_initialized_plots = [];
-            
-			ax = getAxes(obj);
 
+
+			ax.FontSmoothing = 'off';       % turn off axes font smoothing
 			% Disable pan/zoom on the axes.
-%             ax.Interactions = [];
+            ax.Interactions = [];
 
 			if obj.PlotConfig.prevent_zoom_in
 				xlim(ax, 'manual');
 				ylim(ax, 'manual');
 			end
 
+			recently_initialized_plots = [];
+            
 			for i = 1:curr_needed_plots
 				% Create Patch and Line objects
 				obj.PolygonObjects(i) = patch(ax, NaN, NaN, 'g');
@@ -246,7 +253,7 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer %& ...
 
                 obj.numInitializedPlots = obj.numInitializedPlots + 1;
                 % fprintf('\t initialized one plot!\n');
-                fprintf('\t\t obj.numInitializedPlots: %d\n', obj.numInitializedPlots);
+                % fprintf('\t\t obj.numInitializedPlots: %d\n', obj.numInitializedPlots);
 			end % end for loop
             
 			if obj.PlotConfig.prevent_zoom_in
@@ -258,8 +265,6 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer %& ...
 
             set(ax, obj.PlotConfig.Axis);
 
-			% Turn hold state off
-			hold(ax,'off')
         end % end buildNeededPlots(...)
         
 
