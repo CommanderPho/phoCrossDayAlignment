@@ -27,14 +27,15 @@ classdef PlotFigureState < handle
 			% obj.FigureWindow = plot_figure_handle;
 			% obj.plot_update_callback_function = plot_callback;
 
-			obj.FigureWindow = createFigureWithTagIfNeeded(obj.plot_identifier);
+			obj.FigureWindow = createUIFigureWithTagIfNeeded(obj.plot_identifier);
+			% obj.FigureWindow = createFigureWithTagIfNeeded(obj.plot_identifier);
 			obj.plot_update_callback_function = @(curr_i) plot_callback(obj.FigureWindow, curr_i);
 			% obj.plot_update_callback_function = @(curr_i) (pho_plot_stimulus_traces(final_data_explorer_obj, obj.FigureWindow, curr_i));
 		end
 
 
 		function obj = Update(obj, curr_i)
-			obj.FigureWindow.Visibility = obj.should_show;
+			obj.FigureWindow.Visible = obj.should_show;
 			if obj.should_show
 				obj.plot_update_callback_function(curr_i);
 			end

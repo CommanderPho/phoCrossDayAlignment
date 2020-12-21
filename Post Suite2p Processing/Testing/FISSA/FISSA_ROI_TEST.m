@@ -1,9 +1,14 @@
 % 
-% addpath(genpath('../../../helpers'));
+addpath(genpath('../../../helpers'));
 
 % PlotData_Cartesian(plot_identifier, should_show, aColor, XData, YData, Colormap)
-clear chart;
-[chart] = plotFissaRoiNewChart(final_data_explorer_obj);
+phoFinalChartFigure = PlotFigureState('phoFinalChartFigure_FissaRoi', true, ...
+    @(extantFigH, ~) (plotFissaRoiNewChart(final_data_explorer_obj, extantFigH)));
+
+phoFinalChartFigure.Update(0);
+
+% clear chart;
+% [chart] = plotFissaRoiNewChart(final_data_explorer_obj);
 
 % neuropil_plottingOptionsStruct.show_outline_line = false;
 % neuropil_plottingOptionsStruct.show_patch = true;
@@ -27,7 +32,7 @@ clear chart;
 
 
 % chart
-function [chart] = plotFissaRoiNewChart(final_data_explorer_obj)
+function [chart] = plotFissaRoiNewChart(final_data_explorer_obj, extantFigH)
 
     number_of_cellROI_plotSubGraphics = 2; % One for the regular cellROI and one for the neuropil
     plotting_options.should_plot_neuropil_masks = true;
@@ -157,7 +162,11 @@ function [chart] = plotFissaRoiNewChart(final_data_explorer_obj)
 %     chart = chart.update_comp_polys(currCellPolys, currCellNeuropilPolys);
     
     dataSeries = reshape(dataSeries, [(num_cell_rois * 2), 1]);
-    chart = PolygonRoiChart(dataSeries, curr_chart_config);
+    
+    if ~exist('extantFigH','var')    
+        error('no figure!')
+    end
+    chart = PolygonRoiChart(dataSeries, curr_chart_config, 'Parent', extantFigH);
 %     chart = InteractivePolygonRoiChart(dataSeries, curr_chart_config);
     openvar('chart')
     
