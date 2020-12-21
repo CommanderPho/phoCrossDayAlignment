@@ -134,10 +134,6 @@ classdef InteractionHelper < handle
 			stimulusStrongestTuningTypeColumn = table(tuning_array,'VariableNames',{'strongestStimuliTuning'});
 			obj.GraphicalSelection.selectionCustomTableFigure.data_table = [obj.GraphicalSelection.selectionCustomTableFigure.data_table stimulusStrongestTuningTypeColumn];
 
-
-
-
-
             foundExtantTableFigure = findall(0,'Type','figure','tag','uimgr.uifigure_PhoCustom_SelectionTable'); % Get the handle.
 			if ~isempty(foundExtantTableFigure) && isgraphics(foundExtantTableFigure)
                 fprintf('found existing table figure. re-using...\n');
@@ -171,10 +167,6 @@ classdef InteractionHelper < handle
                 obj.GraphicalSelection.tableControls.btn_SaveUserAnnotations.ClickedCallback = @(src, event) (obj.selection_toolbar_btn_SaveUserSelections_callback(src, event));
 
             end
-
-			
-			
-
 
 			obj.GraphicalSelection.selectionCustomTableFigure.Table = uitable(obj.GraphicalSelection.selectionCustomTableFigure.Figure, 'Data', obj.GraphicalSelection.selectionCustomTableFigure.data_table,...
                 'Tag','uimgr.uitable_PhoCustom_SelectionTable');
