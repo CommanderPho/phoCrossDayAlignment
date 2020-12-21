@@ -1,11 +1,18 @@
 % 
 
 % PlotData_Cartesian(plot_identifier, should_show, aColor, XData, YData, Colormap)
+
+
+cellROI_plottingOptionsStruct.roi_alpha = 0.4;
+cellROI_plottingOptionsStruct.other_alpha = 0.3;
+cellROI_plottingOptionsStruct.prevent_zoom_in = false;
 cellROI_plottingOptionsStruct.show_outline_line = false;
 cellROI_plottingOptionsStruct.show_patch = true;
 
-neuropil_plottingOptionsStruct.show_outline_line = false;
-neuropil_plottingOptionsStruct.show_patch = true;
+neuropil_plottingOptionsStruct = cellROI_plottingOptionsStruct;
+
+% neuropil_plottingOptionsStruct.show_outline_line = false;
+% neuropil_plottingOptionsStruct.show_patch = true;
 
 % test = PlotData_Mixin_PlottingOptions(plottingOptionsStruct);
 
@@ -28,11 +35,7 @@ chart = PolygonRoiChart(dataSeries);
 
 activeCellROIIndex = 25;
 
-plottingInfo.roi_alpha = 0.4;
-plottingInfo.other_alpha = 0.3;
 
-% plottingInfo.prevent_zoom_in = false;
-plottingInfo.prevent_zoom_in = false;
 
 % Note that this gets all comps (all sessions), not all ROIs
 activeCompCells = final_data_explorer_obj.compMasks.Polygons; % Only want good polys, in the first session.

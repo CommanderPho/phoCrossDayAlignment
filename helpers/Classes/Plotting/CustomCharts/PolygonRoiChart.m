@@ -1,6 +1,7 @@
 classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
-        matlab.graphics.chartcontainer.mixin.Legend & ...
-        matlab.mixin.CustomDisplay
+        matlab.mixin.CustomDisplay %& ...
+        %     matlab.graphics.chartcontainer.mixin.Legend
+        
     
 	properties
 		Color = [1 0 0]
@@ -91,10 +92,16 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
                     % Update patch XData and YData
 					if show_patch
 						x = curr_x(:,1);
-						obj.PolygonObjects(i).XData = [x x(end:-1:1)];
+						active_x = [x x(end:-1:1)];
 						y = curr_y(:,1);
 						% c = obj.ConfidenceMargin;
-						obj.PolygonObjects(i).YData = [y y(end:-1:1)];
+                        active_y = [y y(end:-1:1)];
+                        
+%                         obj.PolygonObjects(i).XData = active_x;
+% 						obj.PolygonObjects(i).YData = active_y;
+                        obj.PolygonObjects(i).XData = curr_x;
+						obj.PolygonObjects(i).YData = curr_y;
+                        
 					end
 
                     % Update colors
