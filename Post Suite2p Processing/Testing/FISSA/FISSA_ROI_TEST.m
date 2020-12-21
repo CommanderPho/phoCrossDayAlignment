@@ -1,7 +1,8 @@
 % 
+% addpath(genpath('../../../helpers'));
 
 % PlotData_Cartesian(plot_identifier, should_show, aColor, XData, YData, Colormap)
-clear chart chartConfigStruct curr_chart_config;
+clear chart;
 [chart] = plotFissaRoiNewChart(final_data_explorer_obj);
 
 % neuropil_plottingOptionsStruct.show_outline_line = false;
@@ -62,19 +63,29 @@ function [chart] = plotFissaRoiNewChart(final_data_explorer_obj)
 
     % plotConfig = DynamicPlottingOptionsContainer({}, plotConfig);
 
-    cellROI_plottingOptionsStruct.main_alpha = 0.4;
-    cellROI_plottingOptionsStruct.other_alpha = 0.3;
+%     cellROI_plottingOptionsStruct.main_alpha = 0.4;
+%     cellROI_plottingOptionsStruct.other_alpha = 0.3;
     cellROI_plottingOptionsStruct.prevent_zoom_in = false;
     cellROI_plottingOptionsStruct.show_outline_line = false;
     cellROI_plottingOptionsStruct.show_patch = true;
 
     cellROI_plottingOptionsStruct.Color = [1 0 0];
     cellROI_plottingOptionsStruct.CData = [1 0 0];
-    cellROI_plottingOptionsStruct.EdgeColor = 'black';
 
+    cellROI_plottingOptionsStruct.Patch.Tag = '';
+    cellROI_plottingOptionsStruct.Patch.UserData = [];
+    cellROI_plottingOptionsStruct.Patch.EdgeColor = 'black';
+    cellROI_plottingOptionsStruct.Patch.EdgeAlpha = 0.3;
+    cellROI_plottingOptionsStruct.Patch.FaceColor = cellROI_plottingOptionsStruct.Color;
+    cellROI_plottingOptionsStruct.Patch.FaceAlpha = 0.4;
+%     cellROI_plottingOptionsStruct.Patch.CData = cellROI_plottingOptionsStruct.Color;
+    
+    
     neuropil_plottingOptionsStruct = cellROI_plottingOptionsStruct;
     neuropil_plottingOptionsStruct.Color = [0 0 1];
     neuropil_plottingOptionsStruct.CData = [0 0 1];
+    neuropil_plottingOptionsStruct.Patch.FaceColor = neuropil_plottingOptionsStruct.Color;
+    
 
     dataSeries = [PlotData_Cartesian('cellROI', true, 'r', [], [], [], cellROI_plottingOptionsStruct),...
         PlotData_Cartesian('neuropil', true, 'b', [], [], [], neuropil_plottingOptionsStruct)];
@@ -103,9 +114,11 @@ function [chart] = plotFissaRoiNewChart(final_data_explorer_obj)
                 currPlotSubGraphicsIdentifier.type = 'NeuropilMask';
     
                 curr_tag_string = fnBuildCellRoiPlotTagString(cellROIIdentifier, nan, 'FissaNeuropilPolygons');
-                
-                [x_array, y_array, num_polys] = PolygonRoiChart.computeFilledCellPolyCoordinates(activeCompCells{i});
-                curr_updated_data_series = PlotData_Cartesian(curr_tag_string, true, 'b', x_array, y_array, [], neuropil_plottingOptionsStruct);
+                neuropil_plottingOptionsStruct.Patch.Tag = curr_tag_string;
+                neuropil_plottingOptionsStruct.Patch.UserData = currPlotSubGraphicsIdentifier;
+                [x_array, y_array, num_polys] = PolygonRoiChart.computeFilledCellPolyCoordinates(activeCompNeuropilCells{i});
+                curr_CData = repmat(neuropil_plottingOptionsStruct.CData, size(x_array));   
+                curr_updated_data_series = PlotData_Cartesian(curr_tag_string, true, 'b', x_array, y_array, curr_CData, neuropil_plottingOptionsStruct);
 
             else
                 % Non-neuropil layer:
@@ -120,14 +133,19 @@ function [chart] = plotFissaRoiNewChart(final_data_explorer_obj)
                 end
 
                 curr_tag_string = fnBuildCellRoiPlotTagString(cellROIIdentifier, nan, 'FissaCellRoiPolygons');
-                
-%                 currCellNeuropilPolys = activeCompNeuropilCells{i};
-                [x_array, y_array, num_polys] = PolygonRoiChart.computeFilledCellPolyCoordinates(activeCompNeuropilCells{i});
-                curr_updated_data_series = PlotData_Cartesian(curr_tag_string, true, 'r', x_array, y_array, [], cellROI_plottingOptionsStruct);
+                cellROI_plottingOptionsStruct.Patch.Tag = curr_tag_string;
+                cellROI_plottingOptionsStruct.Patch.UserData = currPlotSubGraphicsIdentifier;
+                [x_array, y_array, num_polys] = PolygonRoiChart.computeFilledCellPolyCoordinates(activeCompCells{i});
+                curr_CData = repmat(cellROI_plottingOptionsStruct.CData, size(x_array));
+                curr_updated_data_series = PlotData_Cartesian(curr_tag_string, true, 'r', x_array, y_array, curr_CData, cellROI_plottingOptionsStruct);
 
             end % end if is_neuropil_index
             
 %             dataSeries(end+1) = curr_updated_data_series;
+           
+%             set(curr_updated_data_series.plotting_options, 'UserData', currPlotSubGraphicsIdentifier);
+%             set(curr_updated_data_series.plotting_options, 'Tag', curr_tag_string);
+            
             dataSeries(i, plotImageIndex) = curr_updated_data_series;
 %             set(imagePlotHandles(i, plotImageIndex), 'UserData', currPlotSubGraphicsIdentifier);
 %             set(imagePlotHandles(i, plotImageIndex), 'Tag', curr_tag_string);
@@ -139,7 +157,8 @@ function [chart] = plotFissaRoiNewChart(final_data_explorer_obj)
 %     chart = chart.update_comp_polys(currCellPolys, currCellNeuropilPolys);
     
     dataSeries = reshape(dataSeries, [(num_cell_rois * 2), 1]);
-    chart = PolygonRoiChart(dataSeries, curr_chart_config);
+%     chart = PolygonRoiChart(dataSeries, curr_chart_config);
+    chart = InteractivePolygonRoiChart(dataSeries, curr_chart_config);
     openvar('chart')
     
     
