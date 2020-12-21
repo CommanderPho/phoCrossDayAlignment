@@ -14,14 +14,14 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
     
     
     properties (Access = protected)
-		numInitializedPlots = [0 0];
+		numInitializedPlots = [];
     end
 
     
 	%% Computed Properties:
 	properties (Dependent)
 		num_of_dataSeries % FinalDataExplorer
-		number_of_dataSeries_SubGraphics % The number of graphics objects belonging to each cellROI. For example, these might be the fill, the edge, and several inset/outset edge objects
+% 		number_of_dataSeries_SubGraphics % The number of graphics objects belonging to each cellROI. For example, these might be the fill, the edge, and several inset/outset edge objects
 		dataSeries_labels
 
 	end
@@ -34,15 +34,15 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 		function dataSeries_labels = get.dataSeries_labels(obj)
 			dataSeries_labels = cell([obj.num_of_dataSeries 1]);
 			for i = 1:obj.num_of_dataSeries
-				dataSeries_labels{i} = obj.PlotData(i).plot_identifier;
+				dataSeries_labels{i} = obj.PlotData(i,1).plot_identifier;
 			end
 		end
-	   function number_of_dataSeries_SubGraphics = get.number_of_dataSeries_SubGraphics(obj)
-          number_of_dataSeries_SubGraphics = zeros([obj.num_of_dataSeries 1]);
-          for i = 1:size(obj.PlotData, 1)
-            number_of_dataSeries_SubGraphics(i) = length(obj.PlotData(i,:));
-          end
-	   end
+% 	   function number_of_dataSeries_SubGraphics = get.number_of_dataSeries_SubGraphics(obj)
+%           number_of_dataSeries_SubGraphics = zeros([obj.num_of_dataSeries 1]);
+%           for i = 1:size(obj.PlotData, 1)
+%             number_of_dataSeries_SubGraphics(i) = length(obj.PlotData(i,:));
+%           end
+% 	   end
 	end
 
 
@@ -65,8 +65,12 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 			% Call superclass constructor method
 			obj@matlab.graphics.chartcontainer.ChartContainer(args{:});
 
-			obj.PlotData(:,1) = plotDataSeries;
-
+            numDataSeries = length(plotDataSeries);
+            
+            obj.numInitializedPlots = zeros([numDataSeries 1]);
+            obj.PlotData(:,:) = repmat(plotDataSeries, [1 5]);
+           
+            
 		end
 	end
 
@@ -89,14 +93,15 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
             
 
 			for i = 1:obj.num_of_dataSeries
-                curr_data = obj.PlotData(i,:);
-                for j = 1:length(curr_data)
-                
-                    curr_plot_is_visible = obj.PlotData(i,j).should_show;
+                curr_data_row = obj.PlotData(i,:);
+                for j = 1:length(curr_data_row)
+                    curr_data = obj.PlotData(i,j);
+                    
+                    curr_plot_is_visible = curr_data.should_show;
 
                     if curr_plot_is_visible
-                        curr_x = obj.PlotData(i).XData;
-                        curr_y = obj.PlotData(i).YData;
+                        curr_x = curr_data.XData;
+                        curr_y = curr_data.YData;
 
                         obj.OutlineBordersLineArray(i).XData = curr_x;
                         obj.OutlineBordersLineArray(i).YData = curr_y;
@@ -109,8 +114,8 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
                         obj.PolygonObjects(i).YData = [y y(end:-1:1)];
 
                         % Update colors
-                        obj.OutlineBordersLineArray(i).Color = obj.PlotData(i).Color;
-                        obj.PolygonObjects(i).FaceColor = obj.PlotData(i).Color;
+                        obj.OutlineBordersLineArray(i).Color = curr_data.Color;
+                        obj.PolygonObjects(i).FaceColor = curr_data.Color;
 
                         obj.OutlineBordersLineArray(i).Visible = 'on';
                         obj.PolygonObjects(i).Visible = 'on';
@@ -124,9 +129,10 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
                 
 			end % end for num_of_dataSeries loop
 
-			drawnow;
-		end
+% 			drawnow;
+        end
 
+        
 		function buildNeededPlots(obj)
             fprintf('buildNeededPlots()\n');
             curr_num_additional_plot_rows = obj.num_of_dataSeries - obj.numInitializedPlots(1);
@@ -196,7 +202,7 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
                 propgrp = getPropertyGroups@matlab.mixin.CustomDisplay(obj);    
             else
                 % List for scalar object
-                propList = {'PlotData','dataSeries_labels','num_of_dataSeries','numInitializedPlots','PolygonObjects','PolygonObjects','OutlineBordersLineArray'};
+                propList = {'PlotData','dataSeries_labels','num_of_dataSeries','numInitializedPlots','PolygonObjects','OutlineBordersLineArray'};
                 propgrp = matlab.mixin.util.PropertyGroup(propList);
             end
         end % end getPropertyGroups(...)
@@ -222,6 +228,23 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 				[coord_data, coord_polys, total_num_points, num_polys] = PolygonRoiChart.extractCellPolyCoordinates(activePolys);
                 
 %                 updatedRequiredPlots(arg_i) = num_polys;
+                curr_row_data = obj.PlotData(arg_i,:);
+                curr_row_num_initialized_columns = length(curr_row_data);
+                curr_row_num_required_columns = num_polys;
+                curr_row_num_additional_data_columns = curr_row_num_required_columns - curr_row_num_initialized_columns;
+                fprintf('\t curr_row_num_additional_plots[%d]: %d\n', arg_i, curr_row_num_additional_data_columns);
+                
+                if curr_row_num_additional_data_columns > 0
+                    extant_data_element = curr_row_data(1);
+                    additional_elements = repmat(extant_data_element, [1 curr_row_num_additional_data_columns]);
+                    num_updated_row_columns = curr_row_num_initialized_columns + curr_row_num_additional_data_columns;
+%                     obj.PlotData(arg_i, :) = [obj.PlotData(arg_i, :) additional_elements];
+%                     obj.PlotData(arg_i, curr_row_num_initialized_columns:num_updated_row_columns) = [curr_row_data additional_elements];
+                    
+                    for new_data_column_idx = 1:curr_row_num_additional_data_columns
+                         obj.PlotData(arg_i, end+1) = extant_data_element;
+                    end
+                end
                 
                 for poly_i = 1:num_polys
                     active_coord_data = coord_data(coord_polys == poly_i, :);

@@ -3,9 +3,9 @@
 % PlotData_Cartesian(plot_identifier, should_show, aColor, XData, YData, Colormap)
 
 dataSeries = [PlotData_Cartesian('cellROI', true, 'r'),...
-    PlotData_Cartesian('neuropil', true, 'b')];
+    PlotData_Cartesian('neuropil', true, 'b')]';
 
-% clear chart;
+clear chart;
 
 % hold off;
 % hold off;
@@ -13,7 +13,7 @@ chart = PolygonRoiChart(dataSeries);
 
 % chart.dataSeries_labels
 
-activeCellROIIndex = 25;
+activeCellROIIndex = 29;
 
 plottingInfo.roi_alpha = 0.4;
 plottingInfo.other_alpha = 0.3;
