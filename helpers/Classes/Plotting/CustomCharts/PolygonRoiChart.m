@@ -125,13 +125,13 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 
                     % Update patch XData and YData
 					if show_patch
-                        curr_color_data = repmat(obj.PlotData(i).plottingOptions.CData, size(curr_x));                        
+                        curr_color_data = repmat(obj.PlotData(i).plottingOptions.CData, size(curr_x));                
                         obj.PolygonObjects(i).XData = curr_x;
 						obj.PolygonObjects(i).YData = curr_y;
                         obj.PolygonObjects(i).CData = curr_color_data;
                         
-                        set(obj.PolygonObjects(i), 'FaceAlpha', obj.PlotData(i).plottingOptions.main_alpha, 'EdgeColor', obj.PlotData(i).plottingOptions.EdgeColor);
-                        
+						set(obj.PolygonObjects(i), obj.PlotData(i).plottingOptions.Patch);
+
 					end
 
                     % Update colors
@@ -192,12 +192,10 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 				obj.OutlineBordersLineArray(i) = plot(ax, NaN, NaN, 'DisplayName','Original');
                 
                 obj.numInitializedPlots = obj.numInitializedPlots + 1;
-                fprintf('\t initialized one plot!\n');
+                % fprintf('\t initialized one plot!\n');
                 fprintf('\t\t obj.numInitializedPlots: %d\n', obj.numInitializedPlots);
 			end % end for loop
             
-            % axis(ax, 'square');
-			%             axis(ax, [-1, 1, -1, 1] * 1.3);
 
 			if obj.PlotConfig.prevent_zoom_in
 				xlim(ax, [1 512]);
@@ -205,7 +203,6 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
 			else
 				axis(ax, 'square');
             end
-
 
             set(ax, obj.PlotConfig.Axis);
 
