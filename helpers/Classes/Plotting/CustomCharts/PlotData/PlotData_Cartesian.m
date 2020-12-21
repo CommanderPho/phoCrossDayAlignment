@@ -23,11 +23,12 @@ classdef PlotData_Cartesian < PlotDataBase
 	methods (Access = public)
 
 		% function obj = PlotData_Cartesian(plot_identifier, plot_callback, plot_figure_handle)
-		function obj = PlotData_Cartesian(plot_identifier, should_show, aColor, XData, YData, Colormap)
+		function obj = PlotData_Cartesian(plot_identifier, should_show, aColor, XData, YData, Colormap, varargin)
 			%PlotData_Cartesian Construct an instance of this class
 			
 			% Call superclass constructor method
-			obj@PlotDataBase(plot_identifier, should_show, aColor);
+			args = varargin;
+			obj@PlotDataBase(plot_identifier, should_show, aColor, args{:});
 
 			if exist('XData','var')
 				obj.XData = XData;

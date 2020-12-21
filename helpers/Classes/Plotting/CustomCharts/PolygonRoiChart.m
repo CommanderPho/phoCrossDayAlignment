@@ -1,4 +1,7 @@
-classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
+classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer & ...
+        matlab.graphics.chartcontainer.mixin.Legend & ...
+        matlab.mixin.CustomDisplay
+    
 	properties
 		Color = [1 0 0]
 
@@ -52,7 +55,7 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 			obj@matlab.graphics.chartcontainer.ChartContainer(args{:});
 
 			obj.PlotData = plotDataSeries;
-
+            
 		end
 	end
 
@@ -65,36 +68,62 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 		end
 		function update(obj)
 			% Update XData and YData of Line
-			
+			is_visible_array = {'off','on'};
+
 			obj.buildNeededPlots();
             
 			for i = 1:obj.num_of_dataSeries               
                 curr_plot_is_visible = obj.PlotData(i).should_show;
 
                 if curr_plot_is_visible
+	
                     curr_x = obj.PlotData(i).XData;
                     curr_y = obj.PlotData(i).YData;
 
-                    obj.OutlineBordersLineArray(i).XData = curr_x;
-                    obj.OutlineBordersLineArray(i).YData = curr_y;
+					show_line = obj.PlotData(i).show_outline_line;
+					show_patch = obj.PlotData(i).show_patch;
+
+					if show_line
+						obj.OutlineBordersLineArray(i).XData = curr_x;
+						obj.OutlineBordersLineArray(i).YData = curr_y;
+					end
 
                     % Update patch XData and YData
-                    x = curr_x;
-                    obj.PolygonObjects(i).XData = [x x(end:-1:1)];
-                    y = curr_y;
-                    % c = obj.ConfidenceMargin;
-                    obj.PolygonObjects(i).YData = [y y(end:-1:1)];
+					if show_patch
+						x = curr_x(:,1);
+						obj.PolygonObjects(i).XData = [x x(end:-1:1)];
+						y = curr_y(:,1);
+						% c = obj.ConfidenceMargin;
+						obj.PolygonObjects(i).YData = [y y(end:-1:1)];
+					end
 
                     % Update colors
-                    obj.OutlineBordersLineArray(i).Color = obj.PlotData(i).Color;
-                    obj.PolygonObjects(i).FaceColor = obj.PlotData(i).Color;
+					if show_line
+                    	obj.OutlineBordersLineArray(i).Color = obj.PlotData(i).Color;
+					end
 
-                    obj.OutlineBordersLineArray(i).Visible = 'on';
-                    obj.PolygonObjects(i).Visible = 'on';
+					if show_patch
+                    	obj.PolygonObjects(i).FaceColor = obj.PlotData(i).Color;
+                    end
+
+                    if (show_line)
+                        obj.OutlineBordersLineArray(i).Visible = 'on';
+                    else
+                        obj.OutlineBordersLineArray(i).Visible = 'off';
+                    end
+                    
+                    if (show_patch)
+                        obj.PolygonObjects(i).Visible = 'on';
+                    else
+                        obj.PolygonObjects(i).Visible = 'off';
+                    end
+
                 else
                     obj.OutlineBordersLineArray(i).Visible = 'off';
                     obj.PolygonObjects(i).Visible = 'off';
                 end
+
+
                 
 			end % end for num_of_dataSeries loop
 
@@ -125,18 +154,54 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 			hold(ax,'off')
         end
         
-        
-        % Called when this class is displayed
-        function propgrp = getPropertyGroups(obj)
-            if ~isscalar(obj)
-                % List for array of objects
-                propgrp = getPropertyGroups@matlab.mixin.CustomDisplay(obj);    
-            else
-                % List for scalar object
-                propList = {'PlotData','dataSeries_labels','num_of_dataSeries','numInitializedPlots','PolygonObjects','OutlineBordersLineArray'};
-                propgrp = matlab.mixin.util.PropertyGroup(propList);
-            end
-        end % end getPropertyGroups(...)
+
+		%% matlab.mixin.CustomDisplay Overrides:
+		% See https://www.mathworks.com/help/matlab/matlab_oop/ways-to-approach-customization.html
+		function header = getHeader(obj)
+			if ~isscalar(obj)
+				% List for array of objects
+				header = getHeader@matlab.mixin.CustomDisplay(obj);
+			else
+				headerStr = matlab.mixin.CustomDisplay.getClassNameForHeader(obj);
+				headerStr = [headerStr,' with Customized Display'];
+				header = sprintf('%s\n',headerStr);
+			end
+		end % end getHeader(...)
+
+
+		function s = getFooter(obj)
+			% The default implementation returns an empty char vector
+            s = 'Here is my custom footer';
+			% if ~isscalar(obj)
+			% 	header = getHeader@matlab.mixin.CustomDisplay(obj);
+			% else
+			% 	headerStr = matlab.mixin.CustomDisplay.getClassNameForHeader(obj);
+			% 	headerStr = [headerStr,' with Customized Display'];
+			% 	header = sprintf('%s\n',headerStr);
+			% end
+
+        end % end getFooter(...)
+
+    	% Called when this class is displayed
+		function propgrp = getPropertyGroups(obj)
+			if ~isscalar(obj)
+				% List for array of objects
+				propgrp = getPropertyGroups@matlab.mixin.CustomDisplay(obj);
+			else
+				% List for scalar object
+				propList = {'PlotData','dataSeries_labels','num_of_dataSeries','numInitializedPlots','PolygonObjects','OutlineBordersLineArray'};
+				% propList = struct('PlotData',obj.Department,...
+				% 	'dataSeries_labels',obj.JobTitle,...
+				% 	'num_of_dataSeries',obj.Name,...
+				% 	'numInitializedPlots','Not available',...
+				% 	'Password',pd);
+				propgrp = matlab.mixin.util.PropertyGroup(propList);
+
+			end
+		end % end getPropertyGroups(...)
+
+
+       
 
         
 
@@ -153,10 +218,37 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
             % nargin: This returns 3 for some reason!
 			for arg_i = 1:length(varargin)	
 				activePolys = varargin{arg_i};
-				[coord_data, coord_polys, total_num_points, num_polys] = PolygonRoiChart.extractCellPolyCoordinates(activePolys);
-				curr_x = coord_data(:, 2);
-				curr_y = coord_data(:, 1);
-				obj.PlotData(arg_i).updateData(curr_x, curr_y);
+				[coord_data, coord_polys, num_points_per_poly, num_polys] = PolygonRoiChart.extractCellPolyCoordinates(activePolys);
+                
+                % Use max_num_points to allocate an array filled with NaNs
+                max_num_points = max(num_points_per_poly,[],'all');
+                
+                x_array = zeros([max_num_points, num_polys]);
+                y_array = zeros([max_num_points, num_polys]);
+                
+                for poly_i = 1:num_polys
+                    active_coord_data = coord_data(coord_polys == poly_i, :);
+                    curr_size = size(active_coord_data, 1);
+                    
+                    curr_remaining_points = max_num_points - curr_size;
+                    remaining_column_points = nan([curr_remaining_points, 1]);
+                    
+                    curr_x = active_coord_data(:, 2);
+                    curr_y = active_coord_data(:, 1);
+                                        
+                    x_array(:,poly_i) = [curr_x; remaining_column_points];
+                    y_array(:,poly_i) = [curr_y; remaining_column_points];
+                    
+%                     obj.PlotData(arg_i, poly_i).updateData(curr_x, curr_y);
+                end
+
+                
+                % The x-coordinates of the patch vertices, specified as a vector or a matrix. If XData is a matrix, then each column represents the x-coordinates of a single face of the patch. In this case, XData, YData, and ZData must have the same dimensions.
+				obj.PlotData(arg_i).updateData(x_array, y_array);
+                
+% 				curr_x = coord_data(:, 2);
+% 				curr_y = coord_data(:, 1);
+% 				obj.PlotData(arg_i).updateData(curr_x, curr_y);
 			end
 
 		end % end function update_comp_polys
@@ -169,10 +261,13 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 
 	methods(Static)
 
-		function [coord_data, coord_polys, total_num_points, num_polys] = extractCellPolyCoordinates(polys)
+		function [coord_data, coord_polys, num_points_per_poly, num_polys] = extractCellPolyCoordinates(polys)
 			% plotCellPolys:
 			num_polys = length(polys);
-			total_num_points = 0;
+			
+            num_points_per_poly = zeros([1 num_polys]);
+%             total_num_points = 0;
+            
 			coord_polys = [];
 			coord_data = [];
 			% Loop through all polygons within this cellROI
@@ -182,10 +277,10 @@ classdef PolygonRoiChart < matlab.graphics.chartcontainer.ChartContainer
 					fprintf('\t WARNING: poly[%d] is double wrapped!\n', j);
 					curr_poly = curr_poly{1}; 
 				end
-				num_points = size(curr_poly, 1);
-				coord_polys = [coord_polys; repmat(j, [num_points 1])];
+				num_points_per_poly(j) = size(curr_poly, 1);
+				coord_polys = [coord_polys; repmat(j, [num_points_per_poly(j) 1])];
 				coord_data = [coord_data; curr_poly];
-				total_num_points = total_num_points + num_points;
+% 				total_num_points = total_num_points + num_points_per_poly(j);
 			end % end for
 		end
 

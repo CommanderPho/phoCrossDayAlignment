@@ -1,9 +1,22 @@
 % 
 
 % PlotData_Cartesian(plot_identifier, should_show, aColor, XData, YData, Colormap)
+cellROI_plottingOptionsStruct.show_outline_line = false;
+cellROI_plottingOptionsStruct.show_patch = true;
 
-dataSeries = [PlotData_Cartesian('cellROI', true, 'r'),...
-    PlotData_Cartesian('neuropil', true, 'b')];
+neuropil_plottingOptionsStruct.show_outline_line = false;
+neuropil_plottingOptionsStruct.show_patch = true;
+
+% test = PlotData_Mixin_PlottingOptions(plottingOptionsStruct);
+
+
+dataSeries = [PlotData_Cartesian('cellROI', true, 'r', [], [], [], cellROI_plottingOptionsStruct),...
+    PlotData_Cartesian('neuropil', true, 'b', [], [], [], neuropil_plottingOptionsStruct)];
+
+plottingInfo.roi_alpha = 0.4;
+plottingInfo.other_alpha = 0.3;
+% plottingInfo.prevent_zoom_in = false;
+plottingInfo.prevent_zoom_in = false;
 
 % clear chart;
 
